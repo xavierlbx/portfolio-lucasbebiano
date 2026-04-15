@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ToggleSwitch } from 'primevue'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useDarkMode } from '../composables/useDarkMode'
 
 const { isDark, toggleDarkMode } = useDarkMode()
@@ -12,6 +12,20 @@ const handleToggle = () => {
   checked.value = isDark.value
 }
 
+const scrollY = ref(0)
+
+const handleScroll = () => {
+  scrollY.value = window.scrollY
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
+
 const navLinks = [
   { label: 'Skills' },
   { label: 'Sobre Mim' },
@@ -19,8 +33,6 @@ const navLinks = [
   { label: 'Certificados' },
   { label: 'Fale Comigo' },
 ]
-
-const title = 'Welcome to My Portfolio'
 
 const projects = [
   {
@@ -98,13 +110,50 @@ const openModal = (project: Project) => {
 const closeModal = () => {
   selectedProject.value = null
 }
+
+const line1 = 'Bem-vindo ao meu'
+const line2 = 'portfólio!'
+const typedLine1 = ref('')
+const typedLine2 = ref('')
+const typingPhase = ref(0) // 0 = digitando linha1, 1 = digitando linha2, 2 = concluído
+const showCursor = ref(true)
+
+onMounted(() => {
+  const speed = 70
+  let i = 0
+  let j = 0
+
+  const typeLine2 = () => {
+    if (j < line2.length) {
+      typedLine2.value += line2[j++]
+      setTimeout(typeLine2, speed)
+    } else {
+      typingPhase.value = 2
+      setTimeout(() => {
+        showCursor.value = false
+      }, 2500)
+    }
+  }
+
+  const typeLine1 = () => {
+    if (i < line1.length) {
+      typedLine1.value += line1[i++]
+      setTimeout(typeLine1, speed)
+    } else {
+      typingPhase.value = 1
+      setTimeout(typeLine2, 150)
+    }
+  }
+
+  setTimeout(typeLine1, 400)
+})
 </script>
 <template>
-  <main class="w-full bg-[#0D0D0D]">
+  <main class="min-h-screen w-full bg-[#0D0D0D]">
     <!-- Navbar flutuante -->
-    <div class="fixed top-3 right-0 left-0 z-50 flex justify-center px-4">
+    <div class="fixed top-3 right-0 left-0 z-100 flex justify-center px-4">
       <nav
-        class="w-full max-w-5xl rounded-2xl bg-white/5 px-8 py-0 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+        class="w-full max-w-5xl rounded-2xl bg-black/40 px-8 py-0 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl"
       >
         <div class="flex h-14 items-center justify-between">
           <!-- Logo -->
@@ -117,7 +166,7 @@ const closeModal = () => {
             <li v-for="link in navLinks" :key="link.label">
               <a
                 href="#"
-                class="inline-block text-sm font-medium text-slate-300 transition-all duration-200 hover:scale-110 hover:text-white"
+                class="hover:text-slate/100 inline-block text-sm font-medium text-white transition-all duration-200 hover:scale-110"
                 @click.prevent
               >
                 {{ link.label }}
@@ -156,7 +205,7 @@ const closeModal = () => {
             <li v-for="link in navLinks" :key="link.label">
               <a
                 href="#"
-                class="block inline-block w-full origin-left py-2 text-sm font-medium text-slate-300 transition-all duration-200 hover:scale-105 hover:text-white"
+                class="hover:text-slate/100 block inline-block w-full origin-left py-2 text-sm font-medium text-white transition-all duration-200 hover:scale-105"
                 @click.prevent="isMenuOpen = false"
               >
                 {{ link.label }}
@@ -167,53 +216,87 @@ const closeModal = () => {
       </nav>
     </div>
 
-    <div class="h-20" />
+    <!-- Bem vindo -->
+    <section class="relative h-screen w-full overflow-hidden">
+      <!-- Background Image | Parallax -->
+      <div>
+        <img
+          src="/images/bg-1.png"
+          alt=""
+          class="absolute inset-0 z-10 h-full w-full object-cover object-top"
+          :style="{ transform: `translate3d(0, ${scrollY * 0.8}px, 0)` }"
+        />
+        <img
+          src="/images/bg-2.png"
+          class="absolute bottom-15 left-0 z-20 w-full"
+          :style="{ transform: `translate3d(0, ${scrollY * 0.6}px, 0)` }"
+        />
+        <img
+          src="/images/jungle2.png"
+          class="absolute bottom-40 left-0 z-30 w-full"
+          :style="{ transform: `translate3d(-0, ${scrollY * 0.6}px, 0)` }"
+        />
+        <img
+          src="/images/jungle3.png"
+          class="absolute bottom-15 left-0 z-40 w-full"
+          :style="{ transform: `translate3d(0, ${scrollY * 0.4}px, 0)` }"
+        />
+        <img
+          src="/images/jungle4.png"
+          class="absolute bottom-8 left-0 z-50 w-full"
+          :style="{ transform: `translate3d(-0, ${scrollY * 0.4}px, 0)` }"
+        />
+        <img
+          src="/images/man_on_mountain.png"
+          class="absolute bottom-0 -left-20 z-70 w-full"
+          :style="{ transform: `translate3d(0, 0, 0)` }"
+        />
+        <img
+          src="/images/jungle5.png"
+          class="absolute bottom-0 left-0 z-70 w-full"
+          :style="{ transform: `translate3d(0, ${scrollY * 0.01}px, 0)` }"
+        />
+      </div>
 
-    <section class="flex min-h-screen items-center px-6 py-10">
-      <div class="mx-auto flex w-full max-w-5xl flex-col items-center gap-8 text-center">
-        <h1
-          class="text-4xl font-extrabold tracking-tight text-slate-800 sm:text-5xl dark:text-slate-200"
-        >
-          {{ title }}
-        </h1>
-
-        <p class="max-w-2xl text-lg text-slate-600 dark:text-slate-300">
-          Consectetur ullamco voluptate ad eu aute et culpa velit et occaecat eu adipisicing. Fugiat
-          pariatur occaecat exercitation sunt consequat aliquip. Sint minim est eiusmod cillum
-          eiusmod irure aliquip in nisi sit. Cupidatat culpa sunt dolore nulla anim aliquip eu sunt
-          Lorem quis excepteur laborum. Cillum veniam et in magna proident esse in deserunt
-          excepteur. Cillum ea sunt velit id pariatur consequat aliqua in reprehenderit sit sunt
-          nulla.
-        </p>
-
-        <div
-          class="flex items-center gap-4 rounded-xl bg-white/80 p-4 shadow-lg backdrop-blur-sm dark:bg-slate-800/80"
-        >
-          <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
-            {{ isDark ? 'Dark Mode' : 'Light Mode' }}
-          </span>
-          <ToggleSwitch v-model="checked" @change="handleToggle" />
+      <!-- Main Text -->
+      <div
+        class="relative z-65 flex h-full flex-col items-center justify-center gap-10 px-6 ps-40 pb-50 md:flex-row md:gap-20"
+        :style="{ transform: `translate3d(0, ${scrollY * 0.75}px, 0)` }"
+      >
+        <div>
+          <p class="text-sm font-semibold tracking-widest text-yellow-400">
+            > Desenvolvedor Full Stack
+          </p>
+          <h1
+            class="flex flex-col items-start text-5xl leading-tight font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl"
+          >
+            <span>
+              {{ typedLine1 }}<span v-if="showCursor && typingPhase === 0" class="cursor">|</span>
+            </span>
+            <span
+              v-if="typingPhase >= 1"
+              class="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent"
+            >
+              {{ typedLine2
+              }}<span v-if="showCursor && typingPhase >= 1" class="cursor text-yellow-400">|</span>
+            </span>
+          </h1>
         </div>
       </div>
     </section>
 
-    <section id="about" class="bg-[#141414]/70 px-6 py-20 text-left md:py-32">
+    <section
+      id="about"
+      class="min-h-screen px-6 py-20 text-left md:py-32"
+      style="background: linear-gradient(to bottom, #210002 0%, #0d0d0d 100%)"
+    >
       <div
         class="mx-auto flex max-w-5xl flex-col items-center gap-12 md:flex-row md:items-center md:gap-16"
       >
-        <!-- image -->
-        <div class="flex w-full shrink-0 justify-center md:w-1/2">
-          <img
-            src="/aboutme-photo.jpg"
-            alt="Imagem do Lucas vestindo a beca em uma formatura"
-            class="w-64 max-w-full rounded-2xl shadow-xl shadow-black/50 transition-all duration-[600ms] hover:scale-105 sm:w-72 md:w-full md:max-w-sm dark:shadow-black/30"
-          />
-        </div>
-
         <!-- text -->
         <div class="w-full md:w-1/2">
           <h2
-            class="mb-4 font-bold text-blue-500 sm:text-3xl md:text-4xl lg:text-5xl dark:text-blue-400"
+            class="mb-4 font-bold text-yellow-500 sm:text-3xl md:text-4xl lg:text-5xl dark:text-yellow-400"
           >
             Sobre mim
           </h2>
@@ -226,14 +309,25 @@ const closeModal = () => {
             sistemas.
           </p>
         </div>
+        <div class="flexshrink-0 justify-center md:w-[340px]">
+          <img
+            src="/aboutme-photo.jpg"
+            alt="Imagem do Lucas vestindo a beca em uma formatura"
+            class="w-64 rounded-2xl shadow-xl shadow-black/50 transition-transform duration-500 hover:scale-105 md:w-full"
+          />
+        </div>
       </div>
     </section>
 
-    <section id="projects" class="px-6 py-20 md:py-32">
+    <section
+      id="projects"
+      class="px-6 py-20 md:py-32"
+      style="background: linear-gradient(to bottom, #210002 0%, #0d0d0d 100%)"
+    >
       <div class="mx-auto w-full max-w-7xl">
         <!-- Title -->
         <h2
-          class="mb-12 text-center text-3xl font-bold text-blue-500 sm:text-4xl md:text-5xl dark:text-blue-400"
+          class="mb-12 text-center text-3xl font-bold text-yellow-500 sm:text-4xl md:text-5xl dark:text-yellow-400"
         >
           Projetos
         </h2>
@@ -262,13 +356,13 @@ const closeModal = () => {
                 <span
                   v-for="tech in project.tech"
                   :key="tech"
-                  class="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-0.5 text-xs font-medium text-blue-400"
+                  class="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-3 py-0.5 text-xs font-medium text-yellow-400"
                 >
                   {{ tech }}
                 </span>
               </div>
 
-              <span class="mt-1 inline-flex items-center gap-1 text-sm font-medium text-blue-400">
+              <span class="mt-1 inline-flex items-center gap-1 text-sm font-medium text-yellow-400">
                 Ver detalhes
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -294,7 +388,7 @@ const closeModal = () => {
           <div
             v-for="project in paginatedProjects"
             :key="project.title"
-            class="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/40 hover:shadow-blue-500/10"
+            class="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-yellow-500/40 hover:shadow-yellow-500/10"
             @click="openModal(project)"
           >
             <!-- Imagem -->
@@ -315,13 +409,13 @@ const closeModal = () => {
                 <span
                   v-for="tech in project.tech"
                   :key="tech"
-                  class="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-0.5 text-xs font-medium text-blue-400"
+                  class="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-3 py-0.5 text-xs font-medium text-yellow-400"
                 >
                   {{ tech }}
                 </span>
               </div>
 
-              <span class="mt-1 inline-flex items-center gap-1 text-sm font-medium text-blue-400">
+              <span class="mt-1 inline-flex items-center gap-1 text-sm font-medium text-yellow-400">
                 Ver detalhes
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -346,7 +440,7 @@ const closeModal = () => {
         <div v-if="totalPages > 1" class="mt-10 hidden items-center justify-center gap-4 sm:flex">
           <button
             :disabled="currentPage === 0"
-            class="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-400 transition-all hover:border-blue-500/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+            class="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-400 transition-all hover:border-yellow-500/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
             aria-label="Página anterior"
             @click="prevPage"
           >
@@ -368,7 +462,7 @@ const closeModal = () => {
               :key="page"
               class="h-2.5 w-2.5 rounded-full transition-all duration-300"
               :class="
-                currentPage === page - 1 ? 'w-6 bg-blue-500' : 'bg-white/20 hover:bg-white/40'
+                currentPage === page - 1 ? 'w-6 bg-yellow-500' : 'bg-white/20 hover:bg-white/40'
               "
               :aria-label="`Ir para página ${page}`"
               @click="currentPage = page - 1"
@@ -377,7 +471,7 @@ const closeModal = () => {
 
           <button
             :disabled="currentPage === totalPages - 1"
-            class="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-400 transition-all hover:border-blue-500/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+            class="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-400 transition-all hover:border-yellow-500/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
             aria-label="Próxima página"
             @click="nextPage"
           >
@@ -398,11 +492,24 @@ const closeModal = () => {
   </main>
 </template>
 <style scoped>
+.font {
+  font-family: 'Orbitron', monospace;
+}
 .carousel {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 .carousel::-webkit-scrollbar {
   display: none;
+}
+.cursor {
+  display: inline-block;
+  font-weight: 100;
+  animation: blink 0.65s step-end infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 </style>
