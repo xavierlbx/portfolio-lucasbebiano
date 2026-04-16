@@ -83,6 +83,45 @@ const projects = [
   },
 ]
 
+const skills = [
+  {
+    name: 'HTML',
+    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg',
+  },
+  {
+    name: 'CSS',
+    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg',
+  },
+  {
+    name: 'JavaScript',
+    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg',
+  },
+  {
+    name: 'C#',
+    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg',
+  },
+  {
+    name: 'Node.js',
+    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg',
+  },
+  {
+    name: 'TypeScript',
+    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg',
+  },
+  {
+    name: 'NestJS',
+    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nestjs/nestjs-original.svg',
+  },
+  {
+    name: 'Vue.js',
+    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg',
+  },
+  {
+    name: 'Entity Framework',
+    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/dotnetcore/dotnetcore-original.svg',
+  },
+]
+
 const itemsPerPage = 6
 const currentPage = ref(0)
 
@@ -264,7 +303,7 @@ onMounted(() => {
         :style="{ transform: `translate3d(0, ${scrollY * 0.75}px, 0)` }"
       >
         <div>
-          <p class="text-sm font-semibold tracking-widest text-yellow-400">
+          <p class="text-sm font-semibold tracking-widest text-black/50 uppercase">
             > Desenvolvedor Full Stack
           </p>
           <h1
@@ -287,16 +326,16 @@ onMounted(() => {
 
     <section
       id="about"
-      class="min-h-screen px-6 py-20 text-left md:py-32"
+      class="flex items-center justify-center px-6 py-16 md:py-20"
       style="background: linear-gradient(to bottom, #210002 0%, #0d0d0d 100%)"
     >
       <div
-        class="mx-auto flex max-w-5xl flex-col items-center gap-12 md:flex-row md:items-center md:gap-16"
+        class="mx-auto flex max-w-6xl flex-col items-center gap-12 md:flex-row md:items-center md:gap-0"
       >
-        <!-- text -->
-        <div class="w-full md:w-1/2">
+        <!-- Left: Sobre mim -->
+        <div class="w-full md:flex-1 md:pr-10">
           <h2
-            class="mb-4 font-bold text-yellow-500 sm:text-3xl md:text-4xl lg:text-5xl dark:text-yellow-400"
+            class="mb-4 text-center text-2xl font-bold text-yellow-500 sm:text-3xl md:text-4xl lg:text-5xl dark:text-yellow-400"
           >
             Sobre mim
           </h2>
@@ -309,21 +348,52 @@ onMounted(() => {
             sistemas.
           </p>
         </div>
-        <div class="flexshrink-0 justify-center md:w-[340px]">
+
+        <!-- Center: Photo as divider -->
+        <div
+          class="relative flex shrink-0 flex-col items-center justify-center self-stretch md:px-10"
+        >
+          <div
+            class="absolute inset-y-0 left-0 hidden w-px bg-gradient-to-b from-transparent via-white/15 to-transparent md:block"
+          />
           <img
             src="/aboutme-photo.jpg"
             alt="Imagem do Lucas vestindo a beca em uma formatura"
-            class="w-64 rounded-2xl shadow-xl shadow-black/50 transition-transform duration-500 hover:scale-105 md:w-full"
+            class="w-44 rounded-2xl shadow-xl ring-1 shadow-black/50 ring-white/10 transition-transform duration-500 hover:scale-105 md:w-60"
           />
+          <div
+            class="absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-white/15 to-transparent md:block"
+          />
+        </div>
+
+        <!-- Right: Conhecimentos -->
+        <div class="w-full md:flex-1 md:pl-10">
+          <h2
+            class="mb-6 text-center text-2xl font-bold text-yellow-500 sm:text-3xl md:text-4xl lg:text-5xl dark:text-yellow-400"
+          >
+            Conhecimentos
+          </h2>
+          <div class="grid grid-cols-3 gap-3">
+            <div
+              v-for="skill in skills"
+              :key="skill.name"
+              class="group flex aspect-square cursor-default flex-col items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-yellow-500/40 hover:bg-white/10"
+            >
+              <img
+                :src="skill.icon"
+                :alt="skill.name"
+                class="h-10 w-10 object-contain transition-transform duration-300 group-hover:scale-110"
+              />
+              <span class="text-center text-xs leading-tight font-medium text-slate-300">
+                {{ skill.name }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section
-      id="projects"
-      class="px-6 py-20 md:py-32"
-      style="background: linear-gradient(to bottom, #210002 0%, #0d0d0d 100%)"
-    >
+    <section id="projects" class="px-6 py-20 md:py-32">
       <div class="mx-auto w-full max-w-7xl">
         <!-- Title -->
         <h2
