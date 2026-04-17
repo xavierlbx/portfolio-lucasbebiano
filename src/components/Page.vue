@@ -150,8 +150,8 @@ const closeModal = () => {
   selectedProject.value = null
 }
 
-const line1 = 'Bem-vindo ao meu'
-const line2 = 'portfólio!'
+const line1 = 'Hello World! 👋'
+const line2 = 'Lucas Bebiano'
 const typedLine1 = ref('')
 const typedLine2 = ref('')
 const typingPhase = ref(0) // 0 = digitando linha1, 1 = digitando linha2, 2 = concluído
@@ -299,28 +299,72 @@ onMounted(() => {
 
       <!-- Main Text -->
       <div
-        class="relative z-65 flex h-full flex-col items-center justify-center gap-10 px-6 ps-40 pb-50 md:flex-row md:gap-20"
-        :style="{ transform: `translate3d(0, ${scrollY * 0.75}px, 0)` }"
+        class="relative z-30 flex h-full items-center justify-center gap-10 px-10 md:px-20"
+        :style="{ transform: `translate3d(0, ${scrollY * 0.9}px, 0)` }"
       >
-        <div>
-          <p class="text-sm font-semibold tracking-widest text-black/50 uppercase">
-            > Desenvolvedor Full Stack
-          </p>
-          <h1
-            class="flex flex-col items-start text-5xl leading-tight font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl"
-          >
-            <span>
-              {{ typedLine1 }}<span v-if="showCursor && typingPhase === 0" class="cursor">|</span>
-            </span>
-            <span
-              v-if="typingPhase >= 1"
-              class="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent"
-            >
-              {{ typedLine2
-              }}<span v-if="showCursor && typingPhase >= 1" class="cursor text-yellow-400">|</span>
-            </span>
-          </h1>
+        <!-- Left: Photo -->
+        <div
+          class="mb-70 hidden shrink-0 items-center justify-center hover:scale-105 transition-all duration-1000 md:flex"
+          :class="typingPhase >= 1 ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'"
+        >
+          <img
+            src="/images/coding-image.png"
+            alt="Lucas Bebiano"
+            class="w-52 lg:w-64"
+          />
         </div>
+
+        <!-- Right: Text -->
+        <div class="mb-70 flex flex-col items-start">
+          <!-- Greeting -->
+          <p
+            class="text-md mb-2 font-bold tracking-[0.35em] text-white uppercase text-shadow-2xs"
+            :class="typingPhase >= 2 ? 'blink-text' : ''"
+            style="font-family: 'Courier New', monospace"
+          >
+            {{ typedLine1
+            }}<span v-if="typingPhase === 0 && showCursor" class="cursor text-slate-300">|</span>
+          </p>
+
+          <!-- Name headline -->
+          <h1
+            class="text-5xl leading-tight font-black text-white drop-shadow-2xl transition-all duration-700 sm:text-6xl md:text-7xl"
+            :class="typingPhase >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'"
+          >
+            Sou o
+            <span class="bg-[#5A1615] via-yellow-300 bg-clip-text text-transparent">{{
+              typedLine2
+            }}</span
+            ><span v-if="typingPhase === 1 && showCursor" class="cursor text-yellow-400">|</span>
+          </h1>
+
+          <!-- Subtitle -->
+          <p
+            class="mt-4 text-base font-medium tracking-widest text-slate-300 transition-all duration-700 sm:text-lg"
+            :class="typingPhase === 2 ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'"
+          >
+            Desenvolvedor Web Fullstack
+          </p>
+        </div>
+      </div>
+
+      <!-- Scroll down -->
+      <div
+        class="absolute bottom-25 left-1/2 z-65 flex -translate-x-1/2 flex-col items-center gap-2 transition-all duration-500"
+        :class="typingPhase === 2 ? 'opacity-100' : 'opacity-0'"
+        :style="{ transform: `translate3d(0, ${scrollY * 0.6}px, 0)` }"
+      >
+        <span class="text-xs tracking-[0.25em] text-slate-500 uppercase">Role para baixo</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 animate-bounce text-slate-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
       </div>
     </section>
 
@@ -680,6 +724,13 @@ onMounted(() => {
   display: inline-block;
   font-weight: 100;
   animation: blink 0.65s step-end infinite;
+}
+.blink-text {
+  animation: blink-text 1.4s ease-in-out infinite;
+}
+@keyframes blink-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
 }
 @keyframes blink {
   50% {
