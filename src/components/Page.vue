@@ -87,40 +87,124 @@ const skills = [
   {
     name: 'HTML',
     icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg',
+    subText: 'Linguagem de marcação web',
   },
   {
     name: 'CSS',
     icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg',
+    subText: 'Estilização e layout web',
   },
   {
     name: 'JavaScript',
     icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg',
+    subText: 'Linguagem da web dinâmica',
   },
   {
     name: 'C#',
     icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg',
+    subText: 'Linguagem backend Microsoft',
   },
   {
     name: 'Node.js',
     icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg',
+    subText: 'Runtime JavaScript backend',
   },
   {
     name: 'TypeScript',
     icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg',
+    subText: 'JavaScript com tipagem estática',
   },
   {
     name: 'NestJS',
     icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nestjs/nestjs-original.svg',
+    subText: 'Framework Node.js backend modular',
   },
   {
     name: 'Vue.js',
     icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg',
+    subText: 'Framework JavaScript reativo',
   },
   {
     name: 'Entity Framework',
     icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/dotnetcore/dotnetcore-original.svg',
+    subText: 'ORM para .NET e C#',
   },
 ]
+
+// ---- Infinite Carousel ----
+const carouselTrackRef = ref<HTMLElement | null>(null)
+const carouselOffset = ref(0)
+const carouselIsDragging = ref(false)
+const carouselDragStartX = ref(0)
+const carouselDragStartOffset = ref(0)
+const carouselAutoplay = ref(true)
+const CAROUSEL_SPEED = 0.25
+let carouselRafId: number | null = null
+let carouselResumeTimer: ReturnType<typeof setTimeout> | null = null
+
+const getCarouselSetWidth = (): number => {
+  if (!carouselTrackRef.value) return 0
+  return carouselTrackRef.value.scrollWidth / 3
+}
+
+const carouselTick = () => {
+  if (carouselAutoplay.value) {
+    carouselOffset.value -= CAROUSEL_SPEED
+    const setWidth = getCarouselSetWidth()
+    if (setWidth > 0 && carouselOffset.value <= -setWidth) {
+      carouselOffset.value += setWidth
+    }
+  }
+  carouselRafId = requestAnimationFrame(carouselTick)
+}
+
+const carouselPointerStart = (clientX: number) => {
+  carouselIsDragging.value = true
+  carouselAutoplay.value = false
+  carouselDragStartX.value = clientX
+  carouselDragStartOffset.value = carouselOffset.value
+  if (carouselResumeTimer !== null) clearTimeout(carouselResumeTimer)
+}
+
+const carouselPointerMove = (clientX: number) => {
+  if (!carouselIsDragging.value) return
+  const delta = clientX - carouselDragStartX.value
+  let next = carouselDragStartOffset.value + delta
+  const setWidth = getCarouselSetWidth()
+  if (setWidth > 0) {
+    while (next <= -setWidth) next += setWidth
+    while (next > 0) next -= setWidth
+  }
+  carouselOffset.value = next
+}
+
+const carouselPointerEnd = () => {
+  if (!carouselIsDragging.value) return
+  carouselIsDragging.value = false
+  carouselResumeTimer = setTimeout(() => {
+    carouselAutoplay.value = true
+  }, 1500)
+}
+
+const onCarouselMouseDown = (e: MouseEvent) => carouselPointerStart(e.clientX)
+const onCarouselGlobalMouseMove = (e: MouseEvent) => carouselPointerMove(e.clientX)
+const onCarouselGlobalMouseUp = () => carouselPointerEnd()
+const onCarouselTouchStart = (e: TouchEvent) => carouselPointerStart(e.touches[0].clientX)
+const onCarouselTouchMove = (e: TouchEvent) => carouselPointerMove(e.touches[0].clientX)
+const onCarouselTouchEnd = () => carouselPointerEnd()
+
+onMounted(() => {
+  window.addEventListener('mousemove', onCarouselGlobalMouseMove)
+  window.addEventListener('mouseup', onCarouselGlobalMouseUp)
+  carouselRafId = requestAnimationFrame(carouselTick)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('mousemove', onCarouselGlobalMouseMove)
+  window.removeEventListener('mouseup', onCarouselGlobalMouseUp)
+  if (carouselRafId !== null) cancelAnimationFrame(carouselRafId)
+  if (carouselResumeTimer !== null) clearTimeout(carouselResumeTimer)
+})
 
 const itemsPerPage = 6
 const currentPage = ref(0)
@@ -258,7 +342,10 @@ onMounted(() => {
     <!-- Bem vindo -->
     <section class="relative h-screen w-full overflow-hidden">
       <!-- Background Image | Parallax -->
-      <div>
+      <div
+        class="absolute top-0 h-full w-[max(100%,1900px)]"
+        style="left: calc((100% - max(100%, 1900px)) / 2)"
+      >
         <img
           src="/images/bg-1.png"
           alt=""
@@ -304,14 +391,10 @@ onMounted(() => {
       >
         <!-- Left: Photo -->
         <div
-          class="mb-70 hidden shrink-0 items-center justify-center hover:scale-105 transition-all duration-1000 md:flex"
+          class="mb-70 hidden shrink-0 items-center justify-center transition-all duration-1000 hover:scale-105 md:flex"
           :class="typingPhase >= 1 ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'"
         >
-          <img
-            src="/images/coding-image.png"
-            alt="Lucas Bebiano"
-            class="w-52 lg:w-64"
-          />
+          <img src="/images/coding-image.png" alt="Lucas Bebiano" class="w-52 lg:w-64" />
         </div>
 
         <!-- Right: Text -->
@@ -370,20 +453,29 @@ onMounted(() => {
 
     <section
       id="about"
-      class="flex items-center justify-center px-6 py-16 md:py-20"
+      class="flex items-center justify-center px-15 py-20 md:py-35"
       style="background: linear-gradient(to bottom, #210002 0%, #0d0d0d 60%)"
     >
       <div
-        class="mx-auto flex max-w-6xl flex-col items-center gap-12 md:flex-row md:items-center md:gap-0"
+        class="mx-auto flex max-w-5xl flex-col items-center gap-14 md:flex-row md:items-center md:gap-20"
       >
-        <!-- Left: Sobre mim -->
-        <div class="w-full md:flex-1 md:pr-10">
+        <!-- Left: Photo -->
+        <div class="flex shrink-0 justify-center">
+          <img
+            src="/aboutme-photo.jpg"
+            alt="Imagem do Lucas vestindo a beca em uma formatura"
+            class="w-56 rounded-2xl shadow-xl ring-1 shadow-black/50 ring-white/10 transition-transform duration-500 hover:scale-105 sm:w-64 md:w-80"
+          />
+        </div>
+
+        <!-- Right: Sobre mim -->
+        <div class="w-full">
           <h2
-            class="mb-4 text-center text-2xl font-bold text-yellow-500 sm:text-3xl md:text-4xl lg:text-5xl dark:text-yellow-400"
+            class="mb-5 text-center text-2xl font-bold text-yellow-500 sm:text-3xl md:text-left md:text-4xl lg:text-5xl dark:text-yellow-400"
           >
             Sobre mim
           </h2>
-          <p class="text-base leading-relaxed text-slate-600 sm:text-lg dark:text-slate-300">
+          <p class="text-center text-base leading-relaxed text-slate-300 sm:text-lg md:text-left">
             Desenvolvedor Full Stack graduado em Análise e Desenvolvimento de Sistemas, com
             experiência no desenvolvimento e manutenção de aplicações web, atuando em todo o ciclo
             de vida, do levantamento de requisitos à entrega. Foco em boas práticas de
@@ -392,48 +484,81 @@ onMounted(() => {
             sistemas.
           </p>
         </div>
+      </div>
+    </section>
 
-        <!-- Center: Photo as divider -->
-        <div
-          class="relative flex shrink-0 flex-col items-center justify-center self-stretch md:px-10"
-        >
-          <div
-            class="absolute inset-y-0 left-0 hidden w-px bg-gradient-to-b from-transparent via-white/15 to-transparent md:block"
-          />
-          <img
-            src="/aboutme-photo.jpg"
-            alt="Imagem do Lucas vestindo a beca em uma formatura"
-            class="w-44 rounded-2xl shadow-xl ring-1 shadow-black/50 ring-white/10 transition-transform duration-500 hover:scale-105 md:w-60"
-          />
-          <div
-            class="absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-white/15 to-transparent md:block"
-          />
-        </div>
+    <section
+      id="skills"
+      class="overflow-hidden bg-zinc-900 py-25 md:py-35"
+      style="
+        background: linear-gradient(to bottom, #0d0d0d 0%, #18181b 25%, #18181b 85%, #0d0d0d 100%);
+      "
+    >
+      <!-- Title -->
+      <h2
+        class="m-0 mb-10 p-0 text-center text-2xl font-bold text-yellow-500 sm:text-3xl md:text-4xl lg:text-5xl dark:text-yellow-400"
+      >
+        Conhecimentos
+      </h2>
 
-        <!-- Right: Conhecimentos -->
-        <div class="w-full md:flex-1 md:pl-10">
-          <h2
-            class="mb-6 text-center text-2xl font-bold text-yellow-500 sm:text-3xl md:text-4xl lg:text-5xl dark:text-yellow-400"
+      <!-- Carousel -->
+      <div
+        ref="carouselTrackRef"
+        class="flex gap-20 will-change-transform"
+        :style="{
+          transform: `translateX(${carouselOffset}px)`,
+          cursor: carouselIsDragging ? 'grabbing' : 'grab',
+          userSelect: 'none',
+        }"
+        @mousedown="onCarouselMouseDown"
+        @touchstart.passive="onCarouselTouchStart"
+        @touchmove.passive="onCarouselTouchMove"
+        @touchend="onCarouselTouchEnd"
+      >
+        <template v-for="set in 3" :key="set">
+          <div
+            v-for="skill in skills"
+            :key="`${set}-${skill.name}`"
+            class="group flex h-50 w-40 shrink-0 flex-col items-center justify-center rounded-sm border border-white/10 bg-white/5 px-4 py-3 text-center transition-all duration-300 hover:bg-white/10"
           >
-            Conhecimentos
-          </h2>
-          <div class="grid grid-cols-3 gap-3">
-            <div
-              v-for="skill in skills"
-              :key="skill.name"
-              class="group flex aspect-square cursor-default flex-col items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-yellow-500/40 hover:bg-white/10"
-            >
-              <img
-                :src="skill.icon"
-                :alt="skill.name"
-                class="h-10 w-10 object-contain transition-transform duration-300 group-hover:scale-110"
-              />
-              <span class="text-center text-xs leading-tight font-medium text-slate-300">
-                {{ skill.name }}
-              </span>
-            </div>
+            <img
+              :src="skill.icon"
+              :alt="skill.name"
+              class="h-18 w-18 object-contain transition-transform duration-300 group-hover:scale-110"
+              draggable="false"
+            />
+            <hr class="my-3 w-full border-white/20" />
+            <span class="text-md mb-1 font-bold font-medium whitespace-nowrap text-slate-200">{{
+              skill.name
+            }}</span>
+            <span class="text-xs break-words text-slate-500">{{ skill.subText }}</span>
           </div>
-        </div>
+        </template>
+      </div>
+
+      <div class="flex flex-col items-center justify-center gap-6 mt-8">
+        <hr class="w-24 border-white/20" />
+        <a
+          href="https://drive.google.com/drive/folders/12R09riJtxIafUOd8BM_FxmYydnODgxjG?usp=drive_link"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="relative inline-block text-yellow-400 font-medium transition-colors duration-300 hover:text-yellow-300 group"
+        >
+          <span class="flex items-center gap-1">
+            Ver certificados
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </span>
+          <span class="absolute bottom-0 left-0 h-0.5 w-0 bg-yellow-400 transition-all duration-300 group-hover:w-full"></span>
+        </a>
       </div>
     </section>
 
@@ -729,8 +854,13 @@ onMounted(() => {
   animation: blink-text 1.4s ease-in-out infinite;
 }
 @keyframes blink-text {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.25; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
 }
 @keyframes blink {
   50% {
