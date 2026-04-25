@@ -16,6 +16,16 @@ const scrollY = ref(0)
 
 const handleScroll = () => {
   scrollY.value = window.scrollY
+  const sectionIds = ['contact', 'projects', 'skills', 'about']
+  let found = ''
+  for (const id of sectionIds) {
+    const el = document.getElementById(id)
+    if (el && window.scrollY >= el.offsetTop - 120) {
+      found = id
+      break
+    }
+  }
+  activeSection.value = found
 }
 
 onMounted(() => {
@@ -27,12 +37,27 @@ onUnmounted(() => {
 })
 
 const navLinks = [
-  { label: 'Skills' },
-  { label: 'Sobre Mim' },
-  { label: 'Projetos' },
-  { label: 'Certificados' },
-  { label: 'Fale Comigo' },
+  { label: 'Sobre Mim', href: '#about' },
+  { label: 'Conhecimentos', href: '#skills' },
+  { label: 'Projetos', href: '#projects' },
+  { label: 'Fale Comigo', href: '#contact' },
 ]
+
+const activeSection = ref('')
+
+const scrollToSection = (link: { href: string; external?: boolean }) => {
+  if (link.external) {
+    window.open(link.href, '_blank', 'noopener,noreferrer')
+  } else {
+    const el = document.querySelector(link.href)
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }
+  isMenuOpen.value = false
+}
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 const projects = [
   {
@@ -40,35 +65,36 @@ const projects = [
     description:
       'Site portfólio responsivo com animações, dark mode e seções de projetos, habilidades e contato.',
     tech: ['Typescript', 'Vue.js', 'Tailwind CSS'],
-    image: '/public/images/previa_portifolio.png',
+    image: 'images/previa_portifolio.png',
     link: 'https://github.com/xavierlbx/portifolio-lucasxavier',
   },
   {
     title: 'Todo List',
     description: 'Todolist com CRUD completo, autenticação de usuários e armazenamento em nuvem.',
     tech: ['Typescript', 'Vue.js', 'NestJS'],
-    image: '/public/images/previa_todolist.png',
+    image: '/images/previa_todolist.png',
     link: '#',
   },
   {
+
     title: 'Power Track',
     description: 'Aplicativo em React Native de controle de treinos e ingestão de água.',
     tech: ['Javascript/C#', 'React Native', 'Entity Framework'],
-    image: '/public/images/previa_powertrack.png',
+    image: '/images/previa_powertrack.png',
     link: 'https://github.com/ICEI-PUC-Minas-PMV-ADS/pmv-ads-2024-2-e3-proj-mov-t3-PowerTrack',
   },
   {
     title: 'Igesc Conecta',
     description: 'API RESTful com autenticação JWT, documentação Swagger e testes automatizados.',
     tech: ['Spring Boot', 'Java', 'MySQL'],
-    image: '/public/images/previa_igesc.png',
+    image: '/images/previa_igesc.png',
     link: 'https://github.com/ICEI-PUC-Minas-PMV-ADS/pmv-ads-2025-2-e5-proj-empext-t1-pmv-ads-2025-2-e5-projigescconecta',
   },
   {
     title: 'Apoia Mente',
     description: 'API RESTful com autenticação JWT, documentação Swagger e testes automatizados.',
     tech: ['Spring Boot', 'Java', 'MySQL'],
-    image: '/public/images/previa_apoia_mente.png',
+    image: '/images/previa_apoia_mente.png',
     link: 'https://github.com/ICEI-PUC-Minas-PMV-ADS/pmv-ads-2025-2-e5-proj-empext-t1-pmv-ads-2025-2-e5-projigescconecta',
   },
 
@@ -225,8 +251,8 @@ const closeModal = () => {
   selectedProject.value = null
 }
 
-const line1 = 'Hello World! 👋'
-const line2 = 'Lucas Bebiano'
+const line1 = 'Hello World!'
+const line2 = 'Bem vindo!'
 const typedLine1 = ref('')
 const typedLine2 = ref('')
 const typingPhase = ref(0) // 0 = digitando linha1, 1 = digitando linha2, 2 = concluído
@@ -267,45 +293,56 @@ onMounted(() => {
     <!-- Navbar flutuante -->
     <div class="fixed top-3 right-0 left-0 z-100 flex justify-center px-4">
       <nav
-        class="w-full max-w-5xl rounded-2xl bg-black/40 px-8 py-0 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+        class="w-full max-w-5xl rounded-xl border border-white/10 bg-black/50 px-6 shadow-[0_4px_24px_rgba(0,0,0,0.6)] backdrop-blur-xl"
       >
-        <div class="flex h-14 items-center justify-between">
+        <div class="flex h-11 items-center justify-between">
           <!-- Logo -->
-          <span class="text-xl font-black tracking-[0.4em] text-white uppercase select-none">
-            Lucas
+          <span
+            class="text-base font-black tracking-[0.35em] text-white uppercase select-none cursor-pointer"
+            @click="scrollToTop()"
+          >
+            LB<span class="text-yellow-500">.</span>
           </span>
 
           <!-- Desktop links (centered) -->
-          <ul class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
+          <ul class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 md:flex">
             <li v-for="link in navLinks" :key="link.label">
-              <a
-                href="#"
-                class="hover:text-slate/100 inline-block text-sm font-medium text-white transition-all duration-200 hover:scale-110"
-                @click.prevent
+              <button
+                class="group relative py-1 text-xs font-semibold tracking-wider uppercase transition-colors duration-200"
+                :class="
+                  (!link.external && activeSection === link.href.replace('#', ''))
+                    ? 'text-yellow-400'
+                    : 'text-slate-300 hover:text-white'
+                "
+                @click="scrollToSection(link)"
               >
                 {{ link.label }}
-              </a>
+                <span
+                  class="absolute bottom-0 left-0 h-px w-full origin-left scale-x-0 bg-yellow-500 transition-transform duration-300 group-hover:scale-x-100"
+                  :class="(!link.external && activeSection === link.href.replace('#', '')) ? 'scale-x-100' : ''"
+                />
+              </button>
             </li>
           </ul>
 
           <!-- Hamburger button (mobile only) -->
           <button
-            class="flex h-8 w-8 flex-col items-center justify-center gap-[5px] focus:outline-none md:hidden"
+            class="flex h-7 w-7 flex-col items-center justify-center gap-[5px] focus:outline-none md:hidden"
             :aria-expanded="isMenuOpen"
             aria-label="Abrir menu"
             @click="isMenuOpen = !isMenuOpen"
           >
             <span
-              class="block h-0.5 w-6 origin-center bg-white transition-all duration-300"
-              :class="isMenuOpen ? 'translate-y-[7px] rotate-45' : ''"
+              class="block h-px w-5 origin-center bg-white transition-all duration-300"
+              :class="isMenuOpen ? 'translate-y-[6px] rotate-45' : ''"
             />
             <span
-              class="block h-0.5 w-6 bg-white transition-all duration-300"
+              class="block h-px w-5 bg-white transition-all duration-300"
               :class="isMenuOpen ? 'opacity-0' : ''"
             />
             <span
-              class="block h-0.5 w-6 origin-center bg-white transition-all duration-300"
-              :class="isMenuOpen ? '-translate-y-[7px] -rotate-45' : ''"
+              class="block h-px w-5 origin-center bg-white transition-all duration-300"
+              :class="isMenuOpen ? '-translate-y-[6px] -rotate-45' : ''"
             />
           </button>
         </div>
@@ -315,15 +352,19 @@ onMounted(() => {
           class="overflow-hidden transition-all duration-300 md:hidden"
           :class="isMenuOpen ? 'max-h-80' : 'max-h-0'"
         >
-          <ul class="flex flex-col gap-1 border-t border-white/10 pt-2 pb-4">
+          <ul class="flex flex-col gap-0.5 border-t border-white/10 py-3">
             <li v-for="link in navLinks" :key="link.label">
-              <a
-                href="#"
-                class="hover:text-slate/100 block inline-block w-full origin-left py-2 text-sm font-medium text-white transition-all duration-200 hover:scale-105"
-                @click.prevent="isMenuOpen = false"
+              <button
+                class="w-full py-2 text-left text-xs font-semibold tracking-wider uppercase transition-colors duration-200"
+                :class="
+                  (!link.external && activeSection === link.href.replace('#', ''))
+                    ? 'text-yellow-400'
+                    : 'text-slate-300 hover:text-white'
+                "
+                @click="scrollToSection(link)"
               >
                 {{ link.label }}
-              </a>
+              </button>
             </li>
           </ul>
         </div>
@@ -380,13 +421,6 @@ onMounted(() => {
         class="relative z-30 flex h-full items-center justify-center gap-10 px-10 md:px-20"
         :style="{ transform: `translate3d(0, ${scrollY * 0.9}px, 0)` }"
       >
-        <!-- Left: Photo -->
-        <div
-          class="mb-70 hidden shrink-0 items-center justify-center transition-all duration-1000 hover:scale-105 md:flex"
-          :class="typingPhase >= 1 ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'"
-        >
-          <img src="/images/coding-image.png" alt="Lucas Bebiano" class="w-52 lg:w-64" />
-        </div>
 
         <!-- Right: Text -->
         <div class="mb-70 flex flex-col items-start">
@@ -400,24 +434,13 @@ onMounted(() => {
             }}<span v-if="typingPhase === 0 && showCursor" class="cursor text-slate-300">|</span>
           </p>
 
-          <!-- Name headline -->
-          <h1
-            class="text-5xl leading-tight font-black text-white drop-shadow-2xl transition-all duration-700 sm:text-6xl md:text-7xl"
-            :class="typingPhase >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'"
-          >
-            Sou o
-            <span class="bg-[#5A1615] via-yellow-300 bg-clip-text text-transparent">{{
-              typedLine2
-            }}</span
-            ><span v-if="typingPhase === 1 && showCursor" class="cursor text-yellow-400">|</span>
-          </h1>
-
-          <!-- Subtitle -->
+          <!-- Bem vindo -->
           <p
-            class="mt-4 text-base font-medium tracking-widest text-slate-300 transition-all duration-700 sm:text-lg"
-            :class="typingPhase === 2 ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'"
+            class="mt-2 text-2xl font-bold tracking-[0.2em] text-white transition-all duration-700 sm:text-3xl"
+            :class="typingPhase >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'"
+            style="font-family: 'Courier New', monospace"
           >
-            Desenvolvedor Web Fullstack
+            {{ typedLine2 }}<span v-if="typingPhase === 1 && showCursor" class="cursor text-slate-300">|</span>
           </p>
         </div>
       </div>
