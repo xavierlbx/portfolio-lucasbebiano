@@ -13,14 +13,14 @@ Comecei estruturando a aplicação com uma base moderna e performática, e depoi
 
 ## Stack utilizada
 
-| Tecnologia | Uso |
-|---|---|
-| Vue 3 (Composition API) | Framework principal |
-| TypeScript | Tipagem estática |
-| Vite | Bundler e dev server |
-| Tailwind CSS | Estilização utilitária |
-| PrimeVue | Componentes de UI |
-| Pinia | Gerenciamento de estado |
+| Tecnologia              | Uso                     |
+| ----------------------- | ----------------------- |
+| Vue 3 (Composition API) | Framework principal     |
+| TypeScript              | Tipagem estática        |
+| Vite                    | Bundler e dev server    |
+| Tailwind CSS            | Estilização utilitária  |
+| PrimeVue                | Componentes de UI       |
+| Pinia                   | Gerenciamento de estado |
 
 ---
 
@@ -78,15 +78,22 @@ npm run preview
 
 ### Scripts disponíveis
 
-| Script | Descrição |
-|---|---|
-| `npm run dev` | Inicia o projeto em desenvolvimento |
-| `npm run build` | Gera a build de produção |
-| `npm run preview` | Executa a pré-visualização da build |
-| `npm run lint` | Verifica problemas de lint |
-| `npm run lint:fix` | Corrige problemas de lint automaticamente |
-| `npm run format` | Formata os arquivos com Prettier |
-| `npm run format:check` | Valida a formatação dos arquivos |
+| Script                  | Descrição                                 |
+| ----------------------- | ----------------------------------------- |
+| `npm run dev`           | Inicia o projeto em desenvolvimento       |
+| `npm run build`         | Gera a build de produção                  |
+| `npm run preview`       | Executa a pré-visualização da build       |
+| `npm run test`          | Executa os testes automatizados           |
+| `npm run test:watch`    | Executa testes em modo watch              |
+| `npm run test:coverage` | Gera relatório de cobertura de testes     |
+| `npm run lint`          | Verifica problemas de lint                |
+| `npm run lint:fix`      | Corrige problemas de lint automaticamente |
+| `npm run format`        | Formata os arquivos com Prettier          |
+| `npm run format:check`  | Valida a formatação dos arquivos          |
+
+### Variáveis de ambiente
+
+Copie o arquivo `.env.example` para `.env` e ajuste os links/contatos conforme necessário.
 
 ---
 
