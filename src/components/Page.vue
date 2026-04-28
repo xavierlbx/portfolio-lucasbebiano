@@ -594,7 +594,7 @@ onUnmounted(() => {
 
     <section
       id="about"
-      class="flex items-center justify-center px-15 py-20 md:py-35"
+      class="flex items-center justify-center px-4 py-14 sm:px-8 md:px-15 md:py-24 lg:py-32"
       :style="isDark ? 'background: linear-gradient(to bottom, #210002 0%, #0d0d0d 60%)' : 'background: #f8fafc'"
     >
       <div
@@ -630,7 +630,7 @@ onUnmounted(() => {
 
     <section
       id="skills"
-      class="overflow-hidden bg-slate-100 dark:bg-zinc-900 py-15 md:py-20"
+      class="overflow-hidden bg-slate-100 dark:bg-zinc-900 py-12 md:py-16 lg:py-20"
       :style="isDark ? 'background: linear-gradient(to bottom, #0d0d0d 0%, #18181b 25%, #18181b 85%, #0d0d0d 100%)' : ''"
     >
       <!-- Title -->
@@ -640,10 +640,29 @@ onUnmounted(() => {
         Conhecimentos
       </h2>
 
-      <!-- Carousel -->
+      <!-- Mobile: Grid -->
+      <div class="sm:hidden px-4">
+        <div class="grid grid-cols-3 gap-3">
+          <div
+            v-for="skill in skills"
+            :key="skill.name"
+            class="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-3 text-center"
+          >
+            <img
+              :src="skill.icon"
+              :alt="skill.name"
+              class="h-10 w-10 object-contain"
+              draggable="false"
+            />
+            <span class="text-xs font-semibold leading-tight text-slate-800 dark:text-slate-200">{{ skill.name }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carousel (sm+) -->
       <div
         ref="carouselTrackRef"
-        class="flex gap-20 will-change-transform"
+        class="hidden sm:flex gap-20 will-change-transform"
         :style="{
           transform: `translateX(${carouselOffset}px)`,
           cursor: carouselIsDragging ? 'grabbing' : 'grab',
@@ -687,7 +706,7 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <section id="projects" class="px-6 pt-15 pb-35 md:px-15 md:pt-20 md:pb-25">
+    <section id="projects" class="px-4 pt-12 pb-16 sm:px-6 md:px-15 md:pt-20 md:pb-24 lg:pb-28">
       <div class="mx-auto w-full max-w-7xl">
         <!-- Title -->
         <h2
@@ -888,7 +907,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Fale Comigo -->
-    <footer id="contact" class="bg-slate-100 dark:bg-zinc-900 px-6 pt-10 pb-0">
+    <footer id="contact" class="bg-slate-100 dark:bg-zinc-900 px-4 pt-12 pb-0 sm:px-6 md:px-10 md:pt-16 lg:pt-20">
       <div class="mx-auto max-w-4xl">
         <!-- Title -->
         <h2
