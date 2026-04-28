@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useDarkMode } from '../composables/useDarkMode'
 import SkillCard from './SkillCard.vue'
 import ProjectsPagination from './ProjectsPagination.vue'
@@ -7,6 +7,13 @@ import ContactLink from './ContactLink.vue'
 
 const { isDark, toggleDarkMode } = useDarkMode()
 const isMenuOpen = ref(false)
+
+const mobileActiveSkill = ref<string | null>(null)
+let mobileActiveSkillTimer: ReturnType<typeof setTimeout> | null = null
+
+const mobileProjectsRef = ref<HTMLElement | null>(null)
+const didDismissProjectsHint = ref(false)
+const showProjectsScrollHint = ref(false)
 
 const toggleTheme = () => {
   toggleDarkMode()
@@ -31,6 +38,7 @@ const CURSOR_HIDE_DELAY_MS = 2500
 
 const scrollY = ref(0)
 const activeSection = ref('')
+const isMobile = ref(typeof window !== 'undefined' && window.innerWidth < 768)
 
 let sectionElements: HTMLElement[] = []
 let scrollRafId: number | null = null
@@ -56,7 +64,7 @@ const handleScroll = () => {
   if (scrollRafId !== null) return
 
   scrollRafId = window.requestAnimationFrame(() => {
-    scrollY.value = window.scrollY
+    scrollY.value = Math.max(0, window.scrollY)
     updateActiveSection()
     scrollRafId = null
   })
@@ -69,10 +77,24 @@ onMounted(() => {
   window.addEventListener('scroll', handleScroll, { passive: true })
 })
 
+const handleResize = () => {
+  isMobile.value = window.innerWidth < 768
+  updateProjectsScrollHint()
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize, { passive: true })
+  nextTick(updateProjectsScrollHint)
+})
+
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('resize', handleResize)
   if (scrollRafId !== null) {
     cancelAnimationFrame(scrollRafId)
+  }
+  if (mobileActiveSkillTimer !== null) {
+    clearTimeout(mobileActiveSkillTimer)
   }
 })
 
@@ -86,7 +108,7 @@ const navLinks: NavLink[] = [
 const CONTACT = {
   phone: import.meta.env.VITE_CONTACT_PHONE ?? '+5531995202028',
   phoneLabel: import.meta.env.VITE_CONTACT_PHONE_LABEL ?? '+55 (31) 99520-2028',
-  email: import.meta.env.VITE_CONTACT_EMAIL ?? 'lucasbebiano@email.com',
+  email: import.meta.env.VITE_CONTACT_EMAIL ?? 'lucasbebianolbx@gmail.com',
   github: import.meta.env.VITE_CONTACT_GITHUB ?? 'https://github.com/xavierlbx',
   githubLabel: import.meta.env.VITE_CONTACT_GITHUB_LABEL ?? 'github.com/xavierlbx',
   linkedin: import.meta.env.VITE_CONTACT_LINKEDIN ?? 'https://linkedin.com/in/lucas-bebiano',
@@ -108,6 +130,38 @@ const scrollToSection = (link: NavLink) => {
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const activateMobileSkill = (skillName: string) => {
+  mobileActiveSkill.value = skillName
+  if (mobileActiveSkillTimer !== null) clearTimeout(mobileActiveSkillTimer)
+  mobileActiveSkillTimer = setTimeout(() => {
+    if (mobileActiveSkill.value === skillName) {
+      mobileActiveSkill.value = null
+    }
+  }, 700)
+}
+
+const updateProjectsScrollHint = () => {
+  const el = mobileProjectsRef.value
+  if (!el || didDismissProjectsHint.value || window.innerWidth >= 640) {
+    showProjectsScrollHint.value = false
+    return
+  }
+
+  showProjectsScrollHint.value = el.scrollWidth - el.clientWidth > 24
+}
+
+const dismissProjectsScrollHint = () => {
+  didDismissProjectsHint.value = true
+  showProjectsScrollHint.value = false
+}
+
+const onMobileProjectsScroll = () => {
+  if (!mobileProjectsRef.value) return
+  if (mobileProjectsRef.value.scrollLeft > 16) {
+    dismissProjectsScrollHint()
+  }
 }
 
 const projects = [
@@ -273,6 +327,7 @@ const onCarouselTouchMove = (e: TouchEvent) => {
 }
 
 const onCarouselTouchEnd = () => carouselPointerEnd()
+const onCarouselTouchCancel = () => carouselPointerEnd()
 
 onMounted(() => {
   window.addEventListener('mousemove', onCarouselGlobalMouseMove)
@@ -505,48 +560,57 @@ onUnmounted(() => {
         class="absolute top-0 h-full w-[max(100%,1900px)]"
         style="left: calc((100% - max(100%, 1900px)) / 2)"
       >
+        <!-- bg-1: 130% height + -15% top gives buffer so iOS overscroll never exposes gaps -->
         <img
           src="/images/bg-1.png"
           alt=""
-          class="absolute inset-0 z-10 h-full w-full object-cover object-top"
-          :style="{ transform: `translate3d(0, ${scrollY * 0.8}px, 0)` }"
+          class="absolute inset-x-0 -top-[15%] z-10 h-[130%] w-full object-cover object-top"
+          fetchpriority="high"
+          loading="eager"
+          :style="{ transform: `translate3d(0, ${isMobile ? 0 : scrollY * 0.8}px, 0)`, willChange: 'transform' }"
         />
         <img
           src="/images/bg-2.png"
           class="absolute bottom-15 left-0 z-20 w-full"
-          :style="{ transform: `translate3d(0, ${scrollY * 0.6}px, 0)` }"
+          loading="eager"
+          :style="{ transform: `translate3d(0, ${isMobile ? 0 : scrollY * 0.6}px, 0)`, willChange: 'transform' }"
         />
         <img
           src="/images/jungle2.png"
           class="absolute bottom-40 left-0 z-30 w-full"
-          :style="{ transform: `translate3d(-0, ${scrollY * 0.6}px, 0)` }"
+          loading="eager"
+          :style="{ transform: `translate3d(0, ${isMobile ? 0 : scrollY * 0.6}px, 0)`, willChange: 'transform' }"
         />
         <img
           src="/images/jungle3.png"
           class="absolute bottom-15 left-0 z-40 w-full"
-          :style="{ transform: `translate3d(0, ${scrollY * 0.4}px, 0)` }"
+          loading="eager"
+          :style="{ transform: `translate3d(0, ${isMobile ? 0 : scrollY * 0.4}px, 0)`, willChange: 'transform' }"
         />
         <img
           src="/images/jungle4.png"
           class="absolute bottom-8 left-0 z-50 w-full"
-          :style="{ transform: `translate3d(-0, ${scrollY * 0.4}px, 0)` }"
+          loading="eager"
+          :style="{ transform: `translate3d(0, ${isMobile ? 0 : scrollY * 0.4}px, 0)`, willChange: 'transform' }"
         />
         <img
           src="/images/man_on_mountain.png"
           class="absolute bottom-0 -left-20 z-70 w-full"
-          :style="{ transform: `translate3d(0, 0, 0)` }"
+          loading="eager"
+          style="transform: translate3d(0, 0, 0)"
         />
         <img
           src="/images/jungle5.png"
           class="absolute bottom-0 left-0 z-70 w-full"
-          :style="{ transform: `translate3d(0, ${scrollY * 0.01}px, 0)` }"
+          loading="eager"
+          :style="{ transform: `translate3d(0, ${isMobile ? 0 : scrollY * 0.01}px, 0)`, willChange: 'transform' }"
         />
       </div>
 
       <!-- Main Text -->
       <div
         class="relative z-30 flex h-full items-center justify-center gap-10 px-10 md:px-20"
-        :style="{ transform: `translate3d(0, ${scrollY * 0.9}px, 0)` }"
+        :style="{ transform: `translate3d(0, ${isMobile ? 0 : scrollY * 0.9}px, 0)` }"
       >
         <!-- Right: Text -->
         <div class="mb-70 flex flex-col items-start">
@@ -576,7 +640,7 @@ onUnmounted(() => {
       <div
         class="absolute bottom-25 left-1/2 z-65 flex -translate-x-1/2 flex-col items-center gap-2 transition-all duration-500"
         :class="typingPhase === 2 ? 'opacity-100' : 'opacity-0'"
-        :style="{ transform: `translate3d(0, ${scrollY * 0.6}px, 0)` }"
+        :style="{ transform: `translate3d(-50%, ${isMobile ? 0 : scrollY * 0.6}px, 0)` }"
       >
         <span class="text-xs tracking-[0.25em] text-slate-500 uppercase">Role para baixo</span>
         <svg
@@ -642,16 +706,27 @@ onUnmounted(() => {
 
       <!-- Mobile: Grid -->
       <div class="sm:hidden px-4">
+        <p class="mb-4 text-center text-xs tracking-wide text-slate-500 dark:text-slate-400">
+          Toque nos icones para destacar as tecnologias.
+        </p>
         <div class="grid grid-cols-3 gap-3">
           <div
             v-for="skill in skills"
             :key="skill.name"
-            class="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-3 text-center"
+            class="group flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-3 text-center transition-all duration-300 active:scale-[1.03]"
+            role="button"
+            tabindex="0"
+            :aria-label="`Destacar habilidade ${skill.name}`"
+            @touchstart.passive="activateMobileSkill(skill.name)"
+            @click="activateMobileSkill(skill.name)"
+            @keydown.enter.prevent="activateMobileSkill(skill.name)"
+            @keydown.space.prevent="activateMobileSkill(skill.name)"
           >
             <img
               :src="skill.icon"
               :alt="skill.name"
-              class="h-10 w-10 object-contain"
+              class="h-10 w-10 object-contain transition-transform duration-300 ease-out group-active:scale-110"
+              :class="mobileActiveSkill === skill.name ? 'scale-110' : ''"
               draggable="false"
             />
             <span class="text-xs font-semibold leading-tight text-slate-800 dark:text-slate-200">{{ skill.name }}</span>
@@ -662,7 +737,7 @@ onUnmounted(() => {
       <!-- Carousel (sm+) -->
       <div
         ref="carouselTrackRef"
-        class="hidden sm:flex gap-20 will-change-transform"
+        class="hidden gap-20 will-change-transform [touch-action:pan-y] sm:flex"
         :style="{
           transform: `translateX(${carouselOffset}px)`,
           cursor: carouselIsDragging ? 'grabbing' : 'grab',
@@ -672,6 +747,7 @@ onUnmounted(() => {
         @touchstart.passive="onCarouselTouchStart"
         @touchmove.passive="onCarouselTouchMove"
         @touchend="onCarouselTouchEnd"
+        @touchcancel="onCarouselTouchCancel"
       >
         <template v-for="set in 3" :key="set">
           <SkillCard v-for="skill in skills" :key="`${set}-${skill.name}`" :skill="skill" />
@@ -716,58 +792,101 @@ onUnmounted(() => {
         </h2>
 
         <!-- Mobile: Carrossel horizontal (< sm) -->
-        <div
-          class="carousel -mx-6 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-4 sm:hidden"
-        >
-          <div
-            v-for="project in projects"
-            :key="project.title"
-            class="flex w-[82%] shrink-0 cursor-pointer snap-start flex-col overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-lg backdrop-blur-sm"
-            role="button"
-            tabindex="0"
-            @click="openModal(project)"
-            @keydown.enter="openModal(project)"
-            @keydown.space.prevent="openModal(project)"
+        <div class="relative sm:hidden">
+          <Transition
+            enter-active-class="transition-all duration-400"
+            enter-from-class="translate-y-1 opacity-0"
+            enter-to-class="translate-y-0 opacity-100"
+            leave-active-class="transition-all duration-250"
+            leave-from-class="translate-y-0 opacity-100"
+            leave-to-class="-translate-y-1 opacity-0"
           >
-            <!-- Imagem -->
-            <div class="h-48 overflow-hidden bg-slate-100 dark:bg-white/5">
-              <img :src="project.image" :alt="project.title" class="h-full w-full object-cover" />
+            <div
+              v-if="showProjectsScrollHint"
+              class="mb-4 flex items-center justify-center gap-2 text-xs font-semibold tracking-wide text-slate-500 dark:text-slate-400"
+              aria-live="polite"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 animate-[slide-hint_1.1s_ease-in-out_infinite]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              Arraste para o lado para ver mais projetos
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 animate-[slide-hint_1.1s_ease-in-out_infinite]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
             </div>
+          </Transition>
 
-            <!-- Conteúdo -->
-            <div class="flex flex-1 flex-col gap-3 p-5">
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ project.title }}</h3>
-              <p class="flex-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{{ project.description }}</p>
-
-              <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="tech in project.tech"
-                  :key="tech"
-                  class="rounded-full border border-yellow-600/40 dark:border-yellow-700/20 px-3 py-0.5 text-xs font-medium text-yellow-600 dark:text-yellow-400"
-                >
-                  {{ tech }}
-                </span>
+          <div
+            ref="mobileProjectsRef"
+            class="carousel -mx-6 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-4"
+            @scroll.passive="onMobileProjectsScroll"
+            @touchstart.passive="dismissProjectsScrollHint"
+          >
+            <div
+              v-for="project in projects"
+              :key="project.title"
+              class="flex w-[82%] shrink-0 cursor-pointer snap-start flex-col overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-lg backdrop-blur-sm"
+              role="button"
+              tabindex="0"
+              @click="openModal(project)"
+              @keydown.enter="openModal(project)"
+              @keydown.space.prevent="openModal(project)"
+            >
+              <!-- Imagem -->
+              <div class="h-48 overflow-hidden bg-slate-100 dark:bg-white/5">
+                <img :src="project.image" :alt="project.title" class="h-full w-full object-cover" loading="lazy" decoding="async" />
               </div>
 
-              <span class="mt-1 inline-flex items-center gap-1 text-sm font-medium text-blue-500 dark:text-blue-400">
-                Ver detalhes
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  />
-                </svg>
-              </span>
+              <!-- Conteúdo -->
+              <div class="flex flex-1 flex-col gap-3 p-5">
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ project.title }}</h3>
+                <p class="flex-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{{ project.description }}</p>
+
+                <div class="flex flex-wrap gap-2">
+                  <span
+                    v-for="tech in project.tech"
+                    :key="tech"
+                    class="rounded-full border border-yellow-600/40 dark:border-yellow-700/20 px-3 py-0.5 text-xs font-medium text-yellow-600 dark:text-yellow-400"
+                  >
+                    {{ tech }}
+                  </span>
+                </div>
+
+                <span class="mt-1 inline-flex items-center gap-1 text-sm font-medium text-blue-500 dark:text-blue-400">
+                  Ver detalhes
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                    />
+                  </svg>
+                </span>
+              </div>
             </div>
           </div>
+
         </div>
 
         <!-- Desktop: Grid (>= sm) -->
@@ -789,6 +908,8 @@ onUnmounted(() => {
                 :src="project.image"
                 :alt="project.title"
                 class="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                loading="lazy"
+                decoding="async"
               />
             </div>
 
@@ -1009,6 +1130,17 @@ onUnmounted(() => {
 }
 .blink-text {
   animation: blink-text 1.4s ease-in-out infinite;
+}
+@keyframes slide-hint {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translateX(3px);
+    opacity: 1;
+  }
 }
 @keyframes blink-text {
   0%,
