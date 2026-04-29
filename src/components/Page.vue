@@ -193,31 +193,98 @@ const projects = [
   },
   {
     title: 'Todo List',
-    description: 'Todolist com CRUD completo, autenticação de usuários e armazenamento em nuvem.',
-    tech: ['Typescript', 'Vue.js', 'NestJS'],
+    description:
+      'Aplicação fullstack de lista de tarefas com CRUD completo, autenticação JWT e deploy contínuo via CI/CD.',
+    longDescription:
+      'Aplicação fullstack desenvolvida do zero com frontend em Vue 3 + TypeScript e backend em NestJS. Conta com autenticação de usuários via Bearer Token (JWT), persistência de dados com Prisma ORM, pipeline de CI/CD com GitHub Actions e deploy do frontend no Vercel.',
+    tech: ['Vue 3', 'TypeScript', 'Vite', 'Tailwind CSS', 'NestJS', 'Prisma', 'JWT'],
+    highlights: [
+      'CRUD completo de tarefas por usuário',
+      'Autenticação com Bearer Token (JWT)',
+      'Backend NestJS com arquitetura modular',
+      'Prisma ORM para persistência de dados',
+      'CI/CD com GitHub Actions',
+      'Deploy do frontend no Vercel',
+      'Responsivo para mobile e desktop',
+    ],
     image: '/images/previa_todolist.png',
-    link: '#',
+    link: 'https://github.com/xavierlbx/todo-nestjs-vue',
+    liveLink: 'https://todo-nestjs-vue.vercel.app/',
+    year: '2025',
+    status: 'Concluído',
   },
   {
     title: 'Power Track',
-    description: 'Aplicativo em React Native de controle de treinos e ingestão de água.',
-    tech: ['Javascript/C#', 'React Native', 'Entity Framework'],
+    description:
+      'Aplicativo mobile para organizar e aprimorar a rotina de bem-estar, com controle de treinos e ingestão de água.',
+    longDescription:
+      'Aplicativo mobile desenvolvido no 3º semestre do curso de ADS na PUC Minas, com o objetivo de ajudar os usuários a organizar, gerenciar e aprimorar sua rotina de bem-estar. Permite registrar treinos, controlar a ingestão diária de água e acompanhar a evolução física ao longo do tempo. Disponível para Android.',
+    tech: ['React Native', 'Expo', 'JavaScript', 'C#', 'Entity Framework'],
+    highlights: [
+      'Registro e histórico de treinos personalizados',
+      'Controle de ingestão diária de água',
+      'Acompanhamento de evolução física',
+      'Autenticação de usuários',
+      'Disponível como APK para Android',
+      'Projeto acadêmico — 3º Semestre ADS PUC Minas',
+    ],
     image: '/images/previa_powertrack.png',
-    link: 'https://github.com/ICEI-PUC-Minas-PMV-ADS/pmv-ads-2024-2-e3-proj-mov-t3-PowerTrack',
+    link: 'https://github.com/xavierlbx/power-track',
+    year: '2024',
+    status: 'Concluído',
   },
   {
     title: 'Igesc Conecta',
-    description: 'API RESTful com autenticação JWT, documentação Swagger e testes automatizados.',
-    tech: ['Spring Boot', 'Java', 'MySQL'],
+    description:
+      'Plataforma web para modernizar a gestão interna do Instituto GESC, substituindo planilhas por um sistema integrado.',
+    longDescription:
+      'Desenvolvido no 5º semestre do curso de ADS na PUC Minas, o IGESC Conecta tem como objetivo modernizar a gestão interna do Instituto GESC, centralizando informações e organizando processos de forma mais eficiente. Conta com backend em ASP.NET Web API e frontend em React 19 com TypeScript, além de geração de relatórios e upload de CSV.',
+    tech: [
+      'React 19',
+      'TypeScript',
+      'Vite',
+      'C# ASP.NET',
+      'Material UI',
+      'MUI X',
+      'Axios',
+      'Firebase',
+    ],
+    highlights: [
+      'Gerenciamento de empresas e doações',
+      'Gerenciamento de times com filtros avançados',
+      'Gerador de relatórios PDF/CSV',
+      'Upload de arquivos CSV com drag-and-drop',
+      'Integração OpenAPI com backend',
+      'Filtragem por status e informações de auditoria',
+      'Deploy no Firebase Hosting',
+      'Projeto acadêmico — 5º Semestre ADS PUC Minas',
+    ],
     image: '/images/previa_igesc.png',
     link: 'https://github.com/ICEI-PUC-Minas-PMV-ADS/pmv-ads-2025-2-e5-proj-empext-t1-pmv-ads-2025-2-e5-projigescconecta',
+    year: '2025',
+    status: 'Concluído',
   },
   {
     title: 'Apoia Mente',
-    description: 'API RESTful com autenticação JWT, documentação Swagger e testes automatizados.',
-    tech: ['Spring Boot', 'Java', 'MySQL'],
+    description:
+      'Plataforma de atendimento psicológico comunitário conectando psicólogos voluntários a pessoas em vulnerabilidade social.',
+    longDescription:
+      'Desenvolvido no 4º semestre do curso de ADS na PUC Minas, o ApoiaMente conecta psicólogos voluntários a pessoas em vulnerabilidade social, oferecendo agendamento de sessões e videochamadas seguras. Conta com frontend web (TypeScript), frontend mobile e backend com API Gateway em C#. Disponível via web e APK para Android.',
+    tech: ['TypeScript', 'C# ASP.NET', 'React Native', 'API Gateway'],
+    highlights: [
+      'Cadastro dual: Paciente ou Psicólogo',
+      'Agendamento de sessões de psicologia',
+      'Videochamadas integradas e seguras',
+      'Frontend web acessível pelo navegador',
+      'App mobile disponível como APK para Android',
+      'API Gateway centralizando os serviços',
+      'Projeto acadêmico — 4º Semestre ADS PUC Minas',
+    ],
     image: '/images/previa_apoia_mente.png',
-    link: 'https://github.com/ICEI-PUC-Minas-PMV-ADS/pmv-ads-2025-2-e5-proj-empext-t1-pmv-ads-2025-2-e5-projigescconecta',
+    link: 'https://github.com/xavierlbx/apoia-mente',
+    liveLink: 'https://www.apoiamente.com.br',
+    year: '2025',
+    status: 'Concluído',
   },
 ]
 
@@ -495,9 +562,8 @@ onUnmounted(() => {
           </ul>
 
           <div class="flex items-center gap-2">
-            <!--
-             <button
-              class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-slate-200 transition hover:border-yellow-400/70 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
+            <button
+              class="d-none inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-slate-200 transition hover:border-yellow-400/70 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
               aria-label="Alternar tema"
               @click="toggleTheme"
             >
@@ -524,7 +590,6 @@ onUnmounted(() => {
                 />
               </svg>
             </button>
-            -->
 
             <!-- Hamburger button (mobile only) -->
             <button
@@ -702,8 +767,10 @@ onUnmounted(() => {
           </h2>
           <p class="text-center text-base leading-relaxed text-slate-300 sm:text-lg md:text-left">
             Desenvolvedor Full Stack graduado em Análise e Desenvolvimento de Sistemas, com
-            experiência no desenvolvimento e manutenção de aplicações web, atuando em todo o ciclo de vida, do levantamento de requisitos à entrega. Foco em boas práticas de
-            desenvolvimento, qualidade de código e colaboração em equipe. Perfil proativo, com busca contínua por evolução técnica e adoção de soluções que agreguem eficiência aos sistemas.
+            experiência no desenvolvimento e manutenção de aplicações web, atuando em todo o ciclo
+            de vida, do levantamento de requisitos à entrega. Foco em boas práticas de
+            desenvolvimento, qualidade de código e colaboração em equipe. Perfil proativo, com busca
+            contínua por evolução técnica e adoção de soluções que agreguem eficiência aos sistemas.
           </p>
         </div>
       </div>
@@ -997,7 +1064,7 @@ onUnmounted(() => {
         role="dialog"
         aria-modal="true"
         aria-label="Detalhes do projeto"
-        class="flex w-full max-w-2xl max-h-[90vh] flex-col overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl"
+        class="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl"
       >
         <!-- Image banner -->
         <div class="relative h-52 w-full shrink-0 overflow-hidden">
@@ -1007,19 +1074,28 @@ onUnmounted(() => {
             class="h-full w-full object-cover"
           />
           <!-- Gradient overlay -->
-          <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent"
+          />
           <!-- Close button over image -->
           <button
             class="absolute top-3 right-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/50 text-slate-300 backdrop-blur-sm transition hover:border-yellow-400/70 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
             aria-label="Fechar detalhes do projeto"
             @click="closeModal"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
           </button>
           <!-- Title & badges over image at bottom -->
-          <div class="absolute bottom-0 left-0 right-0 px-6 pb-4">
+          <div class="absolute right-0 bottom-0 left-0 px-6 pb-4">
             <div class="flex flex-wrap items-end gap-3">
               <h3 class="text-2xl font-bold text-white">{{ selectedProject.title }}</h3>
               <div class="flex gap-2 pb-0.5">
@@ -1041,7 +1117,7 @@ onUnmounted(() => {
         </div>
 
         <!-- Scrollable body -->
-        <div class="overflow-y-auto px-6 py-5 flex flex-col gap-5">
+        <div class="flex flex-col gap-5 overflow-y-auto px-6 py-5">
           <!-- Description -->
           <p class="text-sm leading-relaxed text-slate-300">
             {{ (selectedProject as any).longDescription ?? selectedProject.description }}
@@ -1058,7 +1134,14 @@ onUnmounted(() => {
                 :key="item"
                 class="flex items-start gap-2 text-sm text-slate-300"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="mt-0.5 h-4 w-4 shrink-0 text-yellow-400"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
                 {{ item }}
@@ -1084,7 +1167,9 @@ onUnmounted(() => {
         </div>
 
         <!-- Footer actions -->
-        <footer class="shrink-0 border-t border-white/10 px-6 py-4 flex items-center justify-between gap-3">
+        <footer
+          class="flex shrink-0 items-center justify-between gap-3 border-t border-white/10 px-6 py-4"
+        >
           <button
             class="rounded-lg border border-white/15 px-4 py-2 text-sm text-slate-300 transition hover:border-white/40 hover:text-white focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
             @click="closeModal"
@@ -1099,8 +1184,19 @@ onUnmounted(() => {
               class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20 focus-visible:ring-2 focus-visible:ring-emerald-400/70 focus-visible:outline-none"
               @click="openProjectLink((selectedProject as any).liveLink)"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                />
               </svg>
               Ver demo
             </button>
@@ -1111,8 +1207,15 @@ onUnmounted(() => {
               :disabled="selectedProject.link === '#'"
               @click="openProjectLink(selectedProject.link)"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"
+                />
               </svg>
               Ver no GitHub
             </button>
