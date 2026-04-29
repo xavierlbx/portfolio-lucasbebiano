@@ -440,18 +440,16 @@ onUnmounted(() => {
 })
 </script>
 <template>
-  <main
-    class="min-h-screen w-full overflow-x-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef5ff_52%,#e8f2ff_100%)] text-slate-900 dark:bg-[#0D0D0D] dark:text-slate-100"
-  >
+  <main class="min-h-screen w-full overflow-x-hidden bg-[#0D0D0D] text-slate-100">
     <!-- Navbar flutuante -->
     <div class="fixed top-3 right-0 left-0 z-100 flex justify-center px-4">
       <nav
-        class="w-full max-w-5xl rounded-xl border border-slate-300/80 dark:border-white/10 bg-white/90 dark:bg-black/50 px-6 shadow-[0_8px_30px_rgba(15,23,42,0.12)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)] backdrop-blur-xl"
+        class="w-full max-w-5xl rounded-xl border border-white/10 bg-black/50 px-6 shadow-[0_4px_24px_rgba(0,0,0,0.6)] backdrop-blur-xl"
       >
         <div class="flex h-11 items-center justify-between">
           <!-- Logo -->
           <span
-            class="cursor-pointer text-base font-black tracking-[0.35em] text-slate-900 dark:text-white uppercase select-none"
+            class="cursor-pointer text-base font-black tracking-[0.35em] text-white uppercase select-none"
             @click="scrollToTop()"
           >
             LB<span class="text-yellow-500">.</span>
@@ -465,7 +463,7 @@ onUnmounted(() => {
                 :class="
                   !link.external && activeSection === link.href.replace('#', '')
                     ? 'text-yellow-400'
-                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                    : 'text-slate-300 hover:text-white'
                 "
                 @click="scrollToSection(link)"
               >
@@ -483,8 +481,9 @@ onUnmounted(() => {
           </ul>
 
           <div class="flex items-center gap-2">
-            <button
-              class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 dark:border-white/15 text-slate-600 dark:text-slate-200 transition hover:border-yellow-400/70 hover:text-yellow-500 dark:hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
+            <!--
+             <button
+              class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-slate-200 transition hover:border-yellow-400/70 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
               aria-label="Alternar tema"
               @click="toggleTheme"
             >
@@ -511,6 +510,7 @@ onUnmounted(() => {
                 />
               </svg>
             </button>
+            -->
 
             <!-- Hamburger button (mobile only) -->
             <button
@@ -520,15 +520,15 @@ onUnmounted(() => {
               @click="isMenuOpen = !isMenuOpen"
             >
               <span
-                class="block h-px w-5 origin-center bg-slate-700 dark:bg-white transition-all duration-300"
+                class="block h-px w-5 origin-center bg-white transition-all duration-300"
                 :class="isMenuOpen ? 'translate-y-[6px] rotate-45' : ''"
               />
               <span
-                class="block h-px w-5 bg-slate-700 dark:bg-white transition-all duration-300"
+                class="block h-px w-5 bg-white transition-all duration-300"
                 :class="isMenuOpen ? 'opacity-0' : ''"
               />
               <span
-                class="block h-px w-5 origin-center bg-slate-700 dark:bg-white transition-all duration-300"
+                class="block h-px w-5 origin-center bg-white transition-all duration-300"
                 :class="isMenuOpen ? '-translate-y-[6px] -rotate-45' : ''"
               />
             </button>
@@ -540,14 +540,14 @@ onUnmounted(() => {
           class="overflow-hidden transition-all duration-300 md:hidden"
           :class="isMenuOpen ? 'max-h-80' : 'max-h-0'"
         >
-          <ul class="flex flex-col gap-0.5 border-t border-slate-200 dark:border-white/10 py-3">
+          <ul class="flex flex-col gap-0.5 border-t border-white/10 py-3">
             <li v-for="link in navLinks" :key="link.label">
               <button
                 class="w-full py-2 text-left text-xs font-semibold tracking-wider uppercase transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
                 :class="
                   !link.external && activeSection === link.href.replace('#', '')
                     ? 'text-yellow-400'
-                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                    : 'text-slate-300 hover:text-white'
                 "
                 @click="scrollToSection(link)"
               >
@@ -665,11 +665,7 @@ onUnmounted(() => {
     <section
       id="about"
       class="flex items-center justify-center px-4 py-14 sm:px-8 md:px-15 md:py-24 lg:py-32"
-      :style="
-        isDark
-          ? 'background: linear-gradient(to bottom, #210002 0%, #0d0d0d 60%)'
-          : 'background: linear-gradient(180deg, #e8f2ff 0%, #f4f8ff 55%, #f8fbff 100%)'
-      "
+      style="background: linear-gradient(to bottom, #210002 0%, #0d0d0d 60%)"
     >
       <div
         class="mx-auto flex max-w-5xl flex-col items-center gap-14 md:flex-row md:items-center md:gap-20"
@@ -686,11 +682,11 @@ onUnmounted(() => {
         <!-- Right: Sobre mim -->
         <div class="w-full">
           <h2
-            class="mb-5 text-center text-2xl font-bold text-yellow-500 sm:text-3xl md:text-left md:text-4xl lg:text-5xl dark:text-yellow-400"
+            class="mb-5 text-center text-2xl font-bold text-yellow-400 sm:text-3xl md:text-left md:text-4xl lg:text-5xl"
           >
             Sobre mim
           </h2>
-          <p class="text-center text-base leading-relaxed text-slate-600 dark:text-slate-300 sm:text-lg md:text-left">
+          <p class="text-center text-base leading-relaxed text-slate-300 sm:text-lg md:text-left">
             Desenvolvedor Full Stack graduado em Análise e Desenvolvimento de Sistemas, com
             experiência no desenvolvimento e manutenção de aplicações web, atuando em todo o ciclo
             de vida, do levantamento de requisitos à entrega. Foco em boas práticas de
@@ -704,22 +700,20 @@ onUnmounted(() => {
 
     <section
       id="skills"
-      class="overflow-hidden bg-slate-100 dark:bg-zinc-900 py-12 md:py-16 lg:py-20"
-      :style="
-        isDark
-          ? 'background: linear-gradient(to bottom, #0d0d0d 0%, #18181b 25%, #18181b 85%, #0d0d0d 100%)'
-          : 'background: linear-gradient(180deg, #f8fbff 0%, #edf5ff 45%, #e8f2ff 100%)'
+      class="overflow-hidden py-12 md:py-16 lg:py-20"
+      style="
+        background: linear-gradient(to bottom, #0d0d0d 0%, #18181b 25%, #18181b 85%, #0d0d0d 100%);
       "
     >
       <!-- Title -->
       <h2
-        class="m-0 mb-10 p-0 text-center text-2xl font-bold text-yellow-500 sm:text-3xl md:text-4xl lg:text-5xl dark:text-yellow-400"
+        class="m-0 mb-10 p-0 text-center text-2xl font-bold text-yellow-400 sm:text-3xl md:text-4xl lg:text-5xl"
       >
         Conhecimentos
       </h2>
 
       <!-- Mobile: Grid -->
-      <div class="sm:hidden px-4">
+      <div class="px-4 sm:hidden">
         <p class="mb-4 text-center text-xs tracking-wide text-slate-500 dark:text-slate-400">
           Toque nos icones para destacar as tecnologias.
         </p>
@@ -727,7 +721,7 @@ onUnmounted(() => {
           <div
             v-for="skill in skills"
             :key="skill.name"
-            class="group flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-3 text-center transition-all duration-300 active:scale-[1.03]"
+            class="group flex flex-col items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 p-3 text-center transition-all duration-300 active:scale-[1.03]"
             role="button"
             tabindex="0"
             :aria-label="`Destacar habilidade ${skill.name}`"
@@ -743,7 +737,7 @@ onUnmounted(() => {
               :class="mobileActiveSkill === skill.name ? 'scale-110' : ''"
               draggable="false"
             />
-            <span class="text-xs font-semibold leading-tight text-slate-800 dark:text-slate-200">{{ skill.name }}</span>
+            <span class="text-xs leading-tight font-semibold text-slate-200">{{ skill.name }}</span>
           </div>
         </div>
       </div>
@@ -751,7 +745,7 @@ onUnmounted(() => {
       <!-- Carousel (sm+) -->
       <div
         ref="carouselTrackRef"
-        class="hidden gap-20 will-change-transform [touch-action:pan-y] sm:flex"
+        class="hidden [touch-action:pan-y] gap-20 will-change-transform sm:flex"
         :style="{
           transform: `translateX(${carouselOffset}px)`,
           cursor: carouselIsDragging ? 'grabbing' : 'grab',
@@ -796,12 +790,14 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <section id="projects" class="px-4 pt-12 pb-16 sm:px-6 md:px-15 md:pt-20 md:pb-24 lg:pb-28">
+    <section
+      id="projects"
+      class="px-4 pt-12 pb-16 sm:px-6 md:px-15 md:pt-20 md:pb-24 lg:pb-28"
+      style="background: #0d0d0d"
+    >
       <div class="mx-auto w-full max-w-7xl">
         <!-- Title -->
-        <h2
-          class="mb-12 text-center text-3xl font-bold text-yellow-500 sm:text-4xl md:text-5xl dark:text-yellow-400"
-        >
+        <h2 class="mb-12 text-center text-3xl font-bold text-yellow-400 sm:text-4xl md:text-5xl">
           Projetos
         </h2>
 
@@ -817,7 +813,7 @@ onUnmounted(() => {
           >
             <div
               v-if="showProjectsScrollHint"
-              class="mb-4 flex items-center justify-center gap-2 text-xs font-semibold tracking-wide text-slate-500 dark:text-slate-400"
+              class="mb-4 flex items-center justify-center gap-2 text-xs font-semibold tracking-wide text-slate-400"
               aria-live="polite"
             >
               <svg
@@ -853,7 +849,7 @@ onUnmounted(() => {
             <div
               v-for="project in projects"
               :key="project.title"
-              class="flex w-[82%] shrink-0 cursor-pointer snap-start flex-col overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-lg backdrop-blur-sm"
+              class="flex w-[82%] shrink-0 cursor-pointer snap-start flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-lg backdrop-blur-sm"
               role="button"
               tabindex="0"
               @click="openModal(project)"
@@ -861,26 +857,34 @@ onUnmounted(() => {
               @keydown.space.prevent="openModal(project)"
             >
               <!-- Imagem -->
-              <div class="h-48 overflow-hidden bg-slate-100 dark:bg-white/5">
-                <img :src="project.image" :alt="project.title" class="h-full w-full object-cover" loading="lazy" decoding="async" />
+              <div class="h-48 overflow-hidden bg-white/5">
+                <img
+                  :src="project.image"
+                  :alt="project.title"
+                  class="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
 
               <!-- Conteúdo -->
               <div class="flex flex-1 flex-col gap-3 p-5">
-                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ project.title }}</h3>
-                <p class="flex-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{{ project.description }}</p>
+                <h3 class="text-lg font-semibold text-white">{{ project.title }}</h3>
+                <p class="flex-1 text-sm leading-relaxed text-slate-400">
+                  {{ project.description }}
+                </p>
 
                 <div class="flex flex-wrap gap-2">
                   <span
                     v-for="tech in project.tech"
                     :key="tech"
-                    class="rounded-full border border-yellow-600/40 dark:border-yellow-700/20 px-3 py-0.5 text-xs font-medium text-yellow-600 dark:text-yellow-400"
+                    class="rounded-full border border-yellow-700/20 px-3 py-0.5 text-xs font-medium text-yellow-400"
                   >
                     {{ tech }}
                   </span>
                 </div>
 
-                <span class="mt-1 inline-flex items-center gap-1 text-sm font-medium text-blue-500 dark:text-blue-400">
+                <span class="mt-1 inline-flex items-center gap-1 text-sm font-medium text-blue-400">
                   Ver detalhes
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -900,7 +904,6 @@ onUnmounted(() => {
               </div>
             </div>
           </div>
-
         </div>
 
         <!-- Desktop: Grid (>= sm) -->
@@ -908,8 +911,8 @@ onUnmounted(() => {
           <div
             v-for="project in paginatedProjects"
             :key="project.title"
-            class="flex cursor-pointer flex-col overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-yellow-500/40 hover:shadow-yellow-500/10"
-            :style="{ borderRadius: '0px 0px 20px 0px' }"
+            class="flex cursor-pointer flex-col overflow-hidden border border-white/10 bg-white/5 shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-yellow-500/40 hover:shadow-yellow-500/10"
+            :style="{ borderRadius: '5px 5px 20px 5px' }"
             role="button"
             tabindex="0"
             @click="openModal(project)"
@@ -917,7 +920,7 @@ onUnmounted(() => {
             @keydown.space.prevent="openModal(project)"
           >
             <!-- Imagem -->
-            <div class="h-48 overflow-hidden bg-slate-100 dark:bg-white/5">
+            <div class="h-48 overflow-hidden bg-white/5">
               <img
                 :src="project.image"
                 :alt="project.title"
@@ -929,20 +932,20 @@ onUnmounted(() => {
 
             <!-- Conteúdo -->
             <div class="flex flex-1 flex-col gap-3 p-5">
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ project.title }}</h3>
-              <p class="flex-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{{ project.description }}</p>
+              <h3 class="text-lg font-semibold text-white">{{ project.title }}</h3>
+              <p class="flex-1 text-sm leading-relaxed text-slate-400">{{ project.description }}</p>
 
               <div class="flex flex-wrap gap-2">
                 <span
                   v-for="tech in project.tech"
                   :key="tech"
-                  class="rounded-full border border-blue-500 bg-blue-500/20 px-3 py-0.5 text-xs font-medium text-blue-700 dark:text-white/90"
+                  class="rounded-full border border-blue-500 bg-blue-500/20 px-3 py-0.5 text-xs font-medium text-white/90"
                 >
                   {{ tech }}
                 </span>
               </div>
 
-              <span class="mt-1 inline-flex items-center gap-1 text-sm font-medium text-blue-500 dark:text-blue-400">
+              <span class="mt-1 inline-flex items-center gap-1 text-sm font-medium text-blue-400">
                 Ver detalhes
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -983,12 +986,12 @@ onUnmounted(() => {
         role="dialog"
         aria-modal="true"
         aria-label="Detalhes do projeto"
-        class="w-full max-w-xl rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl"
+        class="w-full max-w-xl rounded-xl border border-white/10 bg-zinc-950 p-6 shadow-2xl"
       >
         <header class="mb-4 flex items-start justify-between gap-3">
-          <h3 class="text-xl font-semibold text-slate-900 dark:text-white">{{ selectedProject.title }}</h3>
+          <h3 class="text-xl font-semibold text-white">{{ selectedProject.title }}</h3>
           <button
-            class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 dark:border-white/15 text-slate-500 dark:text-slate-300 transition hover:border-yellow-400/70 hover:text-yellow-500 dark:hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
+            class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-slate-300 transition hover:border-yellow-400/70 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
             aria-label="Fechar detalhes do projeto"
             @click="closeModal"
           >
@@ -1011,7 +1014,7 @@ onUnmounted(() => {
           class="mb-4 h-56 w-full rounded-lg object-cover"
         />
 
-        <p class="mb-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{{ selectedProject.description }}</p>
+        <p class="mb-4 text-sm leading-relaxed text-slate-300">{{ selectedProject.description }}</p>
 
         <div class="mb-6 flex flex-wrap gap-2">
           <span
@@ -1025,7 +1028,7 @@ onUnmounted(() => {
 
         <div class="flex items-center justify-end gap-2">
           <button
-            class="rounded-md border border-slate-300 dark:border-white/15 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 transition hover:border-slate-400 dark:hover:border-white/40 hover:text-slate-900 dark:hover:text-white focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
+            class="rounded-md border border-white/15 px-4 py-2 text-sm text-slate-300 transition hover:border-white/40 hover:text-white focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
             @click="closeModal"
           >
             Fechar
@@ -1044,13 +1047,12 @@ onUnmounted(() => {
     <!-- Fale Comigo -->
     <footer
       id="contact"
-      class="bg-[linear-gradient(180deg,#edf5ff_0%,#e7f1ff_100%)] dark:bg-zinc-900 px-4 pt-12 pb-0 sm:px-6 md:px-10 md:pt-16 lg:pt-20"
+      class="px-4 pt-12 pb-0 sm:px-6 md:px-10 md:pt-16 lg:pt-20"
+      style="background: #18181b"
     >
       <div class="mx-auto max-w-4xl">
         <!-- Title -->
-        <h2
-          class="mb-12 text-center text-2xl font-bold text-yellow-500 sm:text-3xl md:text-4xl dark:text-yellow-400"
-        >
+        <h2 class="mb-12 text-center text-2xl font-bold text-yellow-400 sm:text-3xl md:text-4xl">
           Fale comigo
         </h2>
 
@@ -1122,7 +1124,7 @@ onUnmounted(() => {
         </div>
 
         <!-- Bottom divider + copyright -->
-        <div class="mt-8 border-t border-slate-200 dark:border-white/10 py-6">
+        <div class="mt-8 border-t border-white/10 py-6">
           <p class="text-center text-xs text-slate-600">@2026 - Lucas Bebiano</p>
         </div>
       </div>
