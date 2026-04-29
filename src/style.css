@@ -4,15 +4,15 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f8fafc;
-  --color-bg-tertiary: #f1f5f9;
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-muted: #64748b;
-  --color-border: #e2e8f0;
-  --color-accent: #3b82f6;
-  --color-accent-hover: #2563eb;
+  --color-bg-primary: #f8fbff;
+  --color-bg-secondary: #eef5ff;
+  --color-bg-tertiary: #e7f1ff;
+  --color-text-primary: #0b1b2b;
+  --color-text-secondary: #31485e;
+  --color-text-muted: #5a7085;
+  --color-border: #cdddef;
+  --color-accent: #ca8a04;
+  --color-accent-hover: #a16207;
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
@@ -39,6 +39,21 @@
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.25), 0 2px 4px -2px rgb(0 0 0 / 0.25);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.25), 0 4px 6px -4px rgb(0 0 0 / 0.25);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.25), 0 8px 10px -6px rgb(0 0 0 / 0.25);
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow-x: hidden;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
 }
 
 * {
