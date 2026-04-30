@@ -554,81 +554,92 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
     <section
       id="skills"
-      class="relative z-[1] overflow-hidden py-12 md:py-16 lg:py-20"
-      style="
-        background: linear-gradient(to bottom, #0d0d0d 0%, #18181b 25%, #18181b 85%, #0d0d0d 100%);
-      "
+      class="relative z-[1] overflow-hidden py-20 md:py-28"
+      style="background: #0D0D0D"
     >
-      <!-- Title -->
-      <h2
-        class="m-0 mb-10 p-0 text-center text-2xl font-bold text-yellow-400 sm:text-3xl md:text-4xl lg:text-5xl"
-      >
-        Conhecimentos
-      </h2>
+      <!-- Dot-grid -->
+      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <!-- Glow center -->
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 60% 40% at 50% 50%, rgba(234,179,8,0.05) 0%, transparent 65%)"
+        aria-hidden="true"
+      />
 
-      <!-- Mobile: Grid -->
-      <div class="px-4 sm:hidden">
-        <p class="mb-4 text-center text-xs tracking-wide text-slate-500 dark:text-slate-400">
-          Toque nos icones para destacar as tecnologias.
-        </p>
-        <div class="grid grid-cols-3 gap-3">
-          <div
-            v-for="skill in skills"
-            :key="skill.name"
-            class="group flex flex-col items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 p-3 text-center transition-all duration-300 active:scale-[1.03]"
-            role="button"
-            tabindex="0"
-            :aria-label="`Destacar habilidade ${skill.name}`"
-            @touchstart.passive="activateMobileSkill(skill.name)"
-            @click="activateMobileSkill(skill.name)"
-            @keydown.enter.prevent="activateMobileSkill(skill.name)"
-            @keydown.space.prevent="activateMobileSkill(skill.name)"
-          >
-            <img
-              :src="skill.icon"
-              :alt="skill.name"
-              class="h-10 w-10 object-contain transition-transform duration-300 ease-out group-active:scale-110"
-              :class="mobileActiveSkill === skill.name ? 'scale-110' : ''"
-              draggable="false"
-            />
-            <span class="text-xs leading-tight font-semibold text-slate-200">{{ skill.name }}</span>
+      <div class="relative px-4 sm:px-6">
+        <!-- Header -->
+        <div class="mb-12 flex flex-col items-center gap-2">
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">// conhecimentos</p>
+          <h2 class="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
+            Minha <span class="text-yellow-400">Stack</span>
+          </h2>
+          <p class="mt-1 text-sm text-slate-500">Tecnologias que uso no dia a dia</p>
+        </div>
+
+        <!-- Mobile: Grid -->
+        <div class="px-0 sm:hidden">
+          <div class="grid grid-cols-3 gap-3">
+            <div
+              v-for="skill in skills"
+              :key="skill.name"
+              class="group flex flex-col items-center justify-center gap-2 rounded-xl border border-white/8 bg-white/3 p-3 text-center transition-all duration-300 active:scale-[1.03] active:border-yellow-500/30"
+              role="button"
+              tabindex="0"
+              :aria-label="`Destacar habilidade ${skill.name}`"
+              @touchstart.passive="activateMobileSkill(skill.name)"
+              @click="activateMobileSkill(skill.name)"
+              @keydown.enter.prevent="activateMobileSkill(skill.name)"
+              @keydown.space.prevent="activateMobileSkill(skill.name)"
+            >
+              <img
+                :src="skill.icon"
+                :alt="skill.name"
+                class="h-10 w-10 object-contain transition-transform duration-300 ease-out group-active:scale-110"
+                :class="mobileActiveSkill === skill.name ? 'scale-110' : ''"
+                draggable="false"
+              />
+              <span class="text-xs leading-tight font-semibold text-slate-300">{{ skill.name }}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Carousel (sm+) -->
-      <div
-        ref="carouselTrackRef"
-        class="hidden [touch-action:pan-y] gap-20 will-change-transform sm:flex"
-        :style="{
-          transform: `translateX(${carouselOffset}px)`,
-          cursor: carouselIsDragging ? 'grabbing' : 'grab',
-          userSelect: 'none',
-        }"
-        @mousedown="onCarouselMouseDown"
-        @touchstart.passive="onCarouselTouchStart"
-        @touchmove.passive="onCarouselTouchMove"
-        @touchend="onCarouselTouchEnd"
-        @touchcancel="onCarouselTouchCancel"
-      >
-        <template v-for="set in 3" :key="set">
-          <SkillCard v-for="skill in skills" :key="`${set}-${skill.name}`" :skill="skill" />
-        </template>
-      </div>
-
-      <div class="mt-8 flex flex-col items-center justify-center gap-6">
-        <hr class="w-24 border-slate-300 dark:border-white/20" />
-        <a
-          href="https://drive.google.com/drive/folders/12R09riJtxIafUOd8BM_FxmYydnODgxjG?usp=drive_link"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="group relative inline-block font-medium text-yellow-400 transition-colors duration-300 hover:text-yellow-300"
+        <!-- Carousel (sm+) -->
+        <div
+          ref="carouselTrackRef"
+          class="hidden [touch-action:pan-y] gap-20 will-change-transform sm:flex"
+          :style="{
+            transform: `translateX(${carouselOffset}px)`,
+            cursor: carouselIsDragging ? 'grabbing' : 'grab',
+            userSelect: 'none',
+          }"
+          @mousedown="onCarouselMouseDown"
+          @touchstart.passive="onCarouselTouchStart"
+          @touchmove.passive="onCarouselTouchMove"
+          @touchend="onCarouselTouchEnd"
+          @touchcancel="onCarouselTouchCancel"
         >
-          <span class="flex items-center gap-1">
+          <template v-for="set in 3" :key="set">
+            <SkillCard v-for="skill in skills" :key="`${set}-${skill.name}`" :skill="skill" />
+          </template>
+        </div>
+
+        <!-- Footer link -->
+        <div class="mt-12 flex flex-col items-center gap-4">
+          <div class="flex items-center gap-3 w-full max-w-xs">
+            <div class="h-px flex-1 bg-white/8" />
+            <span class="font-mono text-[10px] tracking-widest text-slate-600 uppercase">certificados</span>
+            <div class="h-px flex-1 bg-white/8" />
+          </div>
+          <a
+            href="https://drive.google.com/drive/folders/12R09riJtxIafUOd8BM_FxmYydnODgxjG?usp=drive_link"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group inline-flex items-center gap-2 rounded-lg border border-yellow-500/25 bg-yellow-500/6 px-5 py-2 text-sm font-semibold text-yellow-400 transition-all duration-200 hover:border-yellow-500/50 hover:bg-yellow-500/10 hover:text-yellow-300"
+          >
             Ver certificados
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+              class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -636,24 +647,34 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             >
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-          </span>
-          <span
-            class="absolute bottom-0 left-0 h-0.5 w-0 bg-yellow-400 transition-all duration-300 group-hover:w-full"
-          ></span>
-        </a>
+          </a>
+        </div>
       </div>
     </section>
 
     <section
       id="projects"
-      class="relative z-[1] px-4 pt-12 pb-16 sm:px-6 md:px-15 md:pt-20 md:pb-24 lg:pb-28"
-      style="background: #0d0d0d"
+      class="relative z-[1] overflow-hidden px-4 pt-20 pb-24 sm:px-6 md:px-15 md:pt-28 md:pb-32"
+      style="background: #0D0D0D"
     >
-      <div class="mx-auto w-full max-w-7xl">
-        <!-- Title -->
-        <h2 class="mb-12 text-center text-3xl font-bold text-yellow-400 sm:text-4xl md:text-5xl">
-          Projetos
-        </h2>
+      <!-- Dot-grid -->
+      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <!-- Glow right -->
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 55% 45% at 80% 30%, rgba(234,179,8,0.05) 0%, transparent 65%)"
+        aria-hidden="true"
+      />
+
+      <div class="relative mx-auto w-full max-w-7xl">
+        <!-- Header -->
+        <div class="mb-12 flex flex-col items-center gap-2">
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">// projetos</p>
+          <h2 class="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
+            O que eu <span class="text-yellow-400">construí</span>
+          </h2>
+          <p class="mt-1 text-sm text-slate-500">Clique em um projeto para ver os detalhes</p>
+        </div>
 
         <!-- Mobile: Carrossel horizontal (< sm) -->
         <div class="relative sm:hidden">
@@ -667,7 +688,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           >
             <div
               v-if="showProjectsScrollHint"
-              class="mb-4 flex items-center justify-center gap-2 text-xs font-semibold tracking-wide text-slate-400"
+              class="mb-4 flex items-center justify-center gap-2 text-xs font-semibold tracking-wide text-slate-500"
               aria-live="polite"
             >
               <svg
@@ -680,7 +701,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               >
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
-              Arraste para o lado para ver mais projetos
+              Arraste para ver mais
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-4 w-4 animate-[slide-hint_1.1s_ease-in-out_infinite]"
@@ -696,65 +717,54 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
           <div
             ref="mobileProjectsRef"
-            class="carousel -mx-6 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-4"
+            class="carousel -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4"
             @scroll.passive="onMobileProjectsScroll"
             @touchstart.passive="dismissProjectsScrollHint"
           >
             <div
               v-for="project in projects"
               :key="project.title"
-              class="flex w-[82%] shrink-0 cursor-pointer snap-start flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-lg backdrop-blur-sm"
+              class="project-card flex w-[85%] shrink-0 cursor-pointer snap-start flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/3"
               role="button"
               tabindex="0"
               @click="openModal(project)"
               @keydown.enter="openModal(project)"
               @keydown.space.prevent="openModal(project)"
             >
-              <!-- Imagem -->
-              <div class="aspect-square w-full overflow-hidden bg-white/5">
+              <!-- Terminal bar -->
+              <div class="flex items-center gap-1.5 border-b border-white/8 bg-white/3 px-3 py-2">
+                <span class="h-2 w-2 rounded-full bg-white/10" />
+                <span class="h-2 w-2 rounded-full bg-white/10" />
+                <span class="h-2 w-2 rounded-full bg-white/10" />
+                <span class="ml-1 font-mono text-[9px] tracking-wider text-slate-600 truncate">{{ project.title.toLowerCase().replace(/\s/g, '-') }}.ts</span>
+              </div>
+              <!-- Image 16:9 -->
+              <div class="aspect-video w-full overflow-hidden bg-white/5">
                 <img
                   :src="project.image"
                   :alt="project.title"
-                  class="h-full w-full object-cover"
+                  class="h-full w-full object-cover transition-transform duration-500"
                   loading="lazy"
                   decoding="async"
                 />
               </div>
-
-              <!-- Conteúdo -->
+              <!-- Content -->
               <div class="flex flex-1 flex-col gap-2 p-3">
                 <h3 class="text-sm font-bold text-white">{{ project.title }}</h3>
-                <p class="flex-1 text-xs leading-relaxed text-slate-400">
-                  {{ project.description }}
-                </p>
-
-                <div class="flex flex-wrap gap-1.5">
+                <p class="flex-1 text-xs leading-relaxed text-slate-400">{{ project.description }}</p>
+                <div class="flex flex-wrap gap-1">
                   <span
                     v-for="tech in project.tech"
                     :key="tech"
-                    class="rounded-full border border-yellow-700/20 px-2 py-0.5 text-[10px] font-medium text-yellow-400"
+                    class="rounded-full border border-yellow-500/20 bg-yellow-500/8 px-2 py-0.5 text-[10px] font-medium text-yellow-400"
                   >
                     {{ tech }}
                   </span>
                 </div>
-
-                <span
-                  class="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-blue-400"
-                >
+                <span class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sky-400">
                   Ver detalhes
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-3 w-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </span>
               </div>
@@ -763,59 +773,51 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
         </div>
 
         <!-- Desktop: Grid (>= sm) -->
-        <div class="hidden sm:grid sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+        <div class="hidden sm:grid sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
           <div
             v-for="project in paginatedProjects"
             :key="project.title"
-            class="flex cursor-pointer flex-col overflow-hidden border border-white/10 bg-white/5 shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-yellow-500/40 hover:shadow-yellow-500/10"
-            :style="{ borderRadius: '5px 5px 20px 5px' }"
+            class="project-card group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/3 transition-all duration-300 hover:-translate-y-1 hover:border-yellow-500/35"
             role="button"
             tabindex="0"
             @click="openModal(project)"
             @keydown.enter="openModal(project)"
             @keydown.space.prevent="openModal(project)"
           >
-            <!-- Imagem -->
-            <div class="aspect-square w-full overflow-hidden bg-white/5">
+            <!-- Terminal bar -->
+            <div class="flex items-center gap-1.5 border-b border-white/8 bg-white/3 px-3 py-2">
+              <span class="h-2 w-2 rounded-full bg-white/10 transition-colors duration-200 group-hover:bg-yellow-500/40" />
+              <span class="h-2 w-2 rounded-full bg-white/10" />
+              <span class="h-2 w-2 rounded-full bg-white/10" />
+              <span class="ml-1 font-mono text-[9px] tracking-wider text-slate-600 truncate">{{ project.title.toLowerCase().replace(/\s/g, '-') }}.ts</span>
+            </div>
+            <!-- Image 16:9 -->
+            <div class="aspect-video w-full overflow-hidden bg-white/5">
               <img
                 :src="project.image"
                 :alt="project.title"
-                class="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 loading="lazy"
                 decoding="async"
               />
             </div>
-
-            <!-- Conteúdo -->
+            <!-- Content -->
             <div class="flex flex-1 flex-col gap-2 p-3">
               <h3 class="text-sm font-bold text-white">{{ project.title }}</h3>
               <p class="flex-1 text-xs leading-relaxed text-slate-400">{{ project.description }}</p>
-
-              <div class="flex flex-wrap gap-1.5">
+              <div class="flex flex-wrap gap-1">
                 <span
                   v-for="tech in project.tech"
                   :key="tech"
-                  class="rounded-full border border-yellow-200/70 bg-yellow-500/20 px-2 py-0.5 text-[10px] font-medium text-white/90"
+                  class="rounded-full border border-yellow-500/20 bg-yellow-500/8 px-2 py-0.5 text-[10px] font-medium text-yellow-400"
                 >
                   {{ tech }}
                 </span>
               </div>
-
-              <span class="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-blue-400">
+              <span class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sky-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                 Ver detalhes
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-3 w-3"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </span>
             </div>
@@ -1088,22 +1090,36 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
     <!-- Fale Comigo -->
     <footer
       id="contact"
-      class="relative z-[1] px-4 pt-12 pb-0 sm:px-6 md:px-10 md:pt-16 lg:pt-20"
-      style="background: #18181b"
+      class="relative z-[1] overflow-hidden px-4 pt-20 pb-0 sm:px-6 md:px-10 md:pt-28"
+      style="background: #0D0D0D"
     >
-      <div class="mx-auto max-w-4xl">
-        <!-- Title -->
-        <h2 class="mb-12 text-center text-2xl font-bold text-yellow-400 sm:text-3xl md:text-4xl">
-          Fale comigo
-        </h2>
+      <!-- Dot-grid -->
+      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <!-- Glow left -->
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 50% 45% at 25% 40%, rgba(234,179,8,0.06) 0%, transparent 65%)"
+        aria-hidden="true"
+      />
 
-        <!-- Contact links row -->
-        <div class="flex flex-wrap items-start justify-center gap-10 sm:gap-16">
-          <!-- Phone -->
+      <div class="relative mx-auto max-w-4xl">
+        <!-- Header -->
+        <div class="mb-12 flex flex-col items-center gap-2">
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">// contato</p>
+          <h2 class="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
+            Fale <span class="text-yellow-400">comigo</span>
+          </h2>
+          <p class="mt-1 text-sm text-slate-500">Aberto a novas oportunidades e colaborações</p>
+        </div>
+
+
+
+        <!-- Contact links -->
+        <div class="flex flex-wrap items-stretch justify-center gap-4 sm:gap-5">
           <ContactLink :href="contactPhoneHref" :label="CONTACT.phoneLabel">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 transition-transform duration-200 group-hover:scale-110"
+              class="h-7 w-7 transition-transform duration-200 group-hover:scale-110"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -1117,11 +1133,10 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             </svg>
           </ContactLink>
 
-          <!-- Email -->
           <ContactLink :href="contactEmailHref" :label="CONTACT.email">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 transition-transform duration-200 group-hover:scale-110"
+              class="h-7 w-7 transition-transform duration-200 group-hover:scale-110"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -1135,11 +1150,10 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             </svg>
           </ContactLink>
 
-          <!-- GitHub -->
           <ContactLink :href="CONTACT.github" :label="CONTACT.githubLabel" :external="true">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 transition-transform duration-200 group-hover:scale-110"
+              class="h-7 w-7 transition-transform duration-200 group-hover:scale-110"
               fill="currentColor"
               viewBox="0 0 24 24"
             >
@@ -1149,11 +1163,10 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             </svg>
           </ContactLink>
 
-          <!-- LinkedIn -->
           <ContactLink :href="CONTACT.linkedin" :label="CONTACT.linkedinLabel" :external="true">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 transition-transform duration-200 group-hover:scale-110"
+              class="h-7 w-7 transition-transform duration-200 group-hover:scale-110"
               fill="currentColor"
               viewBox="0 0 24 24"
             >
@@ -1165,8 +1178,10 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
         </div>
 
         <!-- Bottom divider + copyright -->
-        <div class="mt-8 border-t border-white/10 py-6">
-          <p class="text-center text-xs text-slate-600">@2026 - Lucas Bebiano</p>
+        <div class="mt-16 border-t border-white/8 py-6">
+          <p class="text-center font-mono text-[10px] tracking-widest text-slate-700">
+            &copy; 2026 — <span class="text-slate-600">Lucas Bebiano</span>
+          </p>
         </div>
       </div>
     </footer>
@@ -1200,6 +1215,11 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
   letter-spacing: 0.05em;
   color: #fde68a;
   text-transform: uppercase;
+}
+
+/* Project cards */
+.project-card:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(234, 179, 8, 0.15);
 }
 
 .carousel {
