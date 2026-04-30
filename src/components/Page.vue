@@ -461,40 +461,93 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
     <section
       id="about"
-      class="relative z-[1] flex items-center justify-center px-4 py-14 sm:px-8 md:px-15 md:py-24 lg:py-32"
-      style="background: #0d0d0d"
+      class="relative z-[1] overflow-hidden px-4 py-20 sm:px-8 md:px-15 md:py-28 lg:py-36"
+      style="background: #0D0D0D"
     >
+      <!-- Dot-grid (same as hero) -->
+      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+
+      <!-- Radial glow: left side -->
       <div
-        class="mx-auto flex max-w-5xl flex-col items-center gap-14 md:flex-row md:items-center md:gap-20"
-      >
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 55% 50% at 20% 55%, rgba(234,179,8,0.06) 0%, transparent 65%)"
+        aria-hidden="true"
+      />
+
+      <div class="relative mx-auto flex max-w-5xl flex-col items-center gap-12 md:flex-row md:items-center md:gap-16">
+
         <!-- Left: Photo -->
-        <div class="group relative w-56 shrink-0 sm:w-64 md:w-80" style="aspect-ratio: 4/5">
-          <img
-            src="/images/aboutme-photo.jpg"
-            alt="Imagem do Lucas vestindo a beca em uma formatura"
-            class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-xl ring-1 shadow-black/50 ring-white/10 transition-all duration-200 group-hover:scale-101 group-hover:opacity-0"
-          />
-          <img
-            src="/images/aboutme-photo-2.png"
-            alt="Segunda foto do Lucas"
-            class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-xl ring-1 shadow-black/50 ring-white/10 opacity-0 transition-all duration-200 group-hover:scale-102 group-hover:opacity-100 object-top"
-          />
+        <div class="shrink-0">
+          <div class="group relative w-52 sm:w-64 md:w-72" style="aspect-ratio: 4/5">
+            <!-- Glow ring behind photo -->
+            <div
+              class="absolute -inset-4 rounded-3xl blur-2xl opacity-20"
+              style="background: radial-gradient(circle, #eab308 0%, transparent 70%)"
+              aria-hidden="true"
+            />
+            <img
+              src="/images/aboutme-photo.jpg"
+              alt="Lucas Bebiano na formatura"
+              class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-all duration-300 group-hover:opacity-0 group-hover:scale-[1.02]"
+            />
+            <img
+              src="/images/aboutme-photo-2.png"
+              alt="Lucas Bebiano"
+              class="absolute inset-0 h-full w-full rounded-2xl object-cover object-top shadow-2xl ring-1 ring-white/10 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-[1.02]"
+            />
+            <!-- Badge "Disponível" -->
+            <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full border border-yellow-500/30 bg-[#0D0D0D] px-3 py-1 shadow-lg">
+              <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse" />
+              <span class="text-[10px] font-semibold tracking-[0.15em] text-yellow-300 uppercase whitespace-nowrap">Disponível</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Right: Sobre mim -->
-        <div class="w-full">
-          <h2
-            class="mb-5 text-center text-2xl font-bold text-yellow-400 sm:text-3xl md:text-left md:text-4xl lg:text-5xl"
-          >
-            Sou o Lucas Bebiano,
+        <!-- Right: Content -->
+        <div class="flex w-full flex-col gap-5">
+
+          <!-- Label -->
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">// sobre mim</p>
+
+          <!-- Name heading -->
+          <h2 class="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
+            Lucas <span class="text-yellow-400">Bebiano</span>
           </h2>
-          <p class="text-center text-base leading-relaxed text-slate-300 sm:text-lg md:text-left">
-            Desenvolvedor Full Stack graduado em Análise e Desenvolvimento de Sistemas, com
-            experiência no desenvolvimento e manutenção de aplicações web, atuando em todo o ciclo
-            de vida, do levantamento de requisitos à entrega. Foco em boas práticas de
-            desenvolvimento, qualidade de código e colaboração em equipe. Perfil proativo, com busca
-            contínua por evolução técnica e adoção de soluções que agreguem eficiência aos sistemas.
+
+          <!-- Bio -->
+          <p class="text-sm leading-relaxed text-slate-400 sm:text-base">
+            Desenvolvedor Full Stack com experiência no ciclo completo de aplicações web — do levantamento de requisitos à entrega.
+            Perfil proativo, com busca contínua por evolução técnica e soluções que agreguem eficiência real aos sistemas.
           </p>
+
+                    <!-- Terminal card -->
+          <div class="about-terminal rounded-xl border border-white/8 bg-white/3 p-4 font-mono text-xs leading-relaxed sm:text-sm">
+            <!-- Terminal top bar -->
+            <div class="mb-3 flex items-center gap-1.5">
+              <span class="h-2.5 w-2.5 rounded-full bg-white/10" />
+              <span class="h-2.5 w-2.5 rounded-full bg-white/10" />
+              <span class="h-2.5 w-2.5 rounded-full bg-white/10" />
+              <span class="ml-2 text-[10px] tracking-wider text-slate-600">lucas.ts</span>
+            </div>
+            <!-- Code -->
+            <p><span class="text-purple-400">const</span> <span class="text-yellow-300">lucas</span> <span class="text-slate-400">=</span> <span class="text-slate-400">{</span></p>
+            <p class="pl-4"><span class="text-sky-400">role</span><span class="text-slate-400">:</span> <span class="text-green-400">'Full Stack Developer'</span><span class="text-slate-400">,</span></p>
+            <p class="pl-4"><span class="text-sky-400">formação</span><span class="text-slate-400">:</span> <span class="text-green-400">'ADS – Análise e Desenvolvimento de Sistemas'</span><span class="text-slate-400">,</span></p>
+            <p class="pl-4"><span class="text-sky-400">stack</span><span class="text-slate-400">:</span> <span class="text-slate-400">[</span><span class="text-green-400">'JS'</span><span class="text-slate-400">,</span> <span class="text-green-400">'TypeScript'</span><span class="text-slate-400">,</span> <span class="text-green-400">'Vue'</span><span class="text-slate-400">,</span> <span class="text-green-400">'NestJS'</span><span class="text-slate-400">,</span> <span class="text-green-400">'.NET'</span><span class="text-slate-400">,</span> <span class="text-green-400">'SQL'</span><span class="text-slate-400">],</span></p>
+            <p class="pl-4"><span class="text-sky-400">foco</span><span class="text-slate-400">:</span> <span class="text-green-400">'boas práticas &amp; qualidade de código'</span><span class="text-slate-400">,</span></p>
+            <p class="pl-4"><span class="text-sky-400">disponível</span><span class="text-slate-400">:</span> <span class="text-yellow-400">true</span><span class="text-slate-400">,</span></p>
+            <p><span class="text-slate-400">}</span></p>
+          </div>
+
+          <!-- Chips -->
+          <div class="flex flex-wrap gap-2">
+            <span class="about-chip">Ciclo completo</span>
+            <span class="about-chip">Boas práticas</span>
+            <span class="about-chip">Trabalho em equipe</span>
+            <span class="about-chip">Perfil proativo</span>
+          </div>
+
+
         </div>
       </div>
     </section>
@@ -1129,6 +1182,24 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 /* Primary CTA glow on hover */
 .hero-btn-primary:hover {
   box-shadow: 0 0 22px rgba(234, 179, 8, 0.45);
+}
+
+/* About section */
+.about-terminal {
+  backdrop-filter: blur(4px);
+}
+
+.about-chip {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  background: rgba(234, 179, 8, 0.06);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #fde68a;
+  text-transform: uppercase;
 }
 
 .carousel {
