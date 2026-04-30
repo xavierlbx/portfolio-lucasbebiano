@@ -207,53 +207,54 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
   <main class="min-h-screen w-full overflow-x-hidden bg-[#0D0D0D] text-slate-100">
     <!-- Navbar flutuante -->
     <div class="fixed top-3 right-0 left-0 z-100 flex justify-center px-4">
-      <nav
-        class="w-full max-w-5xl rounded-xl border border-white/10 bg-black/50 px-6 shadow-[0_4px_24px_rgba(0,0,0,0.6)] backdrop-blur-xl"
-      >
-        <div class="flex h-11 items-center justify-between">
-          <!-- Logo -->
-          <span
-            class="cursor-pointer text-base font-black tracking-[0.35em] text-white uppercase select-none"
+      <nav class="nav-bar w-full max-w-5xl overflow-hidden rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.8)] backdrop-blur-xl">
+        <!-- Top accent line -->
+        <div class="nav-top-accent h-px w-full" />
+
+        <div class="flex h-11 items-center justify-between px-5">
+          <!-- Logo: terminal style -->
+          <button
+            class="group flex items-center gap-1 font-mono select-none focus:outline-none"
             @click="scrollToTop()"
           >
-            LB<span class="text-yellow-500">.</span>
-          </span>
+            <span class="text-yellow-500/60 text-xs transition-colors group-hover:text-yellow-400">&gt;_</span>
+            <span class="ml-1 text-sm font-black text-white tracking-tight">
+              lucas<span class="text-yellow-400">b</span>
+            </span>
+            <span class="ml-0.5 inline-block h-3 w-[2px] bg-yellow-400 opacity-80 animate-[blink_1.1s_step-end_infinite]" />
+          </button>
 
           <!-- Desktop links (centered) -->
-          <ul class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 md:flex">
+          <ul class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-0.5 md:flex">
             <li v-for="link in navLinks" :key="link.label">
               <button
-                class="group relative py-1 text-xs font-semibold tracking-wider uppercase transition-colors duration-200"
+                class="nav-link group relative px-3 py-1.5 font-mono text-[11px] tracking-wider transition-all duration-200 rounded-md"
                 :class="
                   !link.external && activeSection === link.href.replace('#', '')
-                    ? 'text-yellow-400'
-                    : 'text-slate-300 hover:text-white'
+                    ? 'nav-link-active text-yellow-400'
+                    : 'text-slate-500 hover:text-slate-200'
                 "
                 @click="scrollToSection(link)"
               >
-                {{ link.label }}
                 <span
-                  class="absolute bottom-0 left-0 h-px w-full origin-left scale-x-0 bg-yellow-500 transition-transform duration-300 group-hover:scale-x-100"
-                  :class="
-                    !link.external && activeSection === link.href.replace('#', '')
-                      ? 'scale-x-100'
-                      : ''
-                  "
-                />
+                  class="mr-0.5 transition-colors duration-200"
+                  :class="!link.external && activeSection === link.href.replace('#', '') ? 'text-yellow-600' : 'text-slate-700 group-hover:text-yellow-600/50'"
+                >//&nbsp;</span>{{ link.label.toLowerCase() }}
               </button>
             </li>
           </ul>
 
           <div class="flex items-center gap-2">
+            <!-- theme toggle -->
             <button
-              class="hidden h-8 w-8 items-center justify-center rounded-full border border-white/15 text-slate-200 transition hover:border-yellow-400/70 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
+              class="hidden h-7 w-7 items-center justify-center rounded border border-white/10 text-slate-500 transition hover:border-yellow-400/40 hover:text-yellow-400 focus-visible:ring-2 focus-visible:ring-yellow-400/60 focus-visible:outline-none"
               aria-label="Alternar tema"
               @click="toggleDarkMode"
             >
               <svg
                 v-if="isDark"
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
+                class="h-3.5 w-3.5"
                 viewBox="0 0 24 24"
                 fill="currentColor"
               >
@@ -264,7 +265,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               <svg
                 v-else
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
+                class="h-3.5 w-3.5"
                 fill="currentColor"
                 viewBox="0 0 24 24"
               >
@@ -274,7 +275,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               </svg>
             </button>
 
-            <!-- Hamburger button (mobile only) -->
+            <!-- Hamburger (mobile only) -->
             <button
               class="flex h-7 w-7 flex-col items-center justify-center gap-[5px] focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/70 md:hidden"
               :aria-expanded="isMenuOpen"
@@ -282,16 +283,16 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               @click="isMenuOpen = !isMenuOpen"
             >
               <span
-                class="block h-px w-5 origin-center bg-white transition-all duration-300"
-                :class="isMenuOpen ? 'translate-y-[6px] rotate-45' : ''"
+                class="block h-px w-5 origin-center bg-slate-400 transition-all duration-300"
+                :class="isMenuOpen ? 'translate-y-[6px] rotate-45 bg-yellow-400' : ''"
               />
               <span
-                class="block h-px w-5 bg-white transition-all duration-300"
+                class="block h-px w-5 bg-slate-400 transition-all duration-300"
                 :class="isMenuOpen ? 'opacity-0' : ''"
               />
               <span
-                class="block h-px w-5 origin-center bg-white transition-all duration-300"
-                :class="isMenuOpen ? '-translate-y-[6px] -rotate-45' : ''"
+                class="block h-px w-5 origin-center bg-slate-400 transition-all duration-300"
+                :class="isMenuOpen ? '-translate-y-[6px] -rotate-45 bg-yellow-400' : ''"
               />
             </button>
           </div>
@@ -302,18 +303,18 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           class="overflow-hidden transition-all duration-300 md:hidden"
           :class="isMenuOpen ? 'max-h-80' : 'max-h-0'"
         >
-          <ul class="flex flex-col gap-0.5 border-t border-white/10 py-3">
+          <ul class="flex flex-col border-t border-white/6 py-2 font-mono">
             <li v-for="link in navLinks" :key="link.label">
               <button
-                class="w-full py-2 text-left text-xs font-semibold tracking-wider uppercase transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
+                class="w-full px-5 py-2 text-left text-xs tracking-wider transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
                 :class="
                   !link.external && activeSection === link.href.replace('#', '')
                     ? 'text-yellow-400'
-                    : 'text-slate-300 hover:text-white'
+                    : 'text-slate-500 hover:text-slate-200'
                 "
                 @click="scrollToSection(link)"
               >
-                {{ link.label }}
+                <span class="text-slate-700 mr-0.5">//&nbsp;</span>{{ link.label.toLowerCase() }}
               </button>
             </li>
           </ul>
@@ -356,7 +357,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             <img
               src="/images/coding-image.png"
               alt="Ilustração de programação"
-              class="relative w-28 opacity-90 drop-shadow-2xl lg:w-40 xl:w-48"
+              class="relative w-38 opacity-90 drop-shadow-2xl lg:w-50 xl:w-58 hover:scale-[1.1] transition-transform duration-300"
               fetchpriority="high"
             />
           </div>
@@ -434,7 +435,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           <img
             src="/images/coding-image.png"
             alt="Ilustração de programação"
-            class="w-24 opacity-80 drop-shadow-2xl"
+            class="w-24 opacity-80 drop-shadow-2xl hover:scale-[1.1] transition-transform duration-300"
           />
         </div>
       </div>
@@ -461,7 +462,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
     <section
       id="about"
-      class="relative z-[1] overflow-hidden px-4 py-20 sm:px-8 md:px-15 md:py-28 lg:py-36"
+      class="relative z-[1] overflow-hidden px-4 py-12 sm:px-8 md:px-15 md:py-16 lg:py-20"
       style="background: #0D0D0D"
     >
       <!-- Dot-grid (same as hero) -->
@@ -554,7 +555,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
     <section
       id="skills"
-      class="relative z-[1] overflow-hidden py-20 md:py-28"
+      class="relative z-[1] overflow-hidden py-12 md:py-16"
       style="background: #0D0D0D"
     >
       <!-- Dot-grid -->
@@ -654,7 +655,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
     <section
       id="projects"
-      class="relative z-[1] overflow-hidden px-4 pt-20 pb-24 sm:px-6 md:px-15 md:pt-28 md:pb-32"
+      class="relative z-[1] overflow-hidden px-4 pt-12 pb-16 sm:px-6 md:px-15 md:pt-16 md:pb-20"
       style="background: #0D0D0D"
     >
       <!-- Dot-grid -->
@@ -1090,7 +1091,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
     <!-- Fale Comigo -->
     <footer
       id="contact"
-      class="relative z-[1] overflow-hidden px-4 pt-20 pb-0 sm:px-6 md:px-10 md:pt-28"
+      class="relative z-[1] overflow-hidden px-4 pt-12 pb-0 sm:px-6 md:px-10 md:pt-16"
       style="background: #0D0D0D"
     >
       <!-- Dot-grid -->
@@ -1188,6 +1189,46 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
   </main>
 </template>
 <style scoped>
+/* ─── Navbar ────────────────────────────── */
+.nav-bar {
+  background: rgba(13, 13, 13, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-top-color: rgba(234, 179, 8, 0.18);
+}
+
+.nav-top-accent {
+  background: linear-gradient(90deg, transparent 5%, rgba(234, 179, 8, 0.35) 50%, transparent 95%);
+}
+
+.nav-link {
+  position: relative;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: rgba(234, 179, 8, 0.5);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+.nav-link-active {
+  background: rgba(234, 179, 8, 0.05);
+}
+
+.nav-link-active::after {
+  transform: scaleX(1);
+}
+
 /* Hero background dot grid */
 .hero-grid-overlay {
   background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
