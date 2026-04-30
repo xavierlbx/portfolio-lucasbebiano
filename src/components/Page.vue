@@ -103,6 +103,7 @@ const { activeSection } = useScrollSpy()
 // ---- Navegação ----
 const navLinks: NavLink[] = [
   { label: 'Sobre Mim', href: '#about' },
+  { label: 'Experiências', href: '#experience' },
   { label: 'Conhecimentos', href: '#skills' },
   { label: 'Projetos', href: '#projects' },
   { label: 'Fale Comigo', href: '#contact' },
@@ -548,6 +549,101 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             <span class="about-chip">Perfil proativo</span>
           </div>
 
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Experiências -->
+    <section
+      id="experience"
+      class="relative z-[1] overflow-hidden px-4 py-12 sm:px-6 md:px-10 md:py-16"
+      style="background: #0D0D0D"
+    >
+      <!-- Dot-grid -->
+      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <!-- Glow right -->
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 50% 45% at 75% 40%, rgba(234,179,8,0.06) 0%, transparent 65%)"
+        aria-hidden="true"
+      />
+
+      <div class="relative mx-auto max-w-4xl">
+        <!-- Header -->
+        <div class="mb-10 flex flex-col items-center gap-2">
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">// experiencias</p>
+          <h2 class="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
+            Onde eu <span class="text-yellow-400">trabalhei</span>
+          </h2>
+        </div>
+
+        <!-- Cards side by side on desktop, stacked on mobile -->
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+          <!-- PRODABEL -->
+          <div class="exp-card group rounded-xl border border-white/8 bg-white/2 p-6 transition-all duration-300 hover:border-yellow-500/20 hover:bg-white/3">
+            <!-- Header row -->
+            <div class="mb-1 flex items-start justify-between gap-3">
+              <div>
+                <p class="text-[11px] font-semibold uppercase tracking-widest text-yellow-500/80">Prodabel</p>
+                <h3 class="mt-1 text-base font-bold text-white leading-snug">Estagiário de Desenvolvimento</h3>
+              </div>
+              <span class="shrink-0 rounded-full border border-white/10 bg-white/4 px-2.5 py-1 text-[10px] font-mono text-slate-500">
+                2024 – 2025
+              </span>
+            </div>
+            <p class="mb-4 text-[11px] text-slate-600">Belo Horizonte, MG</p>
+
+            <!-- Bullets -->
+            <ul class="flex flex-col gap-2.5">
+              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-500/60" />
+                Desenvolvimento de sistemas web modernos, participando de todo o ciclo — do código ao ambiente de produção.
+              </li>
+              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-500/60" />
+                Atuação em equipe multidisciplinar com metodologia ágil (Scrum), contribuindo em cerimônias e entregas.
+              </li>
+              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-500/60" />
+                Levantamento e validação de requisitos com stakeholders, traduzindo necessidades de negócio em soluções técnicas.
+              </li>
+            </ul>
+
+            <!-- Stack -->
+            <div class="mt-5 flex flex-wrap gap-1.5">
+              <span v-for="tech in ['Vue.js', 'Node.js', 'TypeScript', 'NestJS', 'Oracle']" :key="tech" class="about-chip">{{ tech }}</span>
+            </div>
+          </div>
+
+          <!-- CARDIESEL -->
+          <div class="exp-card group rounded-xl border border-white/8 bg-white/2 p-6 transition-all duration-300 hover:border-yellow-500/20 hover:bg-white/3">
+            <!-- Header row -->
+            <div class="mb-1 flex items-start justify-between gap-3">
+              <div>
+                <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Cardiesel</p>
+                <h3 class="mt-1 text-base font-bold text-white leading-snug">Jovem Aprendiz — TI</h3>
+                <p class="mt-0.5 text-[11px] text-slate-600">Concessionária Mercedes-Benz</p>
+              </div>
+              <span class="shrink-0 rounded-full border border-white/10 bg-white/4 px-2.5 py-1 text-[10px] font-mono text-slate-500">
+                2022 – 2023
+              </span>
+            </div>
+            <p class="mb-4 text-[11px] text-slate-600">Belo Horizonte, MG</p>
+
+            <!-- Bullets -->
+            <ul class="flex flex-col gap-2.5">
+              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-white/25" />
+                Participação na implantação de novo sistema interno, sendo ponto de contato entre equipe técnica e usuários finais.
+              </li>
+              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-white/25" />
+                Suporte técnico e atendimento a colaboradores via Service Desk, auxiliando na resolução de problemas do dia a dia.
+              </li>
+            </ul>
+          </div>
 
         </div>
       </div>
@@ -1261,6 +1357,19 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 /* Project cards */
 .project-card:hover {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(234, 179, 8, 0.15);
+}
+
+/* Experience timeline */
+.exp-timeline-line {
+  background: linear-gradient(to bottom, transparent, rgba(234, 179, 8, 0.2) 15%, rgba(234, 179, 8, 0.2) 85%, transparent);
+}
+
+.exp-card {
+  backdrop-filter: blur(4px);
+}
+
+.exp-card:hover {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(234, 179, 8, 0.1);
 }
 
 .carousel {

@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 // A detecção de seção ativa percorre os IDs em ordem DESCENDENTE (contact → about).
 // Assim, o primeiro elemento cujo offsetTop é <= scrollY + offset é a seção mais
 // baixa já visível, garantindo que a navbar destaque a seção correta.
-const SECTION_IDS = ['contact', 'projects', 'skills', 'about'] as const
+const SECTION_IDS = ['contact', 'projects', 'skills', 'experience', 'about'] as const
 const SECTION_OFFSET = 120
 
 // Breakpoint md do Tailwind — mesma condição do `md:hidden` usado no hamburger menu.
