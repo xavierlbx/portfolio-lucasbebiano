@@ -1,23 +1,31 @@
-<script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+﻿<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useDarkMode } from '../composables/useDarkMode'
+import { useScrollSpy } from '../composables/useScrollSpy'
+import { useCarousel } from '../composables/useCarousel'
+import { useTypingAnimation } from '../composables/useTypingAnimation'
+import { useProjectModal } from '../composables/useProjectModal'
+import { projects } from '../data/projects'
+import { skills } from '../data/skills'
+import { CONTACT, contactPhoneHref, contactEmailHref } from '../data/contact'
 import SkillCard from './SkillCard.vue'
 import ProjectsPagination from './ProjectsPagination.vue'
 import ContactLink from './ContactLink.vue'
 
+// ---- Tema ----
 const { isDark, toggleDarkMode } = useDarkMode()
 const isMenuOpen = ref(false)
 
+// ---- Mobile skill highlight ----
 const mobileActiveSkill = ref<string | null>(null)
 let mobileActiveSkillTimer: ReturnType<typeof setTimeout> | null = null
 
+// ---- Mobile projects scroll hint ----
+// Breakpoint 640px = `sm` do Tailwind, mesmo ponto onde o grid desktop aparece.
+const SCROLL_HINT_BREAKPOINT = 640
 const mobileProjectsRef = ref<HTMLElement | null>(null)
 const didDismissProjectsHint = ref(false)
 const showProjectsScrollHint = ref(false)
-
-const toggleTheme = () => {
-  toggleDarkMode()
-}
 
 type NavLink = {
   label: string
@@ -25,98 +33,16 @@ type NavLink = {
   external?: boolean
 }
 
-const SECTION_IDS = ['contact', 'projects', 'skills', 'about'] as const
-const SECTION_OFFSET = 120
+// ---- Scroll spy + parallax ----
+const { scrollY, activeSection, getParallaxTransform } = useScrollSpy()
 
-const CAROUSEL_SPEED = 0.25
-const CAROUSEL_RESUME_DELAY_MS = 1500
-
-const TYPING_SPEED_MS = 70
-const TYPING_START_DELAY_MS = 400
-const TYPING_LINE_GAP_MS = 150
-const CURSOR_HIDE_DELAY_MS = 2500
-
-const scrollY = ref(0)
-const activeSection = ref('')
-const isMobile = ref(typeof window !== 'undefined' && window.innerWidth < 768)
-
-let sectionElements: HTMLElement[] = []
-let scrollRafId: number | null = null
-
-const refreshSectionElements = () => {
-  sectionElements = SECTION_IDS.map((id) => document.getElementById(id)).filter(
-    (el): el is HTMLElement => el !== null
-  )
-}
-
-const updateActiveSection = () => {
-  let found = ''
-  for (const el of sectionElements) {
-    if (window.scrollY >= el.offsetTop - SECTION_OFFSET) {
-      found = el.id
-      break
-    }
-  }
-  activeSection.value = found
-}
-
-const handleScroll = () => {
-  if (scrollRafId !== null) return
-
-  scrollRafId = window.requestAnimationFrame(() => {
-    scrollY.value = Math.max(0, window.scrollY)
-    updateActiveSection()
-    scrollRafId = null
-  })
-}
-
-onMounted(() => {
-  refreshSectionElements()
-  handleScroll()
-
-  window.addEventListener('scroll', handleScroll, { passive: true })
-})
-
-const handleResize = () => {
-  isMobile.value = window.innerWidth < 768
-  updateProjectsScrollHint()
-}
-
-onMounted(() => {
-  window.addEventListener('resize', handleResize, { passive: true })
-  nextTick(updateProjectsScrollHint)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-  window.removeEventListener('resize', handleResize)
-  if (scrollRafId !== null) {
-    cancelAnimationFrame(scrollRafId)
-  }
-  if (mobileActiveSkillTimer !== null) {
-    clearTimeout(mobileActiveSkillTimer)
-  }
-})
-
+// ---- Navegação ----
 const navLinks: NavLink[] = [
   { label: 'Sobre Mim', href: '#about' },
   { label: 'Conhecimentos', href: '#skills' },
   { label: 'Projetos', href: '#projects' },
   { label: 'Fale Comigo', href: '#contact' },
 ]
-
-const CONTACT = {
-  phone: import.meta.env.VITE_CONTACT_PHONE ?? '+5531995202028',
-  phoneLabel: import.meta.env.VITE_CONTACT_PHONE_LABEL ?? '+55 (31) 99520-2028',
-  email: import.meta.env.VITE_CONTACT_EMAIL ?? 'lucasbebianolbx@gmail.com',
-  github: import.meta.env.VITE_CONTACT_GITHUB ?? 'https://github.com/xavierlbx',
-  githubLabel: import.meta.env.VITE_CONTACT_GITHUB_LABEL ?? 'github.com/xavierlbx',
-  linkedin: import.meta.env.VITE_CONTACT_LINKEDIN ?? 'https://linkedin.com/in/lucas-bebiano',
-  linkedinLabel: import.meta.env.VITE_CONTACT_LINKEDIN_LABEL ?? 'linkedin.com/in/lucas-bebiano',
-}
-
-const contactPhoneHref = `tel:${CONTACT.phone.replace(/[\s()-]/g, '')}`
-const contactEmailHref = `mailto:${CONTACT.email}`
 
 const scrollToSection = (link: NavLink) => {
   if (link.external) {
@@ -128,31 +54,26 @@ const scrollToSection = (link: NavLink) => {
   isMenuOpen.value = false
 }
 
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
+const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
-const getParallaxTransform = (speed: number) => {
-  return `translate3d(0, ${scrollY.value * speed}px, 0)`
-}
-
+// ---- Skills mobile highlight ----
 const activateMobileSkill = (skillName: string) => {
   mobileActiveSkill.value = skillName
   if (mobileActiveSkillTimer !== null) clearTimeout(mobileActiveSkillTimer)
+  // Auto-limpa o destaque após 700ms para simular hover em dispositivos touch.
   mobileActiveSkillTimer = setTimeout(() => {
-    if (mobileActiveSkill.value === skillName) {
-      mobileActiveSkill.value = null
-    }
+    if (mobileActiveSkill.value === skillName) mobileActiveSkill.value = null
   }, 700)
 }
 
+// ---- Mobile projects scroll hint ----
 const updateProjectsScrollHint = () => {
   const el = mobileProjectsRef.value
-  if (!el || didDismissProjectsHint.value || window.innerWidth >= 640) {
+  if (!el || didDismissProjectsHint.value || window.innerWidth >= SCROLL_HINT_BREAKPOINT) {
     showProjectsScrollHint.value = false
     return
   }
-
+  // Exibe a dica apenas se o overflow for perceptível (> 24px de conteúdo oculto).
   showProjectsScrollHint.value = el.scrollWidth - el.clientWidth > 24
 }
 
@@ -163,388 +84,54 @@ const dismissProjectsScrollHint = () => {
 
 const onMobileProjectsScroll = () => {
   if (!mobileProjectsRef.value) return
-  if (mobileProjectsRef.value.scrollLeft > 16) {
-    dismissProjectsScrollHint()
-  }
+  if (mobileProjectsRef.value.scrollLeft > 16) dismissProjectsScrollHint()
 }
-
-const projects = [
-
-  {
-    title: 'Portifólio Pessoal',
-    description:
-      'Site portfólio responsivo com animações, dark mode e seções de projetos, habilidades e contato.',
-    longDescription:
-      'Portfólio desenvolvido para apresentar minha trajetória como Desenvolvedor Full Stack, com foco em clareza, identidade visual e boa experiência de navegação. Estruturado com uma base moderna e performática, evoluído com responsividade, fluidez e organização de conteúdo.',
-    tech: ['Vue 3', 'TypeScript', 'Vite', 'Tailwind CSS', 'Pinia', 'PrimeVue'],
-    highlights: [
-      'Animação de digitação na apresentação inicial',
-      'Carrossel infinito de habilidades com drag/touch',
-      'Modal de detalhes dos projetos',
-      'Tema escuro com persistência de preferência',
-      'Interface totalmente responsiva (mobile e desktop)',
-      'Testes automatizados com Vitest',
-      'Deploy contínuo via Vercel',
-    ],
-    image: 'images/previa_portifolio.png',
-    images: ['images/previa_portifolio.png'],
-    link: 'https://github.com/xavierlbx/portifolio-lucasxavier',
-    liveLink: 'https://portifolio-lucasxavier.vercel.app/',
-    year: '2025',
-    status: 'Em evolução',
-  },
-
-  {
-    title: 'Power Track',
-    description:
-      'Aplicativo mobile para organizar e aprimorar a rotina de bem-estar, com controle de treinos e ingestão de água.',
-    longDescription:
-      'Aplicativo mobile desenvolvido no 3º semestre do curso de ADS na PUC Minas, com o objetivo de ajudar os usuários a organizar, gerenciar e aprimorar sua rotina de bem-estar. Permite registrar treinos, controlar a ingestão diária de água e acompanhar a evolução física ao longo do tempo. Disponível para Android.',
-    tech: ['React Native', 'Expo', 'JavaScript', 'C#', 'Entity Framework'],
-    highlights: [
-      'Registro e histórico de treinos personalizados',
-      'Controle de ingestão diária de água',
-      'Acompanhamento de evolução física',
-      'Autenticação de usuários',
-      'Disponível como APK para Android',
-      'Projeto acadêmico — 3º Semestre ADS PUC Minas',
-    ],
-    image: 'images/powertrack/power-track-main.png',
-    images: [
-      'images/powertrack/power-track-photo (1).png',
-      'images/powertrack/power-track-photo (2).png',
-      'images/powertrack/power-track-photo (3).png',
-      'images/powertrack/power-track-photo (4).png',
-      'images/powertrack/power-track-photo (5).png',
-      'images/powertrack/power-track-photo (6).png',
-      'images/powertrack/power-track-photo (7).png',
-    ],
-    link: 'https://github.com/xavierlbx/power-track',
-    year: '2024',
-    status: 'Concluído',
-  },
-  {
-    title: 'Igesc Conecta',
-    description:
-      'Plataforma web para modernizar a gestão interna do Instituto GESC, substituindo planilhas por um sistema integrado.',
-    longDescription:
-      'Desenvolvido no 5º semestre do curso de ADS na PUC Minas, o IGESC Conecta tem como objetivo modernizar a gestão interna do Instituto GESC, centralizando informações e organizando processos de forma mais eficiente. Conta com backend em ASP.NET Web API e frontend em React 19 com TypeScript, além de geração de relatórios e upload de CSV.',
-    tech: [
-      'React 19',
-      'TypeScript',
-      'Vite',
-      'C# ASP.NET',
-      'Material UI',
-      'MUI X',
-      'Axios',
-      'Firebase',
-    ],
-    highlights: [
-      'Gerenciamento de empresas e doações',
-      'Gerenciamento de times com filtros avançados',
-      'Gerador de relatórios PDF/CSV',
-      'Upload de arquivos CSV com drag-and-drop',
-      'Integração OpenAPI com backend',
-      'Filtragem por status e informações de auditoria',
-      'Deploy no Firebase Hosting',
-      'Projeto acadêmico — 5º Semestre ADS PUC Minas',
-    ],
-    image: '/images/igesc/igesc-main.png',
-    images: [
-      '/images/igesc/igesc-photo (1).png',
-      '/images/igesc/igesc-photo (2).png',
-      '/images/igesc/igesc-photo (3).png',
-      '/images/igesc/igesc-photo (4).png',
-      '/images/igesc/igesc-photo (5).png',
-      '/images/igesc/igesc-photo (6).png',
-      '/images/igesc/igesc-photo (7).png',
-    ],
-    link: 'https://github.com/ICEI-PUC-Minas-PMV-ADS/pmv-ads-2025-2-e5-proj-empext-t1-pmv-ads-2025-2-e5-projigescconecta',
-    year: '2025',
-    status: 'Concluído',
-  },
-  {
-    title: 'Apoia Mente',
-    description:
-      'Plataforma de atendimento psicológico comunitário conectando psicólogos voluntários a pessoas em vulnerabilidade social.',
-    longDescription:
-      'Desenvolvido no 4º semestre do curso de ADS na PUC Minas, o ApoiaMente conecta psicólogos voluntários a pessoas em vulnerabilidade social, oferecendo agendamento de sessões e videochamadas seguras. Conta com frontend web (TypeScript), frontend mobile e backend com API Gateway em C#. Disponível via web e APK para Android.',
-    tech: ['TypeScript', 'C# ASP.NET', 'React Native', 'API Gateway'],
-    highlights: [
-      'Cadastro dual: Paciente ou Psicólogo',
-      'Agendamento de sessões de psicologia',
-      'Videochamadas integradas e seguras',
-      'Frontend web acessível pelo navegador',
-      'App mobile disponível como APK para Android',
-      'API Gateway centralizando os serviços',
-      'Projeto acadêmico — 4º Semestre ADS PUC Minas',
-    ],
-    image: '/images/apoiamente/apoia-mente-main.png',
-    images: [
-      '/images/apoiamente/apoia-mente-photo (1).png',
-      '/images/apoiamente/apoia-mente-photo (2).png',
-      '/images/apoiamente/apoia-mente-photo (3).png',
-      '/images/apoiamente/apoia-mente-photo (4).png',
-      '/images/apoiamente/apoia-mente-photo (5).png',
-    ],
-    link: 'https://github.com/xavierlbx/apoia-mente',
-    liveLink: 'https://www.apoiamente.com.br',
-    year: '2025',
-    status: 'Concluído',
-  },
-]
-
-const skills = [
-  {
-    name: 'HTML',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg',
-    subText: 'Linguagem de marcação web',
-  },
-  {
-    name: 'CSS',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg',
-    subText: 'Estilização e layout web',
-  },
-  {
-    name: 'JavaScript',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg',
-    subText: 'Linguagem da web dinâmica',
-  },
-  {
-    name: 'C#',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg',
-    subText: 'Linguagem backend Microsoft',
-  },
-  {
-    name: 'Node.js',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg',
-    subText: 'Runtime JavaScript backend',
-  },
-  {
-    name: 'TypeScript',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg',
-    subText: 'JavaScript com tipagem estática',
-  },
-  {
-    name: 'NestJS',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nestjs/nestjs-original.svg',
-    subText: 'Framework Node.js backend modular',
-  },
-  {
-    name: 'Vue.js',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg',
-    subText: 'Framework JavaScript reativo',
-  },
-  {
-    name: 'Entity Framework',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/dotnetcore/dotnetcore-original.svg',
-    subText: 'ORM para .NET e C#',
-  },
-]
-
-// ---- Infinite Carousel ----
-const carouselTrackRef = ref<HTMLElement | null>(null)
-const carouselOffset = ref(0)
-const carouselIsDragging = ref(false)
-const carouselDragStartX = ref(0)
-const carouselDragStartOffset = ref(0)
-const carouselAutoplay = ref(true)
-let carouselRafId: number | null = null
-let carouselResumeTimer: ReturnType<typeof setTimeout> | null = null
-
-const getCarouselSetWidth = (): number => {
-  if (!carouselTrackRef.value) return 0
-  return carouselTrackRef.value.scrollWidth / 3
-}
-
-const carouselTick = () => {
-  if (carouselAutoplay.value) {
-    carouselOffset.value -= CAROUSEL_SPEED
-    const setWidth = getCarouselSetWidth()
-    if (setWidth > 0 && carouselOffset.value <= -setWidth) {
-      carouselOffset.value += setWidth
-    }
-  }
-  carouselRafId = requestAnimationFrame(carouselTick)
-}
-
-const carouselPointerStart = (clientX: number) => {
-  carouselIsDragging.value = true
-  carouselAutoplay.value = false
-  carouselDragStartX.value = clientX
-  carouselDragStartOffset.value = carouselOffset.value
-  if (carouselResumeTimer !== null) clearTimeout(carouselResumeTimer)
-}
-
-const carouselPointerMove = (clientX: number) => {
-  if (!carouselIsDragging.value) return
-  const delta = clientX - carouselDragStartX.value
-  let next = carouselDragStartOffset.value + delta
-  const setWidth = getCarouselSetWidth()
-  if (setWidth > 0) {
-    while (next <= -setWidth) next += setWidth
-    while (next > 0) next -= setWidth
-  }
-  carouselOffset.value = next
-}
-
-const carouselPointerEnd = () => {
-  if (!carouselIsDragging.value) return
-  carouselIsDragging.value = false
-  carouselResumeTimer = setTimeout(() => {
-    carouselAutoplay.value = true
-  }, CAROUSEL_RESUME_DELAY_MS)
-}
-
-const onCarouselMouseDown = (e: MouseEvent) => carouselPointerStart(e.clientX)
-const onCarouselGlobalMouseMove = (e: MouseEvent) => carouselPointerMove(e.clientX)
-const onCarouselGlobalMouseUp = () => carouselPointerEnd()
-
-const getTouchClientX = (e: TouchEvent): number | null => {
-  const primaryTouch = e.touches[0] ?? e.changedTouches[0]
-  return primaryTouch ? primaryTouch.clientX : null
-}
-
-const onCarouselTouchStart = (e: TouchEvent) => {
-  const clientX = getTouchClientX(e)
-  if (clientX === null) return
-  carouselPointerStart(clientX)
-}
-
-const onCarouselTouchMove = (e: TouchEvent) => {
-  const clientX = getTouchClientX(e)
-  if (clientX === null) return
-  carouselPointerMove(clientX)
-}
-
-const onCarouselTouchEnd = () => carouselPointerEnd()
-const onCarouselTouchCancel = () => carouselPointerEnd()
 
 onMounted(() => {
-  window.addEventListener('mousemove', onCarouselGlobalMouseMove)
-  window.addEventListener('mouseup', onCarouselGlobalMouseUp)
-  carouselRafId = requestAnimationFrame(carouselTick)
+  nextTick(updateProjectsScrollHint)
+  window.addEventListener('resize', updateProjectsScrollHint, { passive: true })
 })
 
 onUnmounted(() => {
-  window.removeEventListener('mousemove', onCarouselGlobalMouseMove)
-  window.removeEventListener('mouseup', onCarouselGlobalMouseUp)
-  if (carouselRafId !== null) cancelAnimationFrame(carouselRafId)
-  if (carouselResumeTimer !== null) clearTimeout(carouselResumeTimer)
+  window.removeEventListener('resize', updateProjectsScrollHint)
+  if (mobileActiveSkillTimer !== null) clearTimeout(mobileActiveSkillTimer)
 })
+// ---- Skills Carousel ----
+// O componente declara o ref DOM e o passa ao composable — o componente controla
+// os refs de template; o composable apenas os consome para calcular a largura do ciclo.
+const carouselTrackRef = ref<HTMLElement | null>(null)
+const {
+  carouselOffset,
+  carouselIsDragging,
+  onMouseDown: onCarouselMouseDown,
+  onTouchStart: onCarouselTouchStart,
+  onTouchMove: onCarouselTouchMove,
+  onTouchEnd: onCarouselTouchEnd,
+  onTouchCancel: onCarouselTouchCancel,
+} = useCarousel(carouselTrackRef)
 
-const itemsPerPage = 4
+// ---- Projects Pagination ----
+const ITEMS_PER_PAGE = 4
 const currentPage = ref(0)
-
-const totalPages = computed(() => Math.ceil(projects.length / itemsPerPage))
-
+const totalPages = computed(() => Math.ceil(projects.length / ITEMS_PER_PAGE))
 const paginatedProjects = computed(() =>
-  projects.slice(currentPage.value * itemsPerPage, (currentPage.value + 1) * itemsPerPage)
+  projects.slice(currentPage.value * ITEMS_PER_PAGE, (currentPage.value + 1) * ITEMS_PER_PAGE),
 )
 
-type Project = (typeof projects)[number]
-const selectedProject = ref<Project | null>(null)
-const modalImageIndex = ref(0)
+// ---- Project Modal ----
+const {
+  selectedProject,
+  modalImageIndex,
+  modalImages,
+  openModal,
+  closeModal,
+  modalPrev,
+  modalNext,
+  openProjectLink,
+} = useProjectModal()
 
-const modalImages = computed((): string[] => {
-  if (!selectedProject.value) return []
-  const proj = selectedProject.value as Record<string, unknown>
-  const extra = proj['images']
-  return Array.isArray(extra) && extra.length > 0
-    ? (extra as string[])
-    : [selectedProject.value.image]
-})
-
-const openModal = (project: Project) => {
-  selectedProject.value = project
-  modalImageIndex.value = 0
-}
-
-const closeModal = () => {
-  selectedProject.value = null
-}
-
-const modalPrev = () => {
-  modalImageIndex.value =
-    (modalImageIndex.value - 1 + modalImages.value.length) % modalImages.value.length
-}
-
-const modalNext = () => {
-  modalImageIndex.value = (modalImageIndex.value + 1) % modalImages.value.length
-}
-
-const openProjectLink = (link: string) => {
-  if (!link || link === '#') return
-  window.open(link, '_blank', 'noopener,noreferrer')
-}
-
-const handleGlobalKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && selectedProject.value) {
-    closeModal()
-  }
-}
-
-watch(selectedProject, (value) => {
-  document.body.style.overflow = value ? 'hidden' : ''
-})
-
-onMounted(() => {
-  window.addEventListener('keydown', handleGlobalKeydown)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleGlobalKeydown)
-  document.body.style.overflow = ''
-})
-
-const line1 = 'Hello World!'
-const line2 = 'Bem vindo!'
-const typedLine1 = ref('')
-const typedLine2 = ref('')
-const typingPhase = ref(0) // 0 = digitando linha1, 1 = digitando linha2, 2 = concluído
-const showCursor = ref(true)
-
-const typingTimeouts: Array<ReturnType<typeof setTimeout>> = []
-
-const scheduleTypingTimeout = (callback: () => void, delayMs: number) => {
-  const timeoutId = setTimeout(callback, delayMs)
-  typingTimeouts.push(timeoutId)
-}
-
-onMounted(() => {
-  let i = 0
-  let j = 0
-
-  const typeLine2 = () => {
-    if (j < line2.length) {
-      typedLine2.value += line2[j++]
-      scheduleTypingTimeout(typeLine2, TYPING_SPEED_MS)
-    } else {
-      typingPhase.value = 2
-      scheduleTypingTimeout(() => {
-        showCursor.value = false
-      }, CURSOR_HIDE_DELAY_MS)
-    }
-  }
-
-  const typeLine1 = () => {
-    if (i < line1.length) {
-      typedLine1.value += line1[i++]
-      scheduleTypingTimeout(typeLine1, TYPING_SPEED_MS)
-    } else {
-      typingPhase.value = 1
-      scheduleTypingTimeout(typeLine2, TYPING_LINE_GAP_MS)
-    }
-  }
-
-  scheduleTypingTimeout(typeLine1, TYPING_START_DELAY_MS)
-})
-
-onUnmounted(() => {
-  for (const timeoutId of typingTimeouts) {
-    clearTimeout(timeoutId)
-  }
-})
+// ---- Typing Animation ----
+const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 </script>
 <template>
   <main class="min-h-screen w-full overflow-x-hidden bg-[#0D0D0D] text-slate-100">
@@ -591,7 +178,7 @@ onUnmounted(() => {
             <button
               class="hidden h-8 w-8 items-center justify-center rounded-full border border-white/15 text-slate-200 transition hover:border-yellow-400/70 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
               aria-label="Alternar tema"
-              @click="toggleTheme"
+              @click="toggleDarkMode"
             >
               <svg
                 v-if="isDark"
@@ -1235,16 +822,16 @@ onUnmounted(() => {
             <h3 class="text-xl font-bold text-white">{{ selectedProject.title }}</h3>
             <div class="mt-2 flex flex-wrap gap-2">
               <span
-                v-if="(selectedProject as any).year"
+                v-if="selectedProject.year"
                 class="rounded-full border border-white/20 bg-white/10 px-2.5 py-0.5 text-xs font-medium text-slate-300"
               >
-                {{ (selectedProject as any).year }}
+                {{ selectedProject.year }}
               </span>
               <span
-                v-if="(selectedProject as any).status"
+                v-if="selectedProject.status"
                 class="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-400"
               >
-                {{ (selectedProject as any).status }}
+                {{ selectedProject.status }}
               </span>
             </div>
           </div>
@@ -1253,17 +840,17 @@ onUnmounted(() => {
           <div class="flex flex-col gap-4 overflow-y-auto px-5 py-4">
             <!-- Description -->
             <p class="text-sm leading-relaxed text-slate-300">
-              {{ (selectedProject as any).longDescription ?? selectedProject.description }}
+              {{ selectedProject.longDescription ?? selectedProject.description }}
             </p>
 
             <!-- Highlights list -->
-            <div v-if="(selectedProject as any).highlights?.length">
+            <div v-if="selectedProject.highlights?.length">
               <h4 class="mb-3 text-xs font-semibold tracking-widest text-yellow-500 uppercase">
                 O que foi implementado
               </h4>
               <ul class="flex flex-col gap-2">
                 <li
-                  v-for="item in (selectedProject as any).highlights"
+                  v-for="item in selectedProject.highlights"
                   :key="item"
                   class="flex items-start gap-2 text-sm text-slate-300"
                 >
@@ -1315,9 +902,9 @@ onUnmounted(() => {
             </button>
             <div class="flex gap-2">
               <button
-                v-if="(selectedProject as any).liveLink"
+                v-if="selectedProject.liveLink"
                 class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20 focus-visible:ring-2 focus-visible:ring-emerald-400/70 focus-visible:outline-none"
-                @click="openProjectLink((selectedProject as any).liveLink)"
+                @click="openProjectLink(selectedProject.liveLink!)"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -1446,9 +1033,6 @@ onUnmounted(() => {
   </main>
 </template>
 <style scoped>
-.font {
-  font-family: 'Orbitron', monospace;
-}
 .carousel {
   -ms-overflow-style: none;
   scrollbar-width: none;
