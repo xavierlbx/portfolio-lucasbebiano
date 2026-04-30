@@ -21,7 +21,7 @@ defineProps<{
       draggable="false"
     />
     <hr class="my-3 w-full border-white/20" />
-    <span class="text-md mb-1 font-bold font-medium whitespace-nowrap text-slate-200">{{
+    <span class="text-md mb-1 font-bold whitespace-nowrap text-slate-200">{{
       skill.name
     }}</span>
     <span class="text-xs break-words text-slate-500">{{ skill.subText }}</span>

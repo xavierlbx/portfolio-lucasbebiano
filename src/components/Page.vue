@@ -1,23 +1,31 @@
-<script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+﻿<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useDarkMode } from '../composables/useDarkMode'
+import { useScrollSpy } from '../composables/useScrollSpy'
+import { useCarousel } from '../composables/useCarousel'
+import { useTypingAnimation } from '../composables/useTypingAnimation'
+import { useProjectModal } from '../composables/useProjectModal'
+import { projects } from '../data/projects'
+import { skills } from '../data/skills'
+import { CONTACT, contactPhoneHref, contactEmailHref } from '../data/contact'
 import SkillCard from './SkillCard.vue'
 import ProjectsPagination from './ProjectsPagination.vue'
 import ContactLink from './ContactLink.vue'
 
+// ---- Tema ----
 const { isDark, toggleDarkMode } = useDarkMode()
 const isMenuOpen = ref(false)
 
+// ---- Mobile skill highlight ----
 const mobileActiveSkill = ref<string | null>(null)
 let mobileActiveSkillTimer: ReturnType<typeof setTimeout> | null = null
 
+// ---- Mobile projects scroll hint ----
+// Breakpoint 640px = `sm` do Tailwind, mesmo ponto onde o grid desktop aparece.
+const SCROLL_HINT_BREAKPOINT = 640
 const mobileProjectsRef = ref<HTMLElement | null>(null)
 const didDismissProjectsHint = ref(false)
 const showProjectsScrollHint = ref(false)
-
-const toggleTheme = () => {
-  toggleDarkMode()
-}
 
 type NavLink = {
   label: string
@@ -25,98 +33,16 @@ type NavLink = {
   external?: boolean
 }
 
-const SECTION_IDS = ['contact', 'projects', 'skills', 'about'] as const
-const SECTION_OFFSET = 120
+// ---- Scroll spy + parallax ----
+const { scrollY, activeSection, getParallaxTransform } = useScrollSpy()
 
-const CAROUSEL_SPEED = 0.25
-const CAROUSEL_RESUME_DELAY_MS = 1500
-
-const TYPING_SPEED_MS = 70
-const TYPING_START_DELAY_MS = 400
-const TYPING_LINE_GAP_MS = 150
-const CURSOR_HIDE_DELAY_MS = 2500
-
-const scrollY = ref(0)
-const activeSection = ref('')
-const isMobile = ref(typeof window !== 'undefined' && window.innerWidth < 768)
-
-let sectionElements: HTMLElement[] = []
-let scrollRafId: number | null = null
-
-const refreshSectionElements = () => {
-  sectionElements = SECTION_IDS.map((id) => document.getElementById(id)).filter(
-    (el): el is HTMLElement => el !== null
-  )
-}
-
-const updateActiveSection = () => {
-  let found = ''
-  for (const el of sectionElements) {
-    if (window.scrollY >= el.offsetTop - SECTION_OFFSET) {
-      found = el.id
-      break
-    }
-  }
-  activeSection.value = found
-}
-
-const handleScroll = () => {
-  if (scrollRafId !== null) return
-
-  scrollRafId = window.requestAnimationFrame(() => {
-    scrollY.value = Math.max(0, window.scrollY)
-    updateActiveSection()
-    scrollRafId = null
-  })
-}
-
-onMounted(() => {
-  refreshSectionElements()
-  handleScroll()
-
-  window.addEventListener('scroll', handleScroll, { passive: true })
-})
-
-const handleResize = () => {
-  isMobile.value = window.innerWidth < 768
-  updateProjectsScrollHint()
-}
-
-onMounted(() => {
-  window.addEventListener('resize', handleResize, { passive: true })
-  nextTick(updateProjectsScrollHint)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-  window.removeEventListener('resize', handleResize)
-  if (scrollRafId !== null) {
-    cancelAnimationFrame(scrollRafId)
-  }
-  if (mobileActiveSkillTimer !== null) {
-    clearTimeout(mobileActiveSkillTimer)
-  }
-})
-
+// ---- Navegação ----
 const navLinks: NavLink[] = [
   { label: 'Sobre Mim', href: '#about' },
   { label: 'Conhecimentos', href: '#skills' },
   { label: 'Projetos', href: '#projects' },
   { label: 'Fale Comigo', href: '#contact' },
 ]
-
-const CONTACT = {
-  phone: import.meta.env.VITE_CONTACT_PHONE ?? '+5531995202028',
-  phoneLabel: import.meta.env.VITE_CONTACT_PHONE_LABEL ?? '+55 (31) 99520-2028',
-  email: import.meta.env.VITE_CONTACT_EMAIL ?? 'lucasbebianolbx@gmail.com',
-  github: import.meta.env.VITE_CONTACT_GITHUB ?? 'https://github.com/xavierlbx',
-  githubLabel: import.meta.env.VITE_CONTACT_GITHUB_LABEL ?? 'github.com/xavierlbx',
-  linkedin: import.meta.env.VITE_CONTACT_LINKEDIN ?? 'https://linkedin.com/in/lucas-bebiano',
-  linkedinLabel: import.meta.env.VITE_CONTACT_LINKEDIN_LABEL ?? 'linkedin.com/in/lucas-bebiano',
-}
-
-const contactPhoneHref = `tel:${CONTACT.phone.replace(/[\s()-]/g, '')}`
-const contactEmailHref = `mailto:${CONTACT.email}`
 
 const scrollToSection = (link: NavLink) => {
   if (link.external) {
@@ -128,31 +54,26 @@ const scrollToSection = (link: NavLink) => {
   isMenuOpen.value = false
 }
 
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
+const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
-const getParallaxTransform = (speed: number) => {
-  return `translate3d(0, ${scrollY.value * speed}px, 0)`
-}
-
+// ---- Skills mobile highlight ----
 const activateMobileSkill = (skillName: string) => {
   mobileActiveSkill.value = skillName
   if (mobileActiveSkillTimer !== null) clearTimeout(mobileActiveSkillTimer)
+  // Auto-limpa o destaque após 700ms para simular hover em dispositivos touch.
   mobileActiveSkillTimer = setTimeout(() => {
-    if (mobileActiveSkill.value === skillName) {
-      mobileActiveSkill.value = null
-    }
+    if (mobileActiveSkill.value === skillName) mobileActiveSkill.value = null
   }, 700)
 }
 
+// ---- Mobile projects scroll hint ----
 const updateProjectsScrollHint = () => {
   const el = mobileProjectsRef.value
-  if (!el || didDismissProjectsHint.value || window.innerWidth >= 640) {
+  if (!el || didDismissProjectsHint.value || window.innerWidth >= SCROLL_HINT_BREAKPOINT) {
     showProjectsScrollHint.value = false
     return
   }
-
+  // Exibe a dica apenas se o overflow for perceptível (> 24px de conteúdo oculto).
   showProjectsScrollHint.value = el.scrollWidth - el.clientWidth > 24
 }
 
@@ -163,362 +84,54 @@ const dismissProjectsScrollHint = () => {
 
 const onMobileProjectsScroll = () => {
   if (!mobileProjectsRef.value) return
-  if (mobileProjectsRef.value.scrollLeft > 16) {
-    dismissProjectsScrollHint()
-  }
+  if (mobileProjectsRef.value.scrollLeft > 16) dismissProjectsScrollHint()
 }
-
-const projects = [
-  {
-    title: 'Portifólio Pessoal',
-    description:
-      'Site portfólio responsivo com animações, dark mode e seções de projetos, habilidades e contato.',
-    longDescription:
-      'Portfólio desenvolvido para apresentar minha trajetória como Desenvolvedor Full Stack, com foco em clareza, identidade visual e boa experiência de navegação. Estruturado com uma base moderna e performática, evoluído com responsividade, fluidez e organização de conteúdo.',
-    tech: ['Vue 3', 'TypeScript', 'Vite', 'Tailwind CSS', 'Pinia', 'PrimeVue'],
-    highlights: [
-      'Animação de digitação na apresentação inicial',
-      'Carrossel infinito de habilidades com drag/touch',
-      'Modal de detalhes dos projetos',
-      'Tema escuro com persistência de preferência',
-      'Interface totalmente responsiva (mobile e desktop)',
-      'Testes automatizados com Vitest',
-      'Deploy contínuo via Vercel',
-    ],
-    image: 'images/previa_portifolio.png',
-    link: 'https://github.com/xavierlbx/portifolio-lucasxavier',
-    liveLink: 'https://portifolio-lucasxavier.vercel.app/',
-    year: '2025',
-    status: 'Em evolução',
-  },
-  {
-    title: 'Todo List',
-    description:
-      'Aplicação fullstack de lista de tarefas com CRUD completo, autenticação JWT e deploy contínuo via CI/CD.',
-    longDescription:
-      'Aplicação fullstack desenvolvida do zero com frontend em Vue 3 + TypeScript e backend em NestJS. Conta com autenticação de usuários via Bearer Token (JWT), persistência de dados com Prisma ORM, pipeline de CI/CD com GitHub Actions e deploy do frontend no Vercel.',
-    tech: ['Vue 3', 'TypeScript', 'Vite', 'Tailwind CSS', 'NestJS', 'Prisma', 'JWT'],
-    highlights: [
-      'CRUD completo de tarefas por usuário',
-      'Autenticação com Bearer Token (JWT)',
-      'Backend NestJS com arquitetura modular',
-      'Prisma ORM para persistência de dados',
-      'CI/CD com GitHub Actions',
-      'Deploy do frontend no Vercel',
-      'Responsivo para mobile e desktop',
-    ],
-    image: '/images/previa_todolist.png',
-    link: 'https://github.com/xavierlbx/todo-nestjs-vue',
-    liveLink: 'https://todo-nestjs-vue.vercel.app/',
-    year: '2025',
-    status: 'Concluído',
-  },
-  {
-    title: 'Power Track',
-    description:
-      'Aplicativo mobile para organizar e aprimorar a rotina de bem-estar, com controle de treinos e ingestão de água.',
-    longDescription:
-      'Aplicativo mobile desenvolvido no 3º semestre do curso de ADS na PUC Minas, com o objetivo de ajudar os usuários a organizar, gerenciar e aprimorar sua rotina de bem-estar. Permite registrar treinos, controlar a ingestão diária de água e acompanhar a evolução física ao longo do tempo. Disponível para Android.',
-    tech: ['React Native', 'Expo', 'JavaScript', 'C#', 'Entity Framework'],
-    highlights: [
-      'Registro e histórico de treinos personalizados',
-      'Controle de ingestão diária de água',
-      'Acompanhamento de evolução física',
-      'Autenticação de usuários',
-      'Disponível como APK para Android',
-      'Projeto acadêmico — 3º Semestre ADS PUC Minas',
-    ],
-    image: '/images/previa_powertrack.png',
-    link: 'https://github.com/xavierlbx/power-track',
-    year: '2024',
-    status: 'Concluído',
-  },
-  {
-    title: 'Igesc Conecta',
-    description:
-      'Plataforma web para modernizar a gestão interna do Instituto GESC, substituindo planilhas por um sistema integrado.',
-    longDescription:
-      'Desenvolvido no 5º semestre do curso de ADS na PUC Minas, o IGESC Conecta tem como objetivo modernizar a gestão interna do Instituto GESC, centralizando informações e organizando processos de forma mais eficiente. Conta com backend em ASP.NET Web API e frontend em React 19 com TypeScript, além de geração de relatórios e upload de CSV.',
-    tech: [
-      'React 19',
-      'TypeScript',
-      'Vite',
-      'C# ASP.NET',
-      'Material UI',
-      'MUI X',
-      'Axios',
-      'Firebase',
-    ],
-    highlights: [
-      'Gerenciamento de empresas e doações',
-      'Gerenciamento de times com filtros avançados',
-      'Gerador de relatórios PDF/CSV',
-      'Upload de arquivos CSV com drag-and-drop',
-      'Integração OpenAPI com backend',
-      'Filtragem por status e informações de auditoria',
-      'Deploy no Firebase Hosting',
-      'Projeto acadêmico — 5º Semestre ADS PUC Minas',
-    ],
-    image: '/images/previa_igesc.png',
-    link: 'https://github.com/ICEI-PUC-Minas-PMV-ADS/pmv-ads-2025-2-e5-proj-empext-t1-pmv-ads-2025-2-e5-projigescconecta',
-    year: '2025',
-    status: 'Concluído',
-  },
-  {
-    title: 'Apoia Mente',
-    description:
-      'Plataforma de atendimento psicológico comunitário conectando psicólogos voluntários a pessoas em vulnerabilidade social.',
-    longDescription:
-      'Desenvolvido no 4º semestre do curso de ADS na PUC Minas, o ApoiaMente conecta psicólogos voluntários a pessoas em vulnerabilidade social, oferecendo agendamento de sessões e videochamadas seguras. Conta com frontend web (TypeScript), frontend mobile e backend com API Gateway em C#. Disponível via web e APK para Android.',
-    tech: ['TypeScript', 'C# ASP.NET', 'React Native', 'API Gateway'],
-    highlights: [
-      'Cadastro dual: Paciente ou Psicólogo',
-      'Agendamento de sessões de psicologia',
-      'Videochamadas integradas e seguras',
-      'Frontend web acessível pelo navegador',
-      'App mobile disponível como APK para Android',
-      'API Gateway centralizando os serviços',
-      'Projeto acadêmico — 4º Semestre ADS PUC Minas',
-    ],
-    image: '/images/previa_apoia_mente.png',
-    link: 'https://github.com/xavierlbx/apoia-mente',
-    liveLink: 'https://www.apoiamente.com.br',
-    year: '2025',
-    status: 'Concluído',
-  },
-]
-
-const skills = [
-  {
-    name: 'HTML',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg',
-    subText: 'Linguagem de marcação web',
-  },
-  {
-    name: 'CSS',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg',
-    subText: 'Estilização e layout web',
-  },
-  {
-    name: 'JavaScript',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg',
-    subText: 'Linguagem da web dinâmica',
-  },
-  {
-    name: 'C#',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg',
-    subText: 'Linguagem backend Microsoft',
-  },
-  {
-    name: 'Node.js',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg',
-    subText: 'Runtime JavaScript backend',
-  },
-  {
-    name: 'TypeScript',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg',
-    subText: 'JavaScript com tipagem estática',
-  },
-  {
-    name: 'NestJS',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nestjs/nestjs-original.svg',
-    subText: 'Framework Node.js backend modular',
-  },
-  {
-    name: 'Vue.js',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg',
-    subText: 'Framework JavaScript reativo',
-  },
-  {
-    name: 'Entity Framework',
-    icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/dotnetcore/dotnetcore-original.svg',
-    subText: 'ORM para .NET e C#',
-  },
-]
-
-// ---- Infinite Carousel ----
-const carouselTrackRef = ref<HTMLElement | null>(null)
-const carouselOffset = ref(0)
-const carouselIsDragging = ref(false)
-const carouselDragStartX = ref(0)
-const carouselDragStartOffset = ref(0)
-const carouselAutoplay = ref(true)
-let carouselRafId: number | null = null
-let carouselResumeTimer: ReturnType<typeof setTimeout> | null = null
-
-const getCarouselSetWidth = (): number => {
-  if (!carouselTrackRef.value) return 0
-  return carouselTrackRef.value.scrollWidth / 3
-}
-
-const carouselTick = () => {
-  if (carouselAutoplay.value) {
-    carouselOffset.value -= CAROUSEL_SPEED
-    const setWidth = getCarouselSetWidth()
-    if (setWidth > 0 && carouselOffset.value <= -setWidth) {
-      carouselOffset.value += setWidth
-    }
-  }
-  carouselRafId = requestAnimationFrame(carouselTick)
-}
-
-const carouselPointerStart = (clientX: number) => {
-  carouselIsDragging.value = true
-  carouselAutoplay.value = false
-  carouselDragStartX.value = clientX
-  carouselDragStartOffset.value = carouselOffset.value
-  if (carouselResumeTimer !== null) clearTimeout(carouselResumeTimer)
-}
-
-const carouselPointerMove = (clientX: number) => {
-  if (!carouselIsDragging.value) return
-  const delta = clientX - carouselDragStartX.value
-  let next = carouselDragStartOffset.value + delta
-  const setWidth = getCarouselSetWidth()
-  if (setWidth > 0) {
-    while (next <= -setWidth) next += setWidth
-    while (next > 0) next -= setWidth
-  }
-  carouselOffset.value = next
-}
-
-const carouselPointerEnd = () => {
-  if (!carouselIsDragging.value) return
-  carouselIsDragging.value = false
-  carouselResumeTimer = setTimeout(() => {
-    carouselAutoplay.value = true
-  }, CAROUSEL_RESUME_DELAY_MS)
-}
-
-const onCarouselMouseDown = (e: MouseEvent) => carouselPointerStart(e.clientX)
-const onCarouselGlobalMouseMove = (e: MouseEvent) => carouselPointerMove(e.clientX)
-const onCarouselGlobalMouseUp = () => carouselPointerEnd()
-
-const getTouchClientX = (e: TouchEvent): number | null => {
-  const primaryTouch = e.touches[0] ?? e.changedTouches[0]
-  return primaryTouch ? primaryTouch.clientX : null
-}
-
-const onCarouselTouchStart = (e: TouchEvent) => {
-  const clientX = getTouchClientX(e)
-  if (clientX === null) return
-  carouselPointerStart(clientX)
-}
-
-const onCarouselTouchMove = (e: TouchEvent) => {
-  const clientX = getTouchClientX(e)
-  if (clientX === null) return
-  carouselPointerMove(clientX)
-}
-
-const onCarouselTouchEnd = () => carouselPointerEnd()
-const onCarouselTouchCancel = () => carouselPointerEnd()
 
 onMounted(() => {
-  window.addEventListener('mousemove', onCarouselGlobalMouseMove)
-  window.addEventListener('mouseup', onCarouselGlobalMouseUp)
-  carouselRafId = requestAnimationFrame(carouselTick)
+  nextTick(updateProjectsScrollHint)
+  window.addEventListener('resize', updateProjectsScrollHint, { passive: true })
 })
 
 onUnmounted(() => {
-  window.removeEventListener('mousemove', onCarouselGlobalMouseMove)
-  window.removeEventListener('mouseup', onCarouselGlobalMouseUp)
-  if (carouselRafId !== null) cancelAnimationFrame(carouselRafId)
-  if (carouselResumeTimer !== null) clearTimeout(carouselResumeTimer)
+  window.removeEventListener('resize', updateProjectsScrollHint)
+  if (mobileActiveSkillTimer !== null) clearTimeout(mobileActiveSkillTimer)
 })
+// ---- Skills Carousel ----
+// O componente declara o ref DOM e o passa ao composable — o componente controla
+// os refs de template; o composable apenas os consome para calcular a largura do ciclo.
+const carouselTrackRef = ref<HTMLElement | null>(null)
+const {
+  carouselOffset,
+  carouselIsDragging,
+  onMouseDown: onCarouselMouseDown,
+  onTouchStart: onCarouselTouchStart,
+  onTouchMove: onCarouselTouchMove,
+  onTouchEnd: onCarouselTouchEnd,
+  onTouchCancel: onCarouselTouchCancel,
+} = useCarousel(carouselTrackRef)
 
-const itemsPerPage = 4
+// ---- Projects Pagination ----
+const ITEMS_PER_PAGE = 4
 const currentPage = ref(0)
-
-const totalPages = computed(() => Math.ceil(projects.length / itemsPerPage))
-
+const totalPages = computed(() => Math.ceil(projects.length / ITEMS_PER_PAGE))
 const paginatedProjects = computed(() =>
-  projects.slice(currentPage.value * itemsPerPage, (currentPage.value + 1) * itemsPerPage)
+  projects.slice(currentPage.value * ITEMS_PER_PAGE, (currentPage.value + 1) * ITEMS_PER_PAGE),
 )
 
-type Project = (typeof projects)[number]
-const selectedProject = ref<Project | null>(null)
+// ---- Project Modal ----
+const {
+  selectedProject,
+  modalImageIndex,
+  modalImages,
+  openModal,
+  closeModal,
+  modalPrev,
+  modalNext,
+  openProjectLink,
+} = useProjectModal()
 
-const openModal = (project: Project) => {
-  selectedProject.value = project
-}
-
-const closeModal = () => {
-  selectedProject.value = null
-}
-
-const openProjectLink = (link: string) => {
-  if (!link || link === '#') return
-  window.open(link, '_blank', 'noopener,noreferrer')
-}
-
-const handleGlobalKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && selectedProject.value) {
-    closeModal()
-  }
-}
-
-watch(selectedProject, (value) => {
-  document.body.style.overflow = value ? 'hidden' : ''
-})
-
-onMounted(() => {
-  window.addEventListener('keydown', handleGlobalKeydown)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleGlobalKeydown)
-  document.body.style.overflow = ''
-})
-
-const line1 = 'Hello World!'
-const line2 = 'Bem vindo!'
-const typedLine1 = ref('')
-const typedLine2 = ref('')
-const typingPhase = ref(0) // 0 = digitando linha1, 1 = digitando linha2, 2 = concluído
-const showCursor = ref(true)
-
-const typingTimeouts: Array<ReturnType<typeof setTimeout>> = []
-
-const scheduleTypingTimeout = (callback: () => void, delayMs: number) => {
-  const timeoutId = setTimeout(callback, delayMs)
-  typingTimeouts.push(timeoutId)
-}
-
-onMounted(() => {
-  let i = 0
-  let j = 0
-
-  const typeLine2 = () => {
-    if (j < line2.length) {
-      typedLine2.value += line2[j++]
-      scheduleTypingTimeout(typeLine2, TYPING_SPEED_MS)
-    } else {
-      typingPhase.value = 2
-      scheduleTypingTimeout(() => {
-        showCursor.value = false
-      }, CURSOR_HIDE_DELAY_MS)
-    }
-  }
-
-  const typeLine1 = () => {
-    if (i < line1.length) {
-      typedLine1.value += line1[i++]
-      scheduleTypingTimeout(typeLine1, TYPING_SPEED_MS)
-    } else {
-      typingPhase.value = 1
-      scheduleTypingTimeout(typeLine2, TYPING_LINE_GAP_MS)
-    }
-  }
-
-  scheduleTypingTimeout(typeLine1, TYPING_START_DELAY_MS)
-})
-
-onUnmounted(() => {
-  for (const timeoutId of typingTimeouts) {
-    clearTimeout(timeoutId)
-  }
-})
+// ---- Typing Animation ----
+const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 </script>
 <template>
   <main class="min-h-screen w-full overflow-x-hidden bg-[#0D0D0D] text-slate-100">
@@ -563,9 +176,9 @@ onUnmounted(() => {
 
           <div class="flex items-center gap-2">
             <button
-              class="d-none inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-slate-200 transition hover:border-yellow-400/70 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
+              class="hidden h-8 w-8 items-center justify-center rounded-full border border-white/15 text-slate-200 transition hover:border-yellow-400/70 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
               aria-label="Alternar tema"
-              @click="toggleTheme"
+              @click="toggleDarkMode"
             >
               <svg
                 v-if="isDark"
@@ -694,11 +307,20 @@ onUnmounted(() => {
 
       <!-- Main Text -->
       <div
-        class="relative z-30 flex h-full items-center justify-center gap-10 px-10 md:px-20"
+        class="relative z-30 flex h-full flex-col items-center justify-center gap-4 px-10 md:flex-row md:gap-10 md:px-20"
         :style="{ transform: getParallaxTransform(0.9) }"
       >
+        <!-- Left: Coding Image (desktop only) -->
+        <div class="hidden md:mb-70 md:block">
+          <img
+            src="/images/coding-image.png"
+            alt="Ilustração de programação"
+            class="w-25 opacity-90 drop-shadow-2xl lg:w-36 xl:w-46"
+          />
+        </div>
+
         <!-- Right: Text -->
-        <div class="mb-70 flex flex-col items-start">
+        <div class="flex flex-col items-start md:mb-70">
           <!-- Greeting -->
           <p
             class="text-md mb-2 font-bold tracking-[0.35em] text-white uppercase text-shadow-2xs"
@@ -718,6 +340,15 @@ onUnmounted(() => {
             {{ typedLine2
             }}<span v-if="typingPhase === 1 && showCursor" class="cursor text-slate-300">|</span>
           </p>
+        </div>
+
+        <!-- Coding Image (mobile only, below text) -->
+        <div class="mt-2 block md:hidden">
+          <img
+            src="/images/coding-image.png"
+            alt="Ilustração de programação"
+            class="w-24 opacity-90 drop-shadow-2xl"
+          />
         </div>
       </div>
 
@@ -750,11 +381,16 @@ onUnmounted(() => {
         class="mx-auto flex max-w-5xl flex-col items-center gap-14 md:flex-row md:items-center md:gap-20"
       >
         <!-- Left: Photo -->
-        <div class="flex shrink-0 justify-center">
+        <div class="group relative w-56 shrink-0 sm:w-64 md:w-80" style="aspect-ratio: 4/5">
           <img
-            src="/aboutme-photo.jpg"
+            src="/images/aboutme-photo.jpg"
             alt="Imagem do Lucas vestindo a beca em uma formatura"
-            class="w-56 rounded-2xl shadow-xl ring-1 shadow-black/50 ring-white/10 transition-transform duration-500 hover:scale-105 sm:w-64 md:w-80"
+            class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-xl ring-1 shadow-black/50 ring-white/10 transition-all duration-200 group-hover:scale-101 group-hover:opacity-0"
+          />
+          <img
+            src="/images/aboutme-photo-2.png"
+            alt="Segunda foto do Lucas"
+            class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-xl ring-1 shadow-black/50 ring-white/10 opacity-0 transition-all duration-200 group-hover:scale-102 group-hover:opacity-100 object-top"
           />
         </div>
 
@@ -935,7 +571,7 @@ onUnmounted(() => {
               @keydown.space.prevent="openModal(project)"
             >
               <!-- Imagem -->
-              <div class="h-48 overflow-hidden bg-white/5">
+              <div class="aspect-square w-full overflow-hidden bg-white/5">
                 <img
                   :src="project.image"
                   :alt="project.title"
@@ -946,27 +582,29 @@ onUnmounted(() => {
               </div>
 
               <!-- Conteúdo -->
-              <div class="flex flex-1 flex-col gap-3 p-5">
-                <h3 class="text-lg font-semibold text-white">{{ project.title }}</h3>
-                <p class="flex-1 text-sm leading-relaxed text-slate-400">
+              <div class="flex flex-1 flex-col gap-2 p-3">
+                <h3 class="text-sm font-bold text-white">{{ project.title }}</h3>
+                <p class="flex-1 text-xs leading-relaxed text-slate-400">
                   {{ project.description }}
                 </p>
 
-                <div class="flex flex-wrap gap-2">
+                <div class="flex flex-wrap gap-1.5">
                   <span
                     v-for="tech in project.tech"
                     :key="tech"
-                    class="rounded-full border border-yellow-700/20 px-3 py-0.5 text-xs font-medium text-yellow-400"
+                    class="rounded-full border border-yellow-700/20 px-2 py-0.5 text-[10px] font-medium text-yellow-400"
                   >
                     {{ tech }}
                   </span>
                 </div>
 
-                <span class="mt-1 inline-flex items-center gap-1 text-sm font-medium text-blue-400">
+                <span
+                  class="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-blue-400"
+                >
                   Ver detalhes
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
+                    class="h-3 w-3"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -998,7 +636,7 @@ onUnmounted(() => {
             @keydown.space.prevent="openModal(project)"
           >
             <!-- Imagem -->
-            <div class="h-48 overflow-hidden bg-white/5">
+            <div class="aspect-square w-full overflow-hidden bg-white/5">
               <img
                 :src="project.image"
                 :alt="project.title"
@@ -1009,25 +647,25 @@ onUnmounted(() => {
             </div>
 
             <!-- Conteúdo -->
-            <div class="flex flex-1 flex-col gap-3 p-5">
-              <h3 class="text-lg font-semibold text-white">{{ project.title }}</h3>
-              <p class="flex-1 text-sm leading-relaxed text-slate-400">{{ project.description }}</p>
+            <div class="flex flex-1 flex-col gap-2 p-3">
+              <h3 class="text-sm font-bold text-white">{{ project.title }}</h3>
+              <p class="flex-1 text-xs leading-relaxed text-slate-400">{{ project.description }}</p>
 
-              <div class="flex flex-wrap gap-2">
+              <div class="flex flex-wrap gap-1.5">
                 <span
                   v-for="tech in project.tech"
                   :key="tech"
-                  class="rounded-full border border-blue-500 bg-blue-500/20 px-3 py-0.5 text-xs font-medium text-white/90"
+                  class="rounded-full border border-yellow-200/70 bg-yellow-500/20 px-2 py-0.5 text-[10px] font-medium text-white/90"
                 >
                   {{ tech }}
                 </span>
               </div>
 
-              <span class="mt-1 inline-flex items-center gap-1 text-sm font-medium text-blue-400">
+              <span class="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-blue-400">
                 Ver detalhes
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4"
+                  class="h-3 w-3"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -1064,22 +702,13 @@ onUnmounted(() => {
         role="dialog"
         aria-modal="true"
         aria-label="Detalhes do projeto"
-        class="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl"
+        class="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl sm:flex-row"
       >
-        <!-- Image banner -->
-        <div class="relative h-52 w-full shrink-0 overflow-hidden">
-          <img
-            :src="selectedProject.image"
-            :alt="selectedProject.title"
-            class="h-full w-full object-cover"
-          />
-          <!-- Gradient overlay -->
-          <div
-            class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent"
-          />
-          <!-- Close button over image -->
+        <!-- LEFT: Image panel -->
+        <div class="relative flex h-56 shrink-0 flex-col bg-zinc-900 sm:h-auto sm:w-[42%]">
+          <!-- Close button -->
           <button
-            class="absolute top-3 right-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/50 text-slate-300 backdrop-blur-sm transition hover:border-yellow-400/70 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
+            class="absolute top-3 right-3 z-30 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/60 text-slate-300 backdrop-blur-sm transition hover:border-yellow-400/70 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
             aria-label="Fechar detalhes do projeto"
             @click="closeModal"
           >
@@ -1094,133 +723,225 @@ onUnmounted(() => {
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
           </button>
-          <!-- Title & badges over image at bottom -->
-          <div class="absolute right-0 bottom-0 left-0 px-6 pb-4">
-            <div class="flex flex-wrap items-end gap-3">
-              <h3 class="text-2xl font-bold text-white">{{ selectedProject.title }}</h3>
-              <div class="flex gap-2 pb-0.5">
-                <span
-                  v-if="(selectedProject as any).year"
-                  class="rounded-full border border-white/20 bg-white/10 px-2.5 py-0.5 text-xs font-medium text-slate-300 backdrop-blur-sm"
+
+          <!-- Main image viewer -->
+          <div class="relative min-h-0 flex-1 overflow-hidden">
+            <!-- Blurred bg fill -->
+            <div
+              class="absolute inset-0 scale-110 blur-lg"
+              :style="{
+                backgroundImage: `url(${modalImages[modalImageIndex]})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }"
+            />
+            <div class="absolute inset-0 bg-black/50" />
+            <img
+              :src="modalImages[modalImageIndex]"
+              :alt="selectedProject.title"
+              class="relative z-10 h-full w-full object-contain transition-all duration-300"
+            />
+            <!-- Prev/Next arrows -->
+            <template v-if="modalImages.length > 1">
+              <button
+                class="absolute top-1/2 left-2 z-30 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur-sm transition hover:bg-black/80 focus-visible:outline-none"
+                aria-label="Imagem anterior"
+                @click.stop="modalPrev"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3.5 w-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2.5"
                 >
-                  {{ (selectedProject as any).year }}
-                </span>
-                <span
-                  v-if="(selectedProject as any).status"
-                  class="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-400"
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                class="absolute top-1/2 right-2 z-30 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur-sm transition hover:bg-black/80 focus-visible:outline-none"
+                aria-label="Próxima imagem"
+                @click.stop="modalNext"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3.5 w-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2.5"
                 >
-                  {{ (selectedProject as any).status }}
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+              <!-- Dot indicators -->
+              <div class="absolute right-0 bottom-2 left-0 z-30 flex justify-center gap-1.5">
+                <button
+                  v-for="(_, i) in modalImages"
+                  :key="i"
+                  class="h-1.5 rounded-full transition-all duration-200 focus-visible:outline-none"
+                  :class="
+                    i === modalImageIndex
+                      ? 'w-4 bg-yellow-400'
+                      : 'w-1.5 bg-white/40 hover:bg-white/70'
+                  "
+                  :aria-label="`Ir para imagem ${i + 1}`"
+                  @click.stop="modalImageIndex = i"
+                />
+              </div>
+            </template>
+          </div>
+
+          <!-- Thumbnail strip -->
+          <div
+            v-if="modalImages.length > 1"
+            class="flex shrink-0 gap-1.5 overflow-x-auto bg-zinc-900/80 p-2"
+          >
+            <button
+              v-for="(img, i) in modalImages"
+              :key="i"
+              class="h-12 w-16 shrink-0 overflow-hidden rounded-md border-2 bg-zinc-800 transition-all duration-200 focus-visible:outline-none"
+              :class="
+                i === modalImageIndex
+                  ? 'border-yellow-400 opacity-100'
+                  : 'border-white/10 opacity-50 hover:opacity-80'
+              "
+              :aria-label="`Visualizar imagem ${i + 1}`"
+              @click="modalImageIndex = i"
+            >
+              <img :src="img" :alt="`Imagem ${i + 1}`" class="h-full w-full object-contain" />
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT: Content + actions -->
+        <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <!-- Header: title + badges -->
+          <div class="shrink-0 border-b border-white/10 px-5 pt-5 pb-4">
+            <h3 class="text-xl font-bold text-white">{{ selectedProject.title }}</h3>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <span
+                v-if="selectedProject.year"
+                class="rounded-full border border-white/20 bg-white/10 px-2.5 py-0.5 text-xs font-medium text-slate-300"
+              >
+                {{ selectedProject.year }}
+              </span>
+              <span
+                v-if="selectedProject.status"
+                class="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-400"
+              >
+                {{ selectedProject.status }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Scrollable body -->
+          <div class="flex flex-col gap-4 overflow-y-auto px-5 py-4">
+            <!-- Description -->
+            <p class="text-sm leading-relaxed text-slate-300">
+              {{ selectedProject.longDescription ?? selectedProject.description }}
+            </p>
+
+            <!-- Highlights list -->
+            <div v-if="selectedProject.highlights?.length">
+              <h4 class="mb-3 text-xs font-semibold tracking-widest text-yellow-500 uppercase">
+                O que foi implementado
+              </h4>
+              <ul class="flex flex-col gap-2">
+                <li
+                  v-for="item in selectedProject.highlights"
+                  :key="item"
+                  class="flex items-start gap-2 text-sm text-slate-300"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="mt-0.5 h-4 w-4 shrink-0 text-yellow-400"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M4.5 12.75l6 6 9-13.5"
+                    />
+                  </svg>
+                  {{ item }}
+                </li>
+              </ul>
+            </div>
+
+            <!-- Tech stack -->
+            <div>
+              <h4 class="mb-3 text-xs font-semibold tracking-widest text-yellow-500 uppercase">
+                Stack utilizada
+              </h4>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  v-for="tech in selectedProject.tech"
+                  :key="tech"
+                  class="rounded-full border border-yellow-600/30 bg-yellow-500/10 px-3 py-1 text-xs font-semibold text-yellow-300"
+                >
+                  {{ tech }}
                 </span>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Scrollable body -->
-        <div class="flex flex-col gap-5 overflow-y-auto px-6 py-5">
-          <!-- Description -->
-          <p class="text-sm leading-relaxed text-slate-300">
-            {{ (selectedProject as any).longDescription ?? selectedProject.description }}
-          </p>
-
-          <!-- Highlights list -->
-          <div v-if="(selectedProject as any).highlights?.length">
-            <h4 class="mb-3 text-xs font-semibold tracking-widest text-yellow-500 uppercase">
-              O que foi implementado
-            </h4>
-            <ul class="grid gap-2 sm:grid-cols-2">
-              <li
-                v-for="item in (selectedProject as any).highlights"
-                :key="item"
-                class="flex items-start gap-2 text-sm text-slate-300"
+          <!-- Footer actions -->
+          <footer
+            class="flex shrink-0 items-center justify-between gap-3 border-t border-white/10 px-5 py-4"
+          >
+            <button
+              class="rounded-lg border border-white/15 px-4 py-2 text-sm text-slate-300 transition hover:border-white/40 hover:text-white focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
+              @click="closeModal"
+            >
+              Fechar
+            </button>
+            <div class="flex gap-2">
+              <button
+                v-if="selectedProject.liveLink"
+                class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20 focus-visible:ring-2 focus-visible:ring-emerald-400/70 focus-visible:outline-none"
+                @click="openProjectLink(selectedProject.liveLink!)"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="mt-0.5 h-4 w-4 shrink-0 text-yellow-400"
-                  viewBox="0 0 24 24"
+                  class="h-4 w-4"
                   fill="none"
+                  viewBox="0 0 24 24"
                   stroke="currentColor"
-                  stroke-width="2.5"
+                  stroke-width="2"
                 >
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                  />
                 </svg>
-                {{ item }}
-              </li>
-            </ul>
-          </div>
-
-          <!-- Tech stack -->
-          <div>
-            <h4 class="mb-3 text-xs font-semibold tracking-widest text-yellow-500 uppercase">
-              Stack utilizada
-            </h4>
-            <div class="flex flex-wrap gap-2">
-              <span
-                v-for="tech in selectedProject.tech"
-                :key="tech"
-                class="rounded-full border border-yellow-600/30 bg-yellow-500/10 px-3 py-1 text-xs font-semibold text-yellow-300"
+                Ver demo
+              </button>
+              <button
+                class="inline-flex items-center gap-1.5 rounded-lg border border-yellow-500/50 bg-yellow-500/10 px-4 py-2 text-sm font-medium text-yellow-300 transition hover:bg-yellow-500/20 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+                :disabled="selectedProject.link === '#'"
+                @click="openProjectLink(selectedProject.link)"
               >
-                {{ tech }}
-              </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"
+                  />
+                </svg>
+                Ver no GitHub
+              </button>
             </div>
-          </div>
+          </footer>
         </div>
-
-        <!-- Footer actions -->
-        <footer
-          class="flex shrink-0 items-center justify-between gap-3 border-t border-white/10 px-6 py-4"
-        >
-          <button
-            class="rounded-lg border border-white/15 px-4 py-2 text-sm text-slate-300 transition hover:border-white/40 hover:text-white focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
-            @click="closeModal"
-          >
-            Fechar
-          </button>
-
-          <div class="flex gap-2">
-            <!-- Live demo button (only when liveLink present) -->
-            <button
-              v-if="(selectedProject as any).liveLink"
-              class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20 focus-visible:ring-2 focus-visible:ring-emerald-400/70 focus-visible:outline-none"
-              @click="openProjectLink((selectedProject as any).liveLink)"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                />
-              </svg>
-              Ver demo
-            </button>
-
-            <!-- GitHub / main link -->
-            <button
-              class="inline-flex items-center gap-1.5 rounded-lg border border-yellow-500/50 bg-yellow-500/10 px-4 py-2 text-sm font-medium text-yellow-300 transition hover:bg-yellow-500/20 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
-              :disabled="selectedProject.link === '#'"
-              @click="openProjectLink(selectedProject.link)"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"
-                />
-              </svg>
-              Ver no GitHub
-            </button>
-          </div>
-        </footer>
       </section>
     </div>
 
@@ -1312,9 +1033,6 @@ onUnmounted(() => {
   </main>
 </template>
 <style scoped>
-.font {
-  font-family: 'Orbitron', monospace;
-}
 .carousel {
   -ms-overflow-style: none;
   scrollbar-width: none;

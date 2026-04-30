@@ -27,7 +27,7 @@ const goNext = () => {
 
 <template>
   <nav
-    class="items-center justify-center gap-4"
+    class="flex items-center justify-center gap-4"
     role="navigation"
     aria-label="Paginacao dos projetos"
   >
