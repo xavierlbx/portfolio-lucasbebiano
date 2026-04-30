@@ -21,6 +21,69 @@ const isMenuOpen = ref(false)
 const mobileActiveSkill = ref<string | null>(null)
 let mobileActiveSkillTimer: ReturnType<typeof setTimeout> | null = null
 
+// ---- Hero canvas (floating code tokens) ----
+const heroCanvasRef = ref<HTMLCanvasElement | null>(null)
+let heroAnimId: number | null = null
+
+interface CodeParticle {
+  x: number; y: number; vy: number
+  size: number; opacity: number; text: string; color: string
+}
+
+const CODE_TOKENS = ['</>', '{  }', '=>', '&&', '||', 'const', 'async', '01', '10', '()', ';', '===', 'fn()', 'null', 'true']
+let heroParticles: CodeParticle[] = []
+
+function initHeroParticles(w: number, h: number): CodeParticle[] {
+  const count = Math.max(18, Math.floor((w * h) / 20000))
+  return Array.from({ length: count }, () => ({
+    x: Math.random() * w,
+    y: Math.random() * h,
+    vy: -(Math.random() * 0.22 + 0.08),
+    size: Math.random() * 8 + 7,
+    opacity: Math.random() * 0.09 + 0.03,
+    text: CODE_TOKENS[Math.floor(Math.random() * CODE_TOKENS.length)] ?? '</>',
+    color: Math.random() > 0.55 ? '#eab308' : '#94a3b8',
+  }))
+}
+
+function animateHeroCanvas() {
+  const canvas = heroCanvasRef.value
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  const { width: w, height: h } = canvas
+  ctx.clearRect(0, 0, w, h)
+  for (const p of heroParticles) {
+    ctx.save()
+    ctx.globalAlpha = p.opacity
+    ctx.font = `${p.size}px "Courier New", monospace`
+    ctx.fillStyle = p.color
+    ctx.fillText(p.text, p.x, p.y)
+    ctx.restore()
+    p.y += p.vy
+    if (p.y < -30) {
+      p.y = h + 10
+      p.x = Math.random() * w
+      p.text = CODE_TOKENS[Math.floor(Math.random() * CODE_TOKENS.length)] ?? '</>'
+    }
+  }
+  heroAnimId = requestAnimationFrame(animateHeroCanvas)
+}
+
+function startHeroCanvas() {
+  const canvas = heroCanvasRef.value
+  if (!canvas) return
+  canvas.width = canvas.offsetWidth
+  canvas.height = canvas.offsetHeight
+  heroParticles = initHeroParticles(canvas.width, canvas.height)
+  animateHeroCanvas()
+}
+
+function resizeHeroCanvas() {
+  if (heroAnimId !== null) { cancelAnimationFrame(heroAnimId); heroAnimId = null }
+  startHeroCanvas()
+}
+
 // ---- Mobile projects scroll hint ----
 // Breakpoint 640px = `sm` do Tailwind, mesmo ponto onde o grid desktop aparece.
 const SCROLL_HINT_BREAKPOINT = 640
@@ -91,12 +154,16 @@ const onMobileProjectsScroll = () => {
 onMounted(() => {
   nextTick(() => {
     updateProjectsScrollHint()
+    startHeroCanvas()
   })
   window.addEventListener('resize', updateProjectsScrollHint, { passive: true })
+  window.addEventListener('resize', resizeHeroCanvas, { passive: true })
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateProjectsScrollHint)
+  window.removeEventListener('resize', resizeHeroCanvas)
+  if (heroAnimId !== null) cancelAnimationFrame(heroAnimId)
   if (mobileActiveSkillTimer !== null) clearTimeout(mobileActiveSkillTimer)
 })
 // ---- Skills Carousel ----
@@ -254,65 +321,134 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
       </nav>
     </div>
 
-    <!-- Bem vindo -->
-    <section class="relative h-screen w-full" style="background: #0d0d0d">
+    <!-- Hero / Bem vindo -->
+    <section class="relative h-screen w-full overflow-hidden" style="background: #0D0D0D">
 
-      <!-- Main Text -->
+      <!-- Canvas: floating code tokens -->
+      <canvas
+        ref="heroCanvasRef"
+        class="absolute inset-0 h-full w-full pointer-events-none select-none"
+        aria-hidden="true"
+      />
+
+      <!-- Dot-grid overlay -->
+      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+
+      <!-- Radial yellow glow -->
       <div
-        class="relative z-30 flex h-full flex-col items-center justify-center gap-4 px-10 md:flex-row md:gap-10 md:px-20"
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 65% 55% at 62% 50%, rgba(234,179,8,0.07) 0%, transparent 65%)"
+        aria-hidden="true"
+      />
+
+      <!-- Content -->
+      <div
+        class="relative z-10 flex h-full flex-col items-center justify-center gap-6 px-8 md:flex-row md:gap-16 md:px-24"
       >
-        <!-- Left: Coding Image (desktop only) -->
-        <div class="hidden md:mb-70 md:block">
-          <img
-            src="/images/coding-image.png"
-            alt="Ilustração de programação"
-            class="w-25 opacity-90 drop-shadow-2xl lg:w-36 xl:w-46"
-          />
+        <!-- Left: Coding Image (desktop) -->
+        <div class="hidden md:flex md:shrink-0 md:items-center md:justify-center">
+          <div class="relative">
+            <div
+              class="absolute -inset-6 rounded-full blur-3xl opacity-25"
+              style="background: radial-gradient(circle, #eab308 0%, transparent 70%)"
+              aria-hidden="true"
+            />
+            <img
+              src="/images/coding-image.png"
+              alt="Ilustração de programação"
+              class="relative w-28 opacity-90 drop-shadow-2xl lg:w-40 xl:w-48"
+              fetchpriority="high"
+            />
+          </div>
         </div>
 
-        <!-- Right: Text -->
-        <div class="flex flex-col items-start md:mb-70">
-          <!-- Greeting -->
+        <!-- Right: Text block -->
+        <div class="flex flex-col items-center gap-4 md:items-start">
+
+          <!-- Badge "Full Stack Developer" -->
+          <div
+            class="inline-flex items-center gap-2 rounded-full border border-yellow-500/30 bg-yellow-500/8 px-4 py-1.5 transition-all duration-700"
+            :class="typingPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse" />
+            <span class="text-xs font-semibold tracking-[0.2em] text-yellow-300 uppercase">Full Stack Developer</span>
+          </div>
+
+          <!-- Line 1: "Hello World!" (typing) -->
           <p
-            class="text-md mb-2 font-bold tracking-[0.35em] text-white uppercase text-shadow-2xs"
-            :class="typingPhase >= 2 ? 'blink-text' : ''"
-            style="font-family: 'Courier New', monospace"
+            class="text-sm font-bold tracking-[0.35em] text-slate-400 uppercase"
+            style="font-family: 'Courier New', monospace; min-height: 1.5em"
           >
             {{ typedLine1
-            }}<span v-if="typingPhase === 0 && showCursor" class="cursor text-slate-300">|</span>
+            }}<span v-if="typingPhase === 0 && showCursor" class="cursor text-yellow-400">|</span>
           </p>
 
-          <!-- Bem vindo -->
+          <!-- Line 2: "Bem vindo!" (typing, big) -->
           <p
-            class="mt-2 text-2xl font-bold tracking-[0.2em] text-white transition-all duration-700 sm:text-3xl"
+            class="text-4xl font-black tracking-tight text-white transition-all duration-700 sm:text-5xl lg:text-6xl"
             :class="typingPhase >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'"
             style="font-family: 'Courier New', monospace"
           >
             {{ typedLine2
-            }}<span v-if="typingPhase === 1 && showCursor" class="cursor text-slate-300">|</span>
+            }}<span v-if="typingPhase === 1 && showCursor" class="cursor text-yellow-400">|</span>
           </p>
+
+          <!-- Name -->
+          <p
+            class="text-base font-semibold tracking-widest text-slate-300 transition-all duration-700 delay-75 sm:text-lg"
+            :class="typingPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'"
+          >
+            Eu sou o <span class="text-yellow-400 font-black">Lucas Bebiano</span>
+          </p>
+
+          <!-- Stack label -->
+          <p
+            class="text-sm tracking-wide text-slate-500 transition-all duration-700 delay-100 md:text-base"
+            :class="typingPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'"
+          >
+            JS &nbsp;·&nbsp; TypeScript &nbsp;·&nbsp; Vue &nbsp;·&nbsp; NestJS &nbsp;·&nbsp; .NET &nbsp;·&nbsp; SQL
+          </p>
+
+          <!-- CTA buttons -->
+          <div
+            class="mt-2 flex flex-wrap gap-3 transition-all duration-700 delay-200"
+            :class="typingPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'"
+          >
+            <button
+              class="hero-btn-primary rounded-lg bg-yellow-500 px-5 py-2.5 text-sm font-bold text-black transition-all duration-200 hover:bg-yellow-400 active:scale-95"
+              @click="scrollToSection({ label: 'Projetos', href: '#projects' })"
+            >
+              Ver Projetos
+            </button>
+            <button
+              class="rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-slate-300 transition-all duration-200 hover:border-white/40 hover:text-white active:scale-95"
+              @click="scrollToSection({ label: 'Fale Comigo', href: '#contact' })"
+            >
+              Fale Comigo
+            </button>
+          </div>
         </div>
 
-        <!-- Coding Image (mobile only, below text) -->
+        <!-- Coding image (mobile only) -->
         <div class="mt-2 block md:hidden">
           <img
             src="/images/coding-image.png"
             alt="Ilustração de programação"
-            class="w-24 opacity-90 drop-shadow-2xl"
+            class="w-24 opacity-80 drop-shadow-2xl"
           />
         </div>
       </div>
 
       <!-- Scroll down -->
       <div
-        class="absolute bottom-25 left-1/2 z-65 flex flex-col items-center gap-2 transition-all duration-500"
+        class="absolute bottom-8 left-1/2 z-10 flex flex-col items-center gap-2 transition-all duration-500"
         :class="typingPhase === 2 ? 'opacity-100' : 'opacity-0'"
         style="transform: translate3d(-50%, 0, 0)"
       >
-        <span class="text-xs tracking-[0.25em] text-slate-500 uppercase">Role para baixo</span>
+        <span class="text-[10px] tracking-[0.25em] text-slate-600 uppercase">Role para baixo</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 animate-bounce text-slate-400"
+          class="h-4 w-4 animate-bounce text-slate-500"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -984,6 +1120,17 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
   </main>
 </template>
 <style scoped>
+/* Hero background dot grid */
+.hero-grid-overlay {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+/* Primary CTA glow on hover */
+.hero-btn-primary:hover {
+  box-shadow: 0 0 22px rgba(234, 179, 8, 0.45);
+}
+
 .carousel {
   -ms-overflow-style: none;
   scrollbar-width: none;
