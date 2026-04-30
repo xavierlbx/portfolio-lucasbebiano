@@ -1,5 +1,6 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+// nextTick used in onMounted
 import { useDarkMode } from '../composables/useDarkMode'
 import { useScrollSpy } from '../composables/useScrollSpy'
 import { useCarousel } from '../composables/useCarousel'
@@ -20,6 +21,69 @@ const isMenuOpen = ref(false)
 const mobileActiveSkill = ref<string | null>(null)
 let mobileActiveSkillTimer: ReturnType<typeof setTimeout> | null = null
 
+// ---- Hero canvas (floating code tokens) ----
+const heroCanvasRef = ref<HTMLCanvasElement | null>(null)
+let heroAnimId: number | null = null
+
+interface CodeParticle {
+  x: number; y: number; vy: number
+  size: number; opacity: number; text: string; color: string
+}
+
+const CODE_TOKENS = ['</>', '{  }', '=>', '&&', '||', 'const', 'async', '01', '10', '()', ';', '===', 'fn()', 'null', 'true']
+let heroParticles: CodeParticle[] = []
+
+function initHeroParticles(w: number, h: number): CodeParticle[] {
+  const count = Math.max(18, Math.floor((w * h) / 20000))
+  return Array.from({ length: count }, () => ({
+    x: Math.random() * w,
+    y: Math.random() * h,
+    vy: -(Math.random() * 0.22 + 0.08),
+    size: Math.random() * 8 + 7,
+    opacity: Math.random() * 0.09 + 0.03,
+    text: CODE_TOKENS[Math.floor(Math.random() * CODE_TOKENS.length)] ?? '</>',
+    color: Math.random() > 0.55 ? '#eab308' : '#94a3b8',
+  }))
+}
+
+function animateHeroCanvas() {
+  const canvas = heroCanvasRef.value
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  const { width: w, height: h } = canvas
+  ctx.clearRect(0, 0, w, h)
+  for (const p of heroParticles) {
+    ctx.save()
+    ctx.globalAlpha = p.opacity
+    ctx.font = `${p.size}px "Courier New", monospace`
+    ctx.fillStyle = p.color
+    ctx.fillText(p.text, p.x, p.y)
+    ctx.restore()
+    p.y += p.vy
+    if (p.y < -30) {
+      p.y = h + 10
+      p.x = Math.random() * w
+      p.text = CODE_TOKENS[Math.floor(Math.random() * CODE_TOKENS.length)] ?? '</>'
+    }
+  }
+  heroAnimId = requestAnimationFrame(animateHeroCanvas)
+}
+
+function startHeroCanvas() {
+  const canvas = heroCanvasRef.value
+  if (!canvas) return
+  canvas.width = canvas.offsetWidth
+  canvas.height = canvas.offsetHeight
+  heroParticles = initHeroParticles(canvas.width, canvas.height)
+  animateHeroCanvas()
+}
+
+function resizeHeroCanvas() {
+  if (heroAnimId !== null) { cancelAnimationFrame(heroAnimId); heroAnimId = null }
+  startHeroCanvas()
+}
+
 // ---- Mobile projects scroll hint ----
 // Breakpoint 640px = `sm` do Tailwind, mesmo ponto onde o grid desktop aparece.
 const SCROLL_HINT_BREAKPOINT = 640
@@ -33,12 +97,13 @@ type NavLink = {
   external?: boolean
 }
 
-// ---- Scroll spy + parallax ----
-const { scrollY, activeSection, getParallaxTransform } = useScrollSpy()
+// ---- Scroll spy ----
+const { activeSection } = useScrollSpy()
 
 // ---- Navegação ----
 const navLinks: NavLink[] = [
   { label: 'Sobre Mim', href: '#about' },
+  { label: 'Experiências', href: '#experience' },
   { label: 'Conhecimentos', href: '#skills' },
   { label: 'Projetos', href: '#projects' },
   { label: 'Fale Comigo', href: '#contact' },
@@ -88,12 +153,18 @@ const onMobileProjectsScroll = () => {
 }
 
 onMounted(() => {
-  nextTick(updateProjectsScrollHint)
+  nextTick(() => {
+    updateProjectsScrollHint()
+    startHeroCanvas()
+  })
   window.addEventListener('resize', updateProjectsScrollHint, { passive: true })
+  window.addEventListener('resize', resizeHeroCanvas, { passive: true })
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateProjectsScrollHint)
+  window.removeEventListener('resize', resizeHeroCanvas)
+  if (heroAnimId !== null) cancelAnimationFrame(heroAnimId)
   if (mobileActiveSkillTimer !== null) clearTimeout(mobileActiveSkillTimer)
 })
 // ---- Skills Carousel ----
@@ -137,53 +208,54 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
   <main class="min-h-screen w-full overflow-x-hidden bg-[#0D0D0D] text-slate-100">
     <!-- Navbar flutuante -->
     <div class="fixed top-3 right-0 left-0 z-100 flex justify-center px-4">
-      <nav
-        class="w-full max-w-5xl rounded-xl border border-white/10 bg-black/50 px-6 shadow-[0_4px_24px_rgba(0,0,0,0.6)] backdrop-blur-xl"
-      >
-        <div class="flex h-11 items-center justify-between">
-          <!-- Logo -->
-          <span
-            class="cursor-pointer text-base font-black tracking-[0.35em] text-white uppercase select-none"
+      <nav class="nav-bar w-full max-w-5xl overflow-hidden rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.8)] backdrop-blur-xl">
+        <!-- Top accent line -->
+        <div class="nav-top-accent h-px w-full" />
+
+        <div class="flex h-11 items-center justify-between px-5">
+          <!-- Logo: terminal style -->
+          <button
+            class="group flex items-center gap-1 font-mono select-none focus:outline-none"
             @click="scrollToTop()"
           >
-            LB<span class="text-yellow-500">.</span>
-          </span>
+            <span class="text-yellow-500/60 text-xs transition-colors group-hover:text-yellow-400">&gt;_</span>
+            <span class="ml-1 text-sm font-black text-white tracking-tight">
+              lucas<span class="text-yellow-400">b</span>
+            </span>
+            <span class="ml-0.5 inline-block h-3 w-[2px] bg-yellow-400 opacity-80 animate-[blink_1.1s_step-end_infinite]" />
+          </button>
 
           <!-- Desktop links (centered) -->
-          <ul class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 md:flex">
+          <ul class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-0.5 md:flex">
             <li v-for="link in navLinks" :key="link.label">
               <button
-                class="group relative py-1 text-xs font-semibold tracking-wider uppercase transition-colors duration-200"
+                class="nav-link group relative px-3 py-1.5 font-mono text-[11px] tracking-wider transition-all duration-200 rounded-md"
                 :class="
                   !link.external && activeSection === link.href.replace('#', '')
-                    ? 'text-yellow-400'
-                    : 'text-slate-300 hover:text-white'
+                    ? 'nav-link-active text-yellow-400'
+                    : 'text-slate-500 hover:text-slate-200'
                 "
                 @click="scrollToSection(link)"
               >
-                {{ link.label }}
                 <span
-                  class="absolute bottom-0 left-0 h-px w-full origin-left scale-x-0 bg-yellow-500 transition-transform duration-300 group-hover:scale-x-100"
-                  :class="
-                    !link.external && activeSection === link.href.replace('#', '')
-                      ? 'scale-x-100'
-                      : ''
-                  "
-                />
+                  class="mr-0.5 transition-colors duration-200"
+                  :class="!link.external && activeSection === link.href.replace('#', '') ? 'text-yellow-600' : 'text-slate-700 group-hover:text-yellow-600/50'"
+                >//&nbsp;</span>{{ link.label.toLowerCase() }}
               </button>
             </li>
           </ul>
 
           <div class="flex items-center gap-2">
+            <!-- theme toggle -->
             <button
-              class="hidden h-8 w-8 items-center justify-center rounded-full border border-white/15 text-slate-200 transition hover:border-yellow-400/70 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
+              class="hidden h-7 w-7 items-center justify-center rounded border border-white/10 text-slate-500 transition hover:border-yellow-400/40 hover:text-yellow-400 focus-visible:ring-2 focus-visible:ring-yellow-400/60 focus-visible:outline-none"
               aria-label="Alternar tema"
               @click="toggleDarkMode"
             >
               <svg
                 v-if="isDark"
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
+                class="h-3.5 w-3.5"
                 viewBox="0 0 24 24"
                 fill="currentColor"
               >
@@ -194,7 +266,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               <svg
                 v-else
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
+                class="h-3.5 w-3.5"
                 fill="currentColor"
                 viewBox="0 0 24 24"
               >
@@ -204,7 +276,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               </svg>
             </button>
 
-            <!-- Hamburger button (mobile only) -->
+            <!-- Hamburger (mobile only) -->
             <button
               class="flex h-7 w-7 flex-col items-center justify-center gap-[5px] focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/70 md:hidden"
               :aria-expanded="isMenuOpen"
@@ -212,16 +284,16 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               @click="isMenuOpen = !isMenuOpen"
             >
               <span
-                class="block h-px w-5 origin-center bg-white transition-all duration-300"
-                :class="isMenuOpen ? 'translate-y-[6px] rotate-45' : ''"
+                class="block h-px w-5 origin-center bg-slate-400 transition-all duration-300"
+                :class="isMenuOpen ? 'translate-y-[6px] rotate-45 bg-yellow-400' : ''"
               />
               <span
-                class="block h-px w-5 bg-white transition-all duration-300"
+                class="block h-px w-5 bg-slate-400 transition-all duration-300"
                 :class="isMenuOpen ? 'opacity-0' : ''"
               />
               <span
-                class="block h-px w-5 origin-center bg-white transition-all duration-300"
-                :class="isMenuOpen ? '-translate-y-[6px] -rotate-45' : ''"
+                class="block h-px w-5 origin-center bg-slate-400 transition-all duration-300"
+                :class="isMenuOpen ? '-translate-y-[6px] -rotate-45 bg-yellow-400' : ''"
               />
             </button>
           </div>
@@ -232,18 +304,18 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           class="overflow-hidden transition-all duration-300 md:hidden"
           :class="isMenuOpen ? 'max-h-80' : 'max-h-0'"
         >
-          <ul class="flex flex-col gap-0.5 border-t border-white/10 py-3">
+          <ul class="flex flex-col border-t border-white/6 py-2 font-mono">
             <li v-for="link in navLinks" :key="link.label">
               <button
-                class="w-full py-2 text-left text-xs font-semibold tracking-wider uppercase transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
+                class="w-full px-5 py-2 text-left text-xs tracking-wider transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
                 :class="
                   !link.external && activeSection === link.href.replace('#', '')
                     ? 'text-yellow-400'
-                    : 'text-slate-300 hover:text-white'
+                    : 'text-slate-500 hover:text-slate-200'
                 "
                 @click="scrollToSection(link)"
               >
-                {{ link.label }}
+                <span class="text-slate-700 mr-0.5">//&nbsp;</span>{{ link.label.toLowerCase() }}
               </button>
             </li>
           </ul>
@@ -251,117 +323,134 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
       </nav>
     </div>
 
-    <!-- Bem vindo -->
-    <section class="relative h-screen w-full overflow-hidden">
-      <!-- Background Image | Parallax -->
-      <div
-        class="absolute top-0 h-full w-[max(100%,1900px)]"
-        style="left: calc((100% - max(100%, 1900px)) / 2)"
-      >
-        <!-- bg-1: 130% height + -15% top gives buffer so iOS overscroll never exposes gaps -->
-        <img
-          src="/images/bg-1.png"
-          alt=""
-          class="absolute inset-x-0 -top-[15%] z-10 h-[130%] w-full object-cover object-top"
-          fetchpriority="high"
-          loading="eager"
-          :style="{ transform: getParallaxTransform(0.8), willChange: 'transform' }"
-        />
-        <img
-          src="/images/bg-2.png"
-          class="absolute bottom-15 left-0 z-20 w-full"
-          loading="eager"
-          :style="{ transform: getParallaxTransform(0.6), willChange: 'transform' }"
-        />
-        <img
-          src="/images/jungle2.png"
-          class="absolute bottom-40 left-0 z-30 w-full"
-          loading="eager"
-          :style="{ transform: getParallaxTransform(0.6), willChange: 'transform' }"
-        />
-        <img
-          src="/images/jungle3.png"
-          class="absolute bottom-15 left-0 z-40 w-full"
-          loading="eager"
-          :style="{ transform: getParallaxTransform(0.4), willChange: 'transform' }"
-        />
-        <img
-          src="/images/jungle4.png"
-          class="absolute bottom-8 left-0 z-50 w-full"
-          loading="eager"
-          :style="{ transform: getParallaxTransform(0.4), willChange: 'transform' }"
-        />
-        <img
-          src="/images/man_on_mountain.png"
-          class="absolute bottom-0 -left-20 z-70 w-full"
-          loading="eager"
-          style="transform: translate3d(0, 0, 0)"
-        />
-        <img
-          src="/images/jungle5.png"
-          class="absolute bottom-0 left-0 z-70 w-full"
-          loading="eager"
-          :style="{ transform: getParallaxTransform(0.01), willChange: 'transform' }"
-        />
-      </div>
+    <!-- Hero / Bem vindo -->
+    <section class="relative h-screen w-full overflow-hidden" style="background: #0D0D0D">
 
-      <!-- Main Text -->
+      <!-- Canvas: floating code tokens -->
+      <canvas
+        ref="heroCanvasRef"
+        class="absolute inset-0 h-full w-full pointer-events-none select-none"
+        aria-hidden="true"
+      />
+
+      <!-- Dot-grid overlay -->
+      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+
+      <!-- Radial yellow glow -->
       <div
-        class="relative z-30 flex h-full flex-col items-center justify-center gap-4 px-10 md:flex-row md:gap-10 md:px-20"
-        :style="{ transform: getParallaxTransform(0.9) }"
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 65% 55% at 62% 50%, rgba(234,179,8,0.07) 0%, transparent 65%)"
+        aria-hidden="true"
+      />
+
+      <!-- Content -->
+      <div
+        class="relative z-10 flex h-full flex-col items-center justify-center gap-6 px-8 md:flex-row md:gap-16 md:px-24"
       >
-        <!-- Left: Coding Image (desktop only) -->
-        <div class="hidden md:mb-70 md:block">
-          <img
-            src="/images/coding-image.png"
-            alt="Ilustração de programação"
-            class="w-25 opacity-90 drop-shadow-2xl lg:w-36 xl:w-46"
-          />
+        <!-- Left: Coding Image (desktop) -->
+        <div class="hidden md:flex md:shrink-0 md:items-center md:justify-center">
+          <div class="relative">
+            <div
+              class="absolute -inset-6 rounded-full blur-3xl opacity-25"
+              style="background: radial-gradient(circle, #eab308 0%, transparent 70%)"
+              aria-hidden="true"
+            />
+            <img
+              src="/images/coding-image.png"
+              alt="Ilustração de programação"
+              class="relative w-38 opacity-90 drop-shadow-2xl lg:w-50 xl:w-58 hover:scale-[1.1] transition-transform duration-300"
+              fetchpriority="high"
+            />
+          </div>
         </div>
 
-        <!-- Right: Text -->
-        <div class="flex flex-col items-start md:mb-70">
-          <!-- Greeting -->
+        <!-- Right: Text block -->
+        <div class="flex flex-col items-center gap-4 md:items-start">
+
+          <!-- Badge "Full Stack Developer" -->
+          <div
+            class="inline-flex items-center gap-2 rounded-full border border-yellow-500/30 bg-yellow-500/8 px-4 py-1.5 transition-all duration-700"
+            :class="typingPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse" />
+            <span class="text-xs font-semibold tracking-[0.2em] text-yellow-300 uppercase">Full Stack Developer</span>
+          </div>
+
+          <!-- Line 1: "Hello World!" (typing) -->
           <p
-            class="text-md mb-2 font-bold tracking-[0.35em] text-white uppercase text-shadow-2xs"
-            :class="typingPhase >= 2 ? 'blink-text' : ''"
-            style="font-family: 'Courier New', monospace"
+            class="text-sm font-bold tracking-[0.35em] text-slate-400 uppercase"
+            style="font-family: 'Courier New', monospace; min-height: 1.5em"
           >
             {{ typedLine1
-            }}<span v-if="typingPhase === 0 && showCursor" class="cursor text-slate-300">|</span>
+            }}<span v-if="typingPhase === 0 && showCursor" class="cursor text-yellow-400">|</span>
           </p>
 
-          <!-- Bem vindo -->
+          <!-- Line 2: "Bem vindo!" (typing, big) -->
           <p
-            class="mt-2 text-2xl font-bold tracking-[0.2em] text-white transition-all duration-700 sm:text-3xl"
+            class="text-4xl font-black tracking-tight text-white transition-all duration-700 sm:text-5xl lg:text-6xl"
             :class="typingPhase >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'"
             style="font-family: 'Courier New', monospace"
           >
             {{ typedLine2
-            }}<span v-if="typingPhase === 1 && showCursor" class="cursor text-slate-300">|</span>
+            }}<span v-if="typingPhase === 1 && showCursor" class="cursor text-yellow-400">|</span>
           </p>
+
+          <!-- Name -->
+          <p
+            class="text-base font-semibold tracking-widest text-slate-300 transition-all duration-700 delay-75 sm:text-lg"
+            :class="typingPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'"
+          >
+            Eu sou o <span class="text-yellow-400 font-black">Lucas Bebiano</span>
+          </p>
+
+          <!-- Stack label -->
+          <p
+            class="text-sm tracking-wide text-slate-500 transition-all duration-700 delay-100 md:text-base"
+            :class="typingPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'"
+          >
+            JS &nbsp;·&nbsp; TypeScript &nbsp;·&nbsp; Vue &nbsp;·&nbsp; NestJS &nbsp;·&nbsp; .NET &nbsp;·&nbsp; SQL
+          </p>
+
+          <!-- CTA buttons -->
+          <div
+            class="mt-2 flex flex-wrap gap-3 transition-all duration-700 delay-200"
+            :class="typingPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'"
+          >
+            <button
+              class="hero-btn-primary rounded-lg bg-yellow-500 px-5 py-2.5 text-sm font-bold text-black transition-all duration-200 hover:bg-yellow-400 active:scale-95"
+              @click="scrollToSection({ label: 'Projetos', href: '#projects' })"
+            >
+              Ver Projetos
+            </button>
+            <button
+              class="rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-slate-300 transition-all duration-200 hover:border-white/40 hover:text-white active:scale-95"
+              @click="scrollToSection({ label: 'Fale Comigo', href: '#contact' })"
+            >
+              Fale Comigo
+            </button>
+          </div>
         </div>
 
-        <!-- Coding Image (mobile only, below text) -->
+        <!-- Coding image (mobile only) -->
         <div class="mt-2 block md:hidden">
           <img
             src="/images/coding-image.png"
             alt="Ilustração de programação"
-            class="w-24 opacity-90 drop-shadow-2xl"
+            class="w-24 opacity-80 drop-shadow-2xl hover:scale-[1.1] transition-transform duration-300"
           />
         </div>
       </div>
 
       <!-- Scroll down -->
       <div
-        class="absolute bottom-25 left-1/2 z-65 flex flex-col items-center gap-2 transition-all duration-500"
+        class="absolute bottom-8 left-1/2 z-10 flex flex-col items-center gap-2 transition-all duration-500"
         :class="typingPhase === 2 ? 'opacity-100' : 'opacity-0'"
-        :style="{ transform: `translate3d(-50%, ${scrollY * 0.6}px, 0)` }"
+        style="transform: translate3d(-50%, 0, 0)"
       >
-        <span class="text-xs tracking-[0.25em] text-slate-500 uppercase">Role para baixo</span>
+        <span class="text-[10px] tracking-[0.25em] text-slate-600 uppercase">Role para baixo</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 animate-bounce text-slate-400"
+          class="h-4 w-4 animate-bounce text-slate-500"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -374,121 +463,280 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
     <section
       id="about"
-      class="flex items-center justify-center px-4 py-14 sm:px-8 md:px-15 md:py-24 lg:py-32"
-      style="background: linear-gradient(to bottom, #210002 0%, #0d0d0d 60%)"
+      class="relative z-[1] overflow-hidden px-4 py-12 sm:px-8 md:px-15 md:py-16 lg:py-20"
+      style="background: #0D0D0D"
     >
+      <!-- Dot-grid (same as hero) -->
+      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+
+      <!-- Radial glow: left side -->
       <div
-        class="mx-auto flex max-w-5xl flex-col items-center gap-14 md:flex-row md:items-center md:gap-20"
-      >
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 55% 50% at 20% 55%, rgba(234,179,8,0.06) 0%, transparent 65%)"
+        aria-hidden="true"
+      />
+
+      <div class="relative mx-auto flex max-w-5xl flex-col items-center gap-12 md:flex-row md:items-center md:gap-16">
+
         <!-- Left: Photo -->
-        <div class="group relative w-56 shrink-0 sm:w-64 md:w-80" style="aspect-ratio: 4/5">
-          <img
-            src="/images/aboutme-photo.jpg"
-            alt="Imagem do Lucas vestindo a beca em uma formatura"
-            class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-xl ring-1 shadow-black/50 ring-white/10 transition-all duration-200 group-hover:scale-101 group-hover:opacity-0"
-          />
-          <img
-            src="/images/aboutme-photo-2.png"
-            alt="Segunda foto do Lucas"
-            class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-xl ring-1 shadow-black/50 ring-white/10 opacity-0 transition-all duration-200 group-hover:scale-102 group-hover:opacity-100 object-top"
-          />
+        <div class="shrink-0">
+          <div class="group relative w-52 sm:w-64 md:w-72" style="aspect-ratio: 4/5">
+            <!-- Glow ring behind photo -->
+            <div
+              class="absolute -inset-4 rounded-3xl blur-2xl opacity-20"
+              style="background: radial-gradient(circle, #eab308 0%, transparent 70%)"
+              aria-hidden="true"
+            />
+            <img
+              src="/images/aboutme-photo.jpg"
+              alt="Lucas Bebiano na formatura"
+              class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-all duration-300 group-hover:opacity-0 group-hover:scale-[1.02]"
+            />
+            <img
+              src="/images/aboutme-photo-2.png"
+              alt="Lucas Bebiano"
+              class="absolute inset-0 h-full w-full rounded-2xl object-cover object-top shadow-2xl ring-1 ring-white/10 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-[1.02]"
+            />
+            <!-- Badge "Disponível" -->
+            <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full border border-yellow-500/30 bg-[#0D0D0D] px-3 py-1 shadow-lg">
+              <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse" />
+              <span class="text-[10px] font-semibold tracking-[0.15em] text-yellow-300 uppercase whitespace-nowrap">Disponível</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Right: Sobre mim -->
-        <div class="w-full">
-          <h2
-            class="mb-5 text-center text-2xl font-bold text-yellow-400 sm:text-3xl md:text-left md:text-4xl lg:text-5xl"
-          >
-            Sou o Lucas Bebiano,
+        <!-- Right: Content -->
+        <div class="flex w-full flex-col gap-5">
+
+          <!-- Label -->
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">// sobre mim</p>
+
+          <!-- Name heading -->
+          <h2 class="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
+            Lucas <span class="text-yellow-400">Bebiano</span>
           </h2>
-          <p class="text-center text-base leading-relaxed text-slate-300 sm:text-lg md:text-left">
-            Desenvolvedor Full Stack graduado em Análise e Desenvolvimento de Sistemas, com
-            experiência no desenvolvimento e manutenção de aplicações web, atuando em todo o ciclo
-            de vida, do levantamento de requisitos à entrega. Foco em boas práticas de
-            desenvolvimento, qualidade de código e colaboração em equipe. Perfil proativo, com busca
-            contínua por evolução técnica e adoção de soluções que agreguem eficiência aos sistemas.
+
+          <!-- Bio -->
+          <p class="text-sm leading-relaxed text-slate-400 sm:text-base">
+            Desenvolvedor Full Stack com experiência no ciclo completo de aplicações web — do levantamento de requisitos à entrega.
+            Perfil proativo, com busca contínua por evolução técnica e soluções que agreguem eficiência real aos sistemas.
           </p>
+
+                    <!-- Terminal card -->
+          <div class="about-terminal rounded-xl border border-white/8 bg-white/3 p-4 font-mono text-xs leading-relaxed sm:text-sm">
+            <!-- Terminal top bar -->
+            <div class="mb-3 flex items-center gap-1.5">
+              <span class="h-2.5 w-2.5 rounded-full bg-white/10" />
+              <span class="h-2.5 w-2.5 rounded-full bg-white/10" />
+              <span class="h-2.5 w-2.5 rounded-full bg-white/10" />
+              <span class="ml-2 text-[10px] tracking-wider text-slate-600">lucas.ts</span>
+            </div>
+            <!-- Code -->
+            <p><span class="text-purple-400">const</span> <span class="text-yellow-300">lucas</span> <span class="text-slate-400">=</span> <span class="text-slate-400">{</span></p>
+            <p class="pl-4"><span class="text-sky-400">role</span><span class="text-slate-400">:</span> <span class="text-green-400">'Full Stack Developer'</span><span class="text-slate-400">,</span></p>
+            <p class="pl-4"><span class="text-sky-400">formação</span><span class="text-slate-400">:</span> <span class="text-green-400">'ADS – Análise e Desenvolvimento de Sistemas'</span><span class="text-slate-400">,</span></p>
+            <p class="pl-4"><span class="text-sky-400">stack</span><span class="text-slate-400">:</span> <span class="text-slate-400">[</span><span class="text-green-400">'JS'</span><span class="text-slate-400">,</span> <span class="text-green-400">'TypeScript'</span><span class="text-slate-400">,</span> <span class="text-green-400">'Vue'</span><span class="text-slate-400">,</span> <span class="text-green-400">'NestJS'</span><span class="text-slate-400">,</span> <span class="text-green-400">'.NET'</span><span class="text-slate-400">,</span> <span class="text-green-400">'SQL'</span><span class="text-slate-400">],</span></p>
+            <p class="pl-4"><span class="text-sky-400">foco</span><span class="text-slate-400">:</span> <span class="text-green-400">'boas práticas &amp; qualidade de código'</span><span class="text-slate-400">,</span></p>
+            <p class="pl-4"><span class="text-sky-400">disponível</span><span class="text-slate-400">:</span> <span class="text-yellow-400">true</span><span class="text-slate-400">,</span></p>
+            <p><span class="text-slate-400">}</span></p>
+          </div>
+
+          <!-- Chips -->
+          <div class="flex flex-wrap gap-2">
+            <span class="about-chip">Ciclo completo</span>
+            <span class="about-chip">Boas práticas</span>
+            <span class="about-chip">Trabalho em equipe</span>
+            <span class="about-chip">Perfil proativo</span>
+          </div>
+
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Experiências -->
+    <section
+      id="experience"
+      class="relative z-[1] overflow-hidden px-4 py-12 sm:px-6 md:px-10 md:py-16"
+      style="background: #0D0D0D"
+    >
+      <!-- Dot-grid -->
+      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <!-- Glow right -->
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 50% 45% at 75% 40%, rgba(234,179,8,0.06) 0%, transparent 65%)"
+        aria-hidden="true"
+      />
+
+      <div class="relative mx-auto max-w-4xl">
+        <!-- Header -->
+        <div class="mb-10 flex flex-col items-center gap-2">
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">// experiencias</p>
+          <h2 class="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
+            Onde eu <span class="text-yellow-400">trabalhei</span>
+          </h2>
+        </div>
+
+        <!-- Cards side by side on desktop, stacked on mobile -->
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+          <!-- PRODABEL -->
+          <div class="exp-card group rounded-xl border border-white/8 bg-white/2 p-6 transition-all duration-300 hover:border-yellow-500/20 hover:bg-white/3">
+            <!-- Header row -->
+            <div class="mb-1 flex items-start justify-between gap-3">
+              <div>
+                <p class="text-[11px] font-semibold uppercase tracking-widest text-yellow-500/80">Prodabel</p>
+                <h3 class="mt-1 text-base font-bold text-white leading-snug">Estagiário de Desenvolvimento</h3>
+              </div>
+              <span class="shrink-0 rounded-full border border-white/10 bg-white/4 px-2.5 py-1 text-[10px] font-mono text-slate-500">
+                2024 – 2025
+              </span>
+            </div>
+            <p class="mb-4 text-[11px] text-slate-600">Belo Horizonte, MG</p>
+
+            <!-- Bullets -->
+            <ul class="flex flex-col gap-2.5">
+              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-500/60" />
+                Desenvolvimento de sistemas web modernos, participando de todo o ciclo — do código ao ambiente de produção.
+              </li>
+              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-500/60" />
+                Atuação em equipe multidisciplinar com metodologia ágil (Scrum), contribuindo em cerimônias e entregas.
+              </li>
+              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-500/60" />
+                Levantamento e validação de requisitos com stakeholders, traduzindo necessidades de negócio em soluções técnicas.
+              </li>
+            </ul>
+
+            <!-- Stack -->
+            <div class="mt-5 flex flex-wrap gap-1.5">
+              <span v-for="tech in ['Vue.js', 'Node.js', 'TypeScript', 'NestJS', 'Oracle']" :key="tech" class="about-chip">{{ tech }}</span>
+            </div>
+          </div>
+
+          <!-- CARDIESEL -->
+          <div class="exp-card group rounded-xl border border-white/8 bg-white/2 p-6 transition-all duration-300 hover:border-yellow-500/20 hover:bg-white/3">
+            <!-- Header row -->
+            <div class="mb-1 flex items-start justify-between gap-3">
+              <div>
+                <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Cardiesel</p>
+                <h3 class="mt-1 text-base font-bold text-white leading-snug">Jovem Aprendiz — TI</h3>
+                <p class="mt-0.5 text-[11px] text-slate-600">Concessionária Mercedes-Benz</p>
+              </div>
+              <span class="shrink-0 rounded-full border border-white/10 bg-white/4 px-2.5 py-1 text-[10px] font-mono text-slate-500">
+                2022 – 2023
+              </span>
+            </div>
+            <p class="mb-4 text-[11px] text-slate-600">Belo Horizonte, MG</p>
+
+            <!-- Bullets -->
+            <ul class="flex flex-col gap-2.5">
+              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-white/25" />
+                Participação na implantação de novo sistema interno, sendo ponto de contato entre equipe técnica e usuários finais.
+              </li>
+              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-white/25" />
+                Suporte técnico e atendimento a colaboradores via Service Desk, auxiliando na resolução de problemas do dia a dia.
+              </li>
+            </ul>
+          </div>
+
         </div>
       </div>
     </section>
 
     <section
       id="skills"
-      class="overflow-hidden py-12 md:py-16 lg:py-20"
-      style="
-        background: linear-gradient(to bottom, #0d0d0d 0%, #18181b 25%, #18181b 85%, #0d0d0d 100%);
-      "
+      class="relative z-[1] overflow-hidden py-12 md:py-16"
+      style="background: #0D0D0D"
     >
-      <!-- Title -->
-      <h2
-        class="m-0 mb-10 p-0 text-center text-2xl font-bold text-yellow-400 sm:text-3xl md:text-4xl lg:text-5xl"
-      >
-        Conhecimentos
-      </h2>
+      <!-- Dot-grid -->
+      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <!-- Glow center -->
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 60% 40% at 50% 50%, rgba(234,179,8,0.05) 0%, transparent 65%)"
+        aria-hidden="true"
+      />
 
-      <!-- Mobile: Grid -->
-      <div class="px-4 sm:hidden">
-        <p class="mb-4 text-center text-xs tracking-wide text-slate-500 dark:text-slate-400">
-          Toque nos icones para destacar as tecnologias.
-        </p>
-        <div class="grid grid-cols-3 gap-3">
-          <div
-            v-for="skill in skills"
-            :key="skill.name"
-            class="group flex flex-col items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 p-3 text-center transition-all duration-300 active:scale-[1.03]"
-            role="button"
-            tabindex="0"
-            :aria-label="`Destacar habilidade ${skill.name}`"
-            @touchstart.passive="activateMobileSkill(skill.name)"
-            @click="activateMobileSkill(skill.name)"
-            @keydown.enter.prevent="activateMobileSkill(skill.name)"
-            @keydown.space.prevent="activateMobileSkill(skill.name)"
-          >
-            <img
-              :src="skill.icon"
-              :alt="skill.name"
-              class="h-10 w-10 object-contain transition-transform duration-300 ease-out group-active:scale-110"
-              :class="mobileActiveSkill === skill.name ? 'scale-110' : ''"
-              draggable="false"
-            />
-            <span class="text-xs leading-tight font-semibold text-slate-200">{{ skill.name }}</span>
+      <div class="relative px-4 sm:px-6">
+        <!-- Header -->
+        <div class="mb-12 flex flex-col items-center gap-2">
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">// conhecimentos</p>
+          <h2 class="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
+            Minha <span class="text-yellow-400">Stack</span>
+          </h2>
+          <p class="mt-1 text-sm text-slate-500">Tecnologias que uso no dia a dia</p>
+        </div>
+
+        <!-- Mobile: Grid -->
+        <div class="px-0 sm:hidden">
+          <div class="grid grid-cols-3 gap-3">
+            <div
+              v-for="skill in skills"
+              :key="skill.name"
+              class="group flex flex-col items-center justify-center gap-2 rounded-xl border border-white/8 bg-white/3 p-3 text-center transition-all duration-300 active:scale-[1.03] active:border-yellow-500/30"
+              role="button"
+              tabindex="0"
+              :aria-label="`Destacar habilidade ${skill.name}`"
+              @touchstart.passive="activateMobileSkill(skill.name)"
+              @click="activateMobileSkill(skill.name)"
+              @keydown.enter.prevent="activateMobileSkill(skill.name)"
+              @keydown.space.prevent="activateMobileSkill(skill.name)"
+            >
+              <img
+                :src="skill.icon"
+                :alt="skill.name"
+                class="h-10 w-10 object-contain transition-transform duration-300 ease-out group-active:scale-110"
+                :class="mobileActiveSkill === skill.name ? 'scale-110' : ''"
+                draggable="false"
+              />
+              <span class="text-xs leading-tight font-semibold text-slate-300">{{ skill.name }}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Carousel (sm+) -->
-      <div
-        ref="carouselTrackRef"
-        class="hidden [touch-action:pan-y] gap-20 will-change-transform sm:flex"
-        :style="{
-          transform: `translateX(${carouselOffset}px)`,
-          cursor: carouselIsDragging ? 'grabbing' : 'grab',
-          userSelect: 'none',
-        }"
-        @mousedown="onCarouselMouseDown"
-        @touchstart.passive="onCarouselTouchStart"
-        @touchmove.passive="onCarouselTouchMove"
-        @touchend="onCarouselTouchEnd"
-        @touchcancel="onCarouselTouchCancel"
-      >
-        <template v-for="set in 3" :key="set">
-          <SkillCard v-for="skill in skills" :key="`${set}-${skill.name}`" :skill="skill" />
-        </template>
-      </div>
-
-      <div class="mt-8 flex flex-col items-center justify-center gap-6">
-        <hr class="w-24 border-slate-300 dark:border-white/20" />
-        <a
-          href="https://drive.google.com/drive/folders/12R09riJtxIafUOd8BM_FxmYydnODgxjG?usp=drive_link"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="group relative inline-block font-medium text-yellow-400 transition-colors duration-300 hover:text-yellow-300"
+        <!-- Carousel (sm+) -->
+        <div
+          ref="carouselTrackRef"
+          class="hidden [touch-action:pan-y] gap-20 will-change-transform sm:flex"
+          :style="{
+            transform: `translateX(${carouselOffset}px)`,
+            cursor: carouselIsDragging ? 'grabbing' : 'grab',
+            userSelect: 'none',
+          }"
+          @mousedown="onCarouselMouseDown"
+          @touchstart.passive="onCarouselTouchStart"
+          @touchmove.passive="onCarouselTouchMove"
+          @touchend="onCarouselTouchEnd"
+          @touchcancel="onCarouselTouchCancel"
         >
-          <span class="flex items-center gap-1">
+          <template v-for="set in 3" :key="set">
+            <SkillCard v-for="skill in skills" :key="`${set}-${skill.name}`" :skill="skill" />
+          </template>
+        </div>
+
+        <!-- Footer link -->
+        <div class="mt-12 flex flex-col items-center gap-4">
+          <div class="flex items-center gap-3 w-full max-w-xs">
+            <div class="h-px flex-1 bg-white/8" />
+            <span class="font-mono text-[10px] tracking-widest text-slate-600 uppercase">certificados</span>
+            <div class="h-px flex-1 bg-white/8" />
+          </div>
+          <a
+            href="https://drive.google.com/drive/folders/12R09riJtxIafUOd8BM_FxmYydnODgxjG?usp=drive_link"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group inline-flex items-center gap-2 rounded-lg border border-yellow-500/25 bg-yellow-500/6 px-5 py-2 text-sm font-semibold text-yellow-400 transition-all duration-200 hover:border-yellow-500/50 hover:bg-yellow-500/10 hover:text-yellow-300"
+          >
             Ver certificados
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+              class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -496,24 +744,34 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             >
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-          </span>
-          <span
-            class="absolute bottom-0 left-0 h-0.5 w-0 bg-yellow-400 transition-all duration-300 group-hover:w-full"
-          ></span>
-        </a>
+          </a>
+        </div>
       </div>
     </section>
 
     <section
       id="projects"
-      class="px-4 pt-12 pb-16 sm:px-6 md:px-15 md:pt-20 md:pb-24 lg:pb-28"
-      style="background: #0d0d0d"
+      class="relative z-[1] overflow-hidden px-4 pt-12 pb-16 sm:px-6 md:px-15 md:pt-16 md:pb-20"
+      style="background: #0D0D0D"
     >
-      <div class="mx-auto w-full max-w-7xl">
-        <!-- Title -->
-        <h2 class="mb-12 text-center text-3xl font-bold text-yellow-400 sm:text-4xl md:text-5xl">
-          Projetos
-        </h2>
+      <!-- Dot-grid -->
+      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <!-- Glow right -->
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 55% 45% at 80% 30%, rgba(234,179,8,0.05) 0%, transparent 65%)"
+        aria-hidden="true"
+      />
+
+      <div class="relative mx-auto w-full max-w-7xl">
+        <!-- Header -->
+        <div class="mb-12 flex flex-col items-center gap-2">
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">// projetos</p>
+          <h2 class="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
+            O que eu <span class="text-yellow-400">construí</span>
+          </h2>
+          <p class="mt-1 text-sm text-slate-500">Clique em um projeto para ver os detalhes</p>
+        </div>
 
         <!-- Mobile: Carrossel horizontal (< sm) -->
         <div class="relative sm:hidden">
@@ -527,7 +785,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           >
             <div
               v-if="showProjectsScrollHint"
-              class="mb-4 flex items-center justify-center gap-2 text-xs font-semibold tracking-wide text-slate-400"
+              class="mb-4 flex items-center justify-center gap-2 text-xs font-semibold tracking-wide text-slate-500"
               aria-live="polite"
             >
               <svg
@@ -540,7 +798,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               >
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
-              Arraste para o lado para ver mais projetos
+              Arraste para ver mais
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-4 w-4 animate-[slide-hint_1.1s_ease-in-out_infinite]"
@@ -556,65 +814,54 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
           <div
             ref="mobileProjectsRef"
-            class="carousel -mx-6 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-4"
+            class="carousel -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4"
             @scroll.passive="onMobileProjectsScroll"
             @touchstart.passive="dismissProjectsScrollHint"
           >
             <div
               v-for="project in projects"
               :key="project.title"
-              class="flex w-[82%] shrink-0 cursor-pointer snap-start flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-lg backdrop-blur-sm"
+              class="project-card flex w-[85%] shrink-0 cursor-pointer snap-start flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/3"
               role="button"
               tabindex="0"
               @click="openModal(project)"
               @keydown.enter="openModal(project)"
               @keydown.space.prevent="openModal(project)"
             >
-              <!-- Imagem -->
-              <div class="aspect-square w-full overflow-hidden bg-white/5">
+              <!-- Terminal bar -->
+              <div class="flex items-center gap-1.5 border-b border-white/8 bg-white/3 px-3 py-2">
+                <span class="h-2 w-2 rounded-full bg-white/10" />
+                <span class="h-2 w-2 rounded-full bg-white/10" />
+                <span class="h-2 w-2 rounded-full bg-white/10" />
+                <span class="ml-1 font-mono text-[9px] tracking-wider text-slate-600 truncate">{{ project.title.toLowerCase().replace(/\s/g, '-') }}.ts</span>
+              </div>
+              <!-- Image 16:9 -->
+              <div class="aspect-video w-full overflow-hidden bg-white/5">
                 <img
                   :src="project.image"
                   :alt="project.title"
-                  class="h-full w-full object-cover"
+                  class="h-full w-full object-cover transition-transform duration-500"
                   loading="lazy"
                   decoding="async"
                 />
               </div>
-
-              <!-- Conteúdo -->
+              <!-- Content -->
               <div class="flex flex-1 flex-col gap-2 p-3">
                 <h3 class="text-sm font-bold text-white">{{ project.title }}</h3>
-                <p class="flex-1 text-xs leading-relaxed text-slate-400">
-                  {{ project.description }}
-                </p>
-
-                <div class="flex flex-wrap gap-1.5">
+                <p class="flex-1 text-xs leading-relaxed text-slate-400">{{ project.description }}</p>
+                <div class="flex flex-wrap gap-1">
                   <span
                     v-for="tech in project.tech"
                     :key="tech"
-                    class="rounded-full border border-yellow-700/20 px-2 py-0.5 text-[10px] font-medium text-yellow-400"
+                    class="rounded-full border border-yellow-500/20 bg-yellow-500/8 px-2 py-0.5 text-[10px] font-medium text-yellow-400"
                   >
                     {{ tech }}
                   </span>
                 </div>
-
-                <span
-                  class="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-blue-400"
-                >
+                <span class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sky-400">
                   Ver detalhes
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-3 w-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </span>
               </div>
@@ -623,59 +870,51 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
         </div>
 
         <!-- Desktop: Grid (>= sm) -->
-        <div class="hidden sm:grid sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+        <div class="hidden sm:grid sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
           <div
             v-for="project in paginatedProjects"
             :key="project.title"
-            class="flex cursor-pointer flex-col overflow-hidden border border-white/10 bg-white/5 shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-yellow-500/40 hover:shadow-yellow-500/10"
-            :style="{ borderRadius: '5px 5px 20px 5px' }"
+            class="project-card group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/3 transition-all duration-300 hover:-translate-y-1 hover:border-yellow-500/35"
             role="button"
             tabindex="0"
             @click="openModal(project)"
             @keydown.enter="openModal(project)"
             @keydown.space.prevent="openModal(project)"
           >
-            <!-- Imagem -->
-            <div class="aspect-square w-full overflow-hidden bg-white/5">
+            <!-- Terminal bar -->
+            <div class="flex items-center gap-1.5 border-b border-white/8 bg-white/3 px-3 py-2">
+              <span class="h-2 w-2 rounded-full bg-white/10 transition-colors duration-200 group-hover:bg-yellow-500/40" />
+              <span class="h-2 w-2 rounded-full bg-white/10" />
+              <span class="h-2 w-2 rounded-full bg-white/10" />
+              <span class="ml-1 font-mono text-[9px] tracking-wider text-slate-600 truncate">{{ project.title.toLowerCase().replace(/\s/g, '-') }}.ts</span>
+            </div>
+            <!-- Image 16:9 -->
+            <div class="aspect-video w-full overflow-hidden bg-white/5">
               <img
                 :src="project.image"
                 :alt="project.title"
-                class="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 loading="lazy"
                 decoding="async"
               />
             </div>
-
-            <!-- Conteúdo -->
+            <!-- Content -->
             <div class="flex flex-1 flex-col gap-2 p-3">
               <h3 class="text-sm font-bold text-white">{{ project.title }}</h3>
               <p class="flex-1 text-xs leading-relaxed text-slate-400">{{ project.description }}</p>
-
-              <div class="flex flex-wrap gap-1.5">
+              <div class="flex flex-wrap gap-1">
                 <span
                   v-for="tech in project.tech"
                   :key="tech"
-                  class="rounded-full border border-yellow-200/70 bg-yellow-500/20 px-2 py-0.5 text-[10px] font-medium text-white/90"
+                  class="rounded-full border border-yellow-500/20 bg-yellow-500/8 px-2 py-0.5 text-[10px] font-medium text-yellow-400"
                 >
                   {{ tech }}
                 </span>
               </div>
-
-              <span class="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-blue-400">
+              <span class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sky-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                 Ver detalhes
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-3 w-3"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </span>
             </div>
@@ -948,22 +1187,36 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
     <!-- Fale Comigo -->
     <footer
       id="contact"
-      class="px-4 pt-12 pb-0 sm:px-6 md:px-10 md:pt-16 lg:pt-20"
-      style="background: #18181b"
+      class="relative z-[1] overflow-hidden px-4 pt-12 pb-0 sm:px-6 md:px-10 md:pt-16"
+      style="background: #0D0D0D"
     >
-      <div class="mx-auto max-w-4xl">
-        <!-- Title -->
-        <h2 class="mb-12 text-center text-2xl font-bold text-yellow-400 sm:text-3xl md:text-4xl">
-          Fale comigo
-        </h2>
+      <!-- Dot-grid -->
+      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <!-- Glow left -->
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 50% 45% at 25% 40%, rgba(234,179,8,0.06) 0%, transparent 65%)"
+        aria-hidden="true"
+      />
 
-        <!-- Contact links row -->
-        <div class="flex flex-wrap items-start justify-center gap-10 sm:gap-16">
-          <!-- Phone -->
+      <div class="relative mx-auto max-w-4xl">
+        <!-- Header -->
+        <div class="mb-12 flex flex-col items-center gap-2">
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">// contato</p>
+          <h2 class="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
+            Fale <span class="text-yellow-400">comigo</span>
+          </h2>
+          <p class="mt-1 text-sm text-slate-500">Aberto a novas oportunidades e colaborações</p>
+        </div>
+
+
+
+        <!-- Contact links -->
+        <div class="flex flex-wrap items-stretch justify-center gap-4 sm:gap-5">
           <ContactLink :href="contactPhoneHref" :label="CONTACT.phoneLabel">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 transition-transform duration-200 group-hover:scale-110"
+              class="h-7 w-7 transition-transform duration-200 group-hover:scale-110"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -977,11 +1230,10 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             </svg>
           </ContactLink>
 
-          <!-- Email -->
           <ContactLink :href="contactEmailHref" :label="CONTACT.email">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 transition-transform duration-200 group-hover:scale-110"
+              class="h-7 w-7 transition-transform duration-200 group-hover:scale-110"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -995,11 +1247,10 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             </svg>
           </ContactLink>
 
-          <!-- GitHub -->
           <ContactLink :href="CONTACT.github" :label="CONTACT.githubLabel" :external="true">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 transition-transform duration-200 group-hover:scale-110"
+              class="h-7 w-7 transition-transform duration-200 group-hover:scale-110"
               fill="currentColor"
               viewBox="0 0 24 24"
             >
@@ -1009,11 +1260,10 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             </svg>
           </ContactLink>
 
-          <!-- LinkedIn -->
           <ContactLink :href="CONTACT.linkedin" :label="CONTACT.linkedinLabel" :external="true">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 transition-transform duration-200 group-hover:scale-110"
+              class="h-7 w-7 transition-transform duration-200 group-hover:scale-110"
               fill="currentColor"
               viewBox="0 0 24 24"
             >
@@ -1025,14 +1275,103 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
         </div>
 
         <!-- Bottom divider + copyright -->
-        <div class="mt-8 border-t border-white/10 py-6">
-          <p class="text-center text-xs text-slate-600">@2026 - Lucas Bebiano</p>
+        <div class="mt-16 border-t border-white/8 py-6">
+          <p class="text-center font-mono text-[10px] tracking-widest text-slate-700">
+            &copy; 2026 — <span class="text-slate-600">Lucas Bebiano</span>
+          </p>
         </div>
       </div>
     </footer>
   </main>
 </template>
 <style scoped>
+/* ─── Navbar ────────────────────────────── */
+.nav-bar {
+  background: rgba(13, 13, 13, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-top-color: rgba(234, 179, 8, 0.18);
+}
+
+.nav-top-accent {
+  background: linear-gradient(90deg, transparent 5%, rgba(234, 179, 8, 0.35) 50%, transparent 95%);
+}
+
+.nav-link {
+  position: relative;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: rgba(234, 179, 8, 0.5);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+.nav-link-active {
+  background: rgba(234, 179, 8, 0.05);
+}
+
+.nav-link-active::after {
+  transform: scaleX(1);
+}
+
+/* Hero background dot grid */
+.hero-grid-overlay {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+/* Primary CTA glow on hover */
+.hero-btn-primary:hover {
+  box-shadow: 0 0 22px rgba(234, 179, 8, 0.45);
+}
+
+/* About section */
+.about-terminal {
+  backdrop-filter: blur(4px);
+}
+
+.about-chip {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  background: rgba(234, 179, 8, 0.06);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #fde68a;
+  text-transform: uppercase;
+}
+
+/* Project cards */
+.project-card:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(234, 179, 8, 0.15);
+}
+
+/* Experience timeline */
+.exp-timeline-line {
+  background: linear-gradient(to bottom, transparent, rgba(234, 179, 8, 0.2) 15%, rgba(234, 179, 8, 0.2) 85%, transparent);
+}
+
+.exp-card {
+  backdrop-filter: blur(4px);
+}
+
+.exp-card:hover {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(234, 179, 8, 0.1);
+}
+
 .carousel {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -1073,4 +1412,6 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
     opacity: 0;
   }
 }
+
+
 </style>
