@@ -229,7 +229,16 @@ const projects = [
       'Disponível como APK para Android',
       'Projeto acadêmico — 3º Semestre ADS PUC Minas',
     ],
-    image: '/images/previa_powertrack.png',
+    image: 'images/powertrack/power-track-main.png',
+    images: [
+      'images/powertrack/power-track-photo (1).png',
+      'images/powertrack/power-track-photo (2).png',
+      'images/powertrack/power-track-photo (3).png',
+      'images/powertrack/power-track-photo (4).png',
+      'images/powertrack/power-track-photo (5).png',
+      'images/powertrack/power-track-photo (6).png',
+      'images/powertrack/power-track-photo (7).png',
+    ],
     link: 'https://github.com/xavierlbx/power-track',
     year: '2024',
     status: 'Concluído',
@@ -260,7 +269,16 @@ const projects = [
       'Deploy no Firebase Hosting',
       'Projeto acadêmico — 5º Semestre ADS PUC Minas',
     ],
-    image: '/images/previa_igesc.png',
+    image: '/images/igesc/igesc-main.png',
+    images: [
+      '/images/igesc/igesc-photo (1).png',
+      '/images/igesc/igesc-photo (2).png',
+      '/images/igesc/igesc-photo (3).png',
+      '/images/igesc/igesc-photo (4).png',
+      '/images/igesc/igesc-photo (5).png',
+      '/images/igesc/igesc-photo (6).png',
+      '/images/igesc/igesc-photo (7).png',
+    ],
     link: 'https://github.com/ICEI-PUC-Minas-PMV-ADS/pmv-ads-2025-2-e5-proj-empext-t1-pmv-ads-2025-2-e5-projigescconecta',
     year: '2025',
     status: 'Concluído',
@@ -281,7 +299,14 @@ const projects = [
       'API Gateway centralizando os serviços',
       'Projeto acadêmico — 4º Semestre ADS PUC Minas',
     ],
-    image: '/images/previa_apoia_mente.png',
+    image: '/images/apoiamente/apoia-mente-main.png',
+    images: [
+      '/images/apoiamente/apoia-mente-photo (1).png',
+      '/images/apoiamente/apoia-mente-photo (2).png',
+      '/images/apoiamente/apoia-mente-photo (3).png',
+      '/images/apoiamente/apoia-mente-photo (4).png',
+      '/images/apoiamente/apoia-mente-photo (5).png',
+    ],
     link: 'https://github.com/xavierlbx/apoia-mente',
     liveLink: 'https://www.apoiamente.com.br',
     year: '2025',
@@ -715,11 +740,11 @@ onUnmounted(() => {
 
       <!-- Main Text -->
       <div
-        class="relative z-30 flex h-full items-center justify-center gap-10 px-10 md:px-20"
+        class="relative z-30 flex h-full flex-col items-center justify-center gap-4 px-10 md:flex-row md:gap-10 md:px-20"
         :style="{ transform: getParallaxTransform(0.9) }"
       >
-        <!-- Left: Coding Image -->
-        <div class="mb-70 hidden md:block">
+        <!-- Left: Coding Image (desktop only) -->
+        <div class="hidden md:mb-70 md:block">
           <img
             src="/images/coding-image.png"
             alt="Ilustração de programação"
@@ -728,7 +753,7 @@ onUnmounted(() => {
         </div>
 
         <!-- Right: Text -->
-        <div class="mb-70 flex flex-col items-start">
+        <div class="flex flex-col items-start md:mb-70">
           <!-- Greeting -->
           <p
             class="text-md mb-2 font-bold tracking-[0.35em] text-white uppercase text-shadow-2xs"
@@ -748,6 +773,15 @@ onUnmounted(() => {
             {{ typedLine2
             }}<span v-if="typingPhase === 1 && showCursor" class="cursor text-slate-300">|</span>
           </p>
+        </div>
+
+        <!-- Coding Image (mobile only, below text) -->
+        <div class="mt-2 block md:hidden">
+          <img
+            src="/images/coding-image.png"
+            alt="Ilustração de programação"
+            class="w-24 opacity-90 drop-shadow-2xl"
+          />
         </div>
       </div>
 
@@ -992,7 +1026,9 @@ onUnmounted(() => {
                   </span>
                 </div>
 
-                <span class="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-blue-400">
+                <span
+                  class="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-blue-400"
+                >
                   Ver detalhes
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -1094,7 +1130,7 @@ onUnmounted(() => {
         role="dialog"
         aria-modal="true"
         aria-label="Detalhes do projeto"
-        class="flex w-full max-w-4xl max-h-[90vh] flex-col overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl sm:flex-row"
+        class="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl sm:flex-row"
       >
         <!-- LEFT: Image panel -->
         <div class="relative flex h-56 shrink-0 flex-col bg-zinc-900 sm:h-auto sm:w-[42%]">
@@ -1104,7 +1140,14 @@ onUnmounted(() => {
             aria-label="Fechar detalhes do projeto"
             @click="closeModal"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
           </button>
@@ -1114,7 +1157,11 @@ onUnmounted(() => {
             <!-- Blurred bg fill -->
             <div
               class="absolute inset-0 scale-110 blur-lg"
-              :style="{ backgroundImage: `url(${modalImages[modalImageIndex]})`, backgroundSize: 'cover', backgroundPosition: 'center' }"
+              :style="{
+                backgroundImage: `url(${modalImages[modalImageIndex]})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }"
             />
             <div class="absolute inset-0 bg-black/50" />
             <img
@@ -1125,30 +1172,48 @@ onUnmounted(() => {
             <!-- Prev/Next arrows -->
             <template v-if="modalImages.length > 1">
               <button
-                class="absolute left-2 top-1/2 z-30 -translate-y-1/2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur-sm transition hover:bg-black/80 focus-visible:outline-none"
+                class="absolute top-1/2 left-2 z-30 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur-sm transition hover:bg-black/80 focus-visible:outline-none"
                 aria-label="Imagem anterior"
                 @click.stop="modalPrev"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3.5 w-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               <button
-                class="absolute right-2 top-1/2 z-30 -translate-y-1/2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur-sm transition hover:bg-black/80 focus-visible:outline-none"
+                class="absolute top-1/2 right-2 z-30 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur-sm transition hover:bg-black/80 focus-visible:outline-none"
                 aria-label="Próxima imagem"
                 @click.stop="modalNext"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3.5 w-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </button>
               <!-- Dot indicators -->
-              <div class="absolute bottom-2 left-0 right-0 z-30 flex justify-center gap-1.5">
+              <div class="absolute right-0 bottom-2 left-0 z-30 flex justify-center gap-1.5">
                 <button
                   v-for="(_, i) in modalImages"
                   :key="i"
                   class="h-1.5 rounded-full transition-all duration-200 focus-visible:outline-none"
-                  :class="i === modalImageIndex ? 'w-4 bg-yellow-400' : 'w-1.5 bg-white/40 hover:bg-white/70'"
+                  :class="
+                    i === modalImageIndex
+                      ? 'w-4 bg-yellow-400'
+                      : 'w-1.5 bg-white/40 hover:bg-white/70'
+                  "
                   :aria-label="`Ir para imagem ${i + 1}`"
                   @click.stop="modalImageIndex = i"
                 />
@@ -1157,12 +1222,19 @@ onUnmounted(() => {
           </div>
 
           <!-- Thumbnail strip -->
-          <div v-if="modalImages.length > 1" class="flex shrink-0 gap-1.5 overflow-x-auto bg-zinc-900/80 p-2">
+          <div
+            v-if="modalImages.length > 1"
+            class="flex shrink-0 gap-1.5 overflow-x-auto bg-zinc-900/80 p-2"
+          >
             <button
               v-for="(img, i) in modalImages"
               :key="i"
               class="h-12 w-16 shrink-0 overflow-hidden rounded-md border-2 bg-zinc-800 transition-all duration-200 focus-visible:outline-none"
-              :class="i === modalImageIndex ? 'border-yellow-400 opacity-100' : 'border-white/10 opacity-50 hover:opacity-80'"
+              :class="
+                i === modalImageIndex
+                  ? 'border-yellow-400 opacity-100'
+                  : 'border-white/10 opacity-50 hover:opacity-80'
+              "
               :aria-label="`Visualizar imagem ${i + 1}`"
               @click="modalImageIndex = i"
             >
@@ -1218,7 +1290,11 @@ onUnmounted(() => {
                     stroke="currentColor"
                     stroke-width="2.5"
                   >
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M4.5 12.75l6 6 9-13.5"
+                    />
                   </svg>
                   {{ item }}
                 </li>
@@ -1243,7 +1319,9 @@ onUnmounted(() => {
           </div>
 
           <!-- Footer actions -->
-          <footer class="flex shrink-0 items-center justify-between gap-3 border-t border-white/10 px-5 py-4">
+          <footer
+            class="flex shrink-0 items-center justify-between gap-3 border-t border-white/10 px-5 py-4"
+          >
             <button
               class="rounded-lg border border-white/15 px-4 py-2 text-sm text-slate-300 transition hover:border-white/40 hover:text-white focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
               @click="closeModal"
@@ -1256,8 +1334,19 @@ onUnmounted(() => {
                 class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20 focus-visible:ring-2 focus-visible:ring-emerald-400/70 focus-visible:outline-none"
                 @click="openProjectLink((selectedProject as any).liveLink)"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                  />
                 </svg>
                 Ver demo
               </button>
@@ -1266,8 +1355,15 @@ onUnmounted(() => {
                 :disabled="selectedProject.link === '#'"
                 @click="openProjectLink(selectedProject.link)"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"
+                  />
                 </svg>
                 Ver no GitHub
               </button>
