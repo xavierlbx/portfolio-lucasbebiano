@@ -1,5 +1,6 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+// nextTick used in onMounted
 import { useDarkMode } from '../composables/useDarkMode'
 import { useScrollSpy } from '../composables/useScrollSpy'
 import { useCarousel } from '../composables/useCarousel'
@@ -33,8 +34,8 @@ type NavLink = {
   external?: boolean
 }
 
-// ---- Scroll spy + parallax ----
-const { scrollY, activeSection, getParallaxTransform } = useScrollSpy()
+// ---- Scroll spy ----
+const { activeSection } = useScrollSpy()
 
 // ---- Navegação ----
 const navLinks: NavLink[] = [
@@ -88,7 +89,9 @@ const onMobileProjectsScroll = () => {
 }
 
 onMounted(() => {
-  nextTick(updateProjectsScrollHint)
+  nextTick(() => {
+    updateProjectsScrollHint()
+  })
   window.addEventListener('resize', updateProjectsScrollHint, { passive: true })
 })
 
@@ -252,63 +255,11 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
     </div>
 
     <!-- Bem vindo -->
-    <section class="relative h-screen w-full overflow-hidden">
-      <!-- Background Image | Parallax -->
-      <div
-        class="absolute top-0 h-full w-[max(100%,1900px)]"
-        style="left: calc((100% - max(100%, 1900px)) / 2)"
-      >
-        <!-- bg-1: 130% height + -15% top gives buffer so iOS overscroll never exposes gaps -->
-        <img
-          src="/images/bg-1.png"
-          alt=""
-          class="absolute inset-x-0 -top-[15%] z-10 h-[130%] w-full object-cover object-top"
-          fetchpriority="high"
-          loading="eager"
-          :style="{ transform: getParallaxTransform(0.8), willChange: 'transform' }"
-        />
-        <img
-          src="/images/bg-2.png"
-          class="absolute bottom-15 left-0 z-20 w-full"
-          loading="eager"
-          :style="{ transform: getParallaxTransform(0.6), willChange: 'transform' }"
-        />
-        <img
-          src="/images/jungle2.png"
-          class="absolute bottom-40 left-0 z-30 w-full"
-          loading="eager"
-          :style="{ transform: getParallaxTransform(0.6), willChange: 'transform' }"
-        />
-        <img
-          src="/images/jungle3.png"
-          class="absolute bottom-15 left-0 z-40 w-full"
-          loading="eager"
-          :style="{ transform: getParallaxTransform(0.4), willChange: 'transform' }"
-        />
-        <img
-          src="/images/jungle4.png"
-          class="absolute bottom-8 left-0 z-50 w-full"
-          loading="eager"
-          :style="{ transform: getParallaxTransform(0.4), willChange: 'transform' }"
-        />
-        <img
-          src="/images/man_on_mountain.png"
-          class="absolute bottom-0 -left-20 z-70 w-full"
-          loading="eager"
-          style="transform: translate3d(0, 0, 0)"
-        />
-        <img
-          src="/images/jungle5.png"
-          class="absolute bottom-0 left-0 z-70 w-full"
-          loading="eager"
-          :style="{ transform: getParallaxTransform(0.01), willChange: 'transform' }"
-        />
-      </div>
+    <section class="relative h-screen w-full" style="background: #0d0d0d">
 
       <!-- Main Text -->
       <div
         class="relative z-30 flex h-full flex-col items-center justify-center gap-4 px-10 md:flex-row md:gap-10 md:px-20"
-        :style="{ transform: getParallaxTransform(0.9) }"
       >
         <!-- Left: Coding Image (desktop only) -->
         <div class="hidden md:mb-70 md:block">
@@ -356,7 +307,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
       <div
         class="absolute bottom-25 left-1/2 z-65 flex flex-col items-center gap-2 transition-all duration-500"
         :class="typingPhase === 2 ? 'opacity-100' : 'opacity-0'"
-        :style="{ transform: `translate3d(-50%, ${scrollY * 0.6}px, 0)` }"
+        style="transform: translate3d(-50%, 0, 0)"
       >
         <span class="text-xs tracking-[0.25em] text-slate-500 uppercase">Role para baixo</span>
         <svg
@@ -374,8 +325,8 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
     <section
       id="about"
-      class="flex items-center justify-center px-4 py-14 sm:px-8 md:px-15 md:py-24 lg:py-32"
-      style="background: linear-gradient(to bottom, #210002 0%, #0d0d0d 60%)"
+      class="relative z-[1] flex items-center justify-center px-4 py-14 sm:px-8 md:px-15 md:py-24 lg:py-32"
+      style="background: #0d0d0d"
     >
       <div
         class="mx-auto flex max-w-5xl flex-col items-center gap-14 md:flex-row md:items-center md:gap-20"
@@ -414,7 +365,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
     <section
       id="skills"
-      class="overflow-hidden py-12 md:py-16 lg:py-20"
+      class="relative z-[1] overflow-hidden py-12 md:py-16 lg:py-20"
       style="
         background: linear-gradient(to bottom, #0d0d0d 0%, #18181b 25%, #18181b 85%, #0d0d0d 100%);
       "
@@ -506,7 +457,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
     <section
       id="projects"
-      class="px-4 pt-12 pb-16 sm:px-6 md:px-15 md:pt-20 md:pb-24 lg:pb-28"
+      class="relative z-[1] px-4 pt-12 pb-16 sm:px-6 md:px-15 md:pt-20 md:pb-24 lg:pb-28"
       style="background: #0d0d0d"
     >
       <div class="mx-auto w-full max-w-7xl">
@@ -948,7 +899,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
     <!-- Fale Comigo -->
     <footer
       id="contact"
-      class="px-4 pt-12 pb-0 sm:px-6 md:px-10 md:pt-16 lg:pt-20"
+      class="relative z-[1] px-4 pt-12 pb-0 sm:px-6 md:px-10 md:pt-16 lg:pt-20"
       style="background: #18181b"
     >
       <div class="mx-auto max-w-4xl">
@@ -1073,4 +1024,6 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
     opacity: 0;
   }
 }
+
+
 </style>

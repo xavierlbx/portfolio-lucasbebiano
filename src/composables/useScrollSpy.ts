@@ -12,7 +12,6 @@ const MOBILE_BREAKPOINT = 768
 type SectionId = (typeof SECTION_IDS)[number]
 
 export function useScrollSpy() {
-  const scrollY = ref(0)
   const activeSection = ref<SectionId | ''>('')
   const isMobile = ref(typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT)
 
@@ -39,11 +38,9 @@ export function useScrollSpy() {
   }
 
   const handleScroll = () => {
-    // RAF throttle: garante que o handler rode no máximo uma vez por frame (~16ms),
-    // evitando cálculos redundantes em monitores de alta taxa de atualização.
+    // RAF throttle: garante que o handler rode no máximo uma vez por frame (~16ms).
     if (scrollRafId !== null) return
     scrollRafId = window.requestAnimationFrame(() => {
-      scrollY.value = Math.max(0, window.scrollY)
       updateActiveSection()
       scrollRafId = null
     })
@@ -53,13 +50,6 @@ export function useScrollSpy() {
     isMobile.value = window.innerWidth < MOBILE_BREAKPOINT
     refreshSectionElements()
   }
-
-  // Retorna a string de transformação CSS para o efeito parallax.
-  // translate3d (ao invés de translateY simples) força a GPU a criar uma
-  // camada de composição separada para o elemento, eliminando repaints e
-  // garantindo animação a 60fps durante o scroll.
-  const getParallaxTransform = (speed: number): string =>
-    `translate3d(0, ${scrollY.value * speed}px, 0)`
 
   onMounted(() => {
     refreshSectionElements()
@@ -74,5 +64,5 @@ export function useScrollSpy() {
     if (scrollRafId !== null) cancelAnimationFrame(scrollRafId)
   })
 
-  return { scrollY, activeSection, isMobile, getParallaxTransform }
+  return { activeSection, isMobile }
 }
