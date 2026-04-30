@@ -169,6 +169,7 @@ const onMobileProjectsScroll = () => {
 }
 
 const projects = [
+
   {
     title: 'Portifólio Pessoal',
     description:
@@ -186,34 +187,13 @@ const projects = [
       'Deploy contínuo via Vercel',
     ],
     image: 'images/previa_portifolio.png',
-    images: ['images/previa_portifolio.png', '/images/previa_todolist.png'],
+    images: ['images/previa_portifolio.png'],
     link: 'https://github.com/xavierlbx/portifolio-lucasxavier',
     liveLink: 'https://portifolio-lucasxavier.vercel.app/',
     year: '2025',
     status: 'Em evolução',
   },
-  {
-    title: 'Todo List',
-    description:
-      'Aplicação fullstack de lista de tarefas com CRUD completo, autenticação JWT e deploy contínuo via CI/CD.',
-    longDescription:
-      'Aplicação fullstack desenvolvida do zero com frontend em Vue 3 + TypeScript e backend em NestJS. Conta com autenticação de usuários via Bearer Token (JWT), persistência de dados com Prisma ORM, pipeline de CI/CD com GitHub Actions e deploy do frontend no Vercel.',
-    tech: ['Vue 3', 'TypeScript', 'Vite', 'Tailwind CSS', 'NestJS', 'Prisma', 'JWT'],
-    highlights: [
-      'CRUD completo de tarefas por usuário',
-      'Autenticação com Bearer Token (JWT)',
-      'Backend NestJS com arquitetura modular',
-      'Prisma ORM para persistência de dados',
-      'CI/CD com GitHub Actions',
-      'Deploy do frontend no Vercel',
-      'Responsivo para mobile e desktop',
-    ],
-    image: '/images/previa_todolist.png',
-    link: 'https://github.com/xavierlbx/todo-nestjs-vue',
-    liveLink: 'https://todo-nestjs-vue.vercel.app/',
-    year: '2025',
-    status: 'Concluído',
-  },
+
   {
     title: 'Power Track',
     description:
@@ -814,11 +794,16 @@ onUnmounted(() => {
         class="mx-auto flex max-w-5xl flex-col items-center gap-14 md:flex-row md:items-center md:gap-20"
       >
         <!-- Left: Photo -->
-        <div class="flex shrink-0 justify-center">
+        <div class="group relative w-56 shrink-0 sm:w-64 md:w-80" style="aspect-ratio: 4/5">
           <img
             src="/images/aboutme-photo.jpg"
             alt="Imagem do Lucas vestindo a beca em uma formatura"
-            class="w-56 rounded-2xl shadow-xl ring-1 shadow-black/50 ring-white/10 transition-transform duration-500 hover:scale-105 sm:w-64 md:w-80"
+            class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-xl ring-1 shadow-black/50 ring-white/10 transition-all duration-200 group-hover:scale-101 group-hover:opacity-0"
+          />
+          <img
+            src="/images/aboutme-photo-2.png"
+            alt="Segunda foto do Lucas"
+            class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-xl ring-1 shadow-black/50 ring-white/10 opacity-0 transition-all duration-200 group-hover:scale-102 group-hover:opacity-100 object-top"
           />
         </div>
 
@@ -1083,7 +1068,7 @@ onUnmounted(() => {
                 <span
                   v-for="tech in project.tech"
                   :key="tech"
-                  class="rounded-full border border-blue-500 bg-blue-500/20 px-2 py-0.5 text-[10px] font-medium text-white/90"
+                  class="rounded-full border border-yellow-200/70 bg-yellow-500/20 px-2 py-0.5 text-[10px] font-medium text-white/90"
                 >
                   {{ tech }}
                 </span>
