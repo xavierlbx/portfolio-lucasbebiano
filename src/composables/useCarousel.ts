@@ -1,8 +1,7 @@
 import { ref, onMounted, onUnmounted, type Ref } from 'vue'
 
 const CAROUSEL_SPEED = 0.25
-// Tempo de espera após soltar o drag antes de retomar o autoplay,
-// para evitar que o carrossel "arranque" imediatamente após a interação.
+// Delay antes de retomar autoplay após o drag.
 const CAROUSEL_RESUME_DELAY_MS = 1500
 
 export function useCarousel(carouselTrackRef: Ref<HTMLElement | null>) {
@@ -14,10 +13,8 @@ export function useCarousel(carouselTrackRef: Ref<HTMLElement | null>) {
   let carouselRafId: number | null = null
   let carouselResumeTimer: ReturnType<typeof setTimeout> | null = null
 
-  // O track contém 3 cópias idênticas dos itens. Dividir o scrollWidth por 3
-  // retorna a largura de um único "set". Quando o offset atinge -setWidth,
-  // resetamos para 0 — o salto é imperceptível porque o próximo set é idêntico.
-  // O valor é cacheado para evitar leitura de scrollWidth (layout reflow) a cada frame.
+  // Track tem 3 cópias dos itens; setWidth = scrollWidth / 3.
+  // Reset em -setWidth cria o loop contínuo. Cacheado para evitar reflow a cada frame.
   let cachedSetWidth = 0
 
   const measureSetWidth = () => {
@@ -66,8 +63,7 @@ export function useCarousel(carouselTrackRef: Ref<HTMLElement | null>) {
 
   const onMouseDown = (e: MouseEvent) => pointerStart(e.clientX)
 
-  // Os handlers de mousemove e mouseup precisam ser globais (window) para não perder
-  // o drag quando o cursor sair rapidamente do elemento durante o arraste.
+  // Handlers globais para não perder o drag quando o cursor sair do elemento.
   const onGlobalMouseMove = (e: MouseEvent) => pointerMove(e.clientX)
   const onGlobalMouseUp = () => pointerEnd()
 

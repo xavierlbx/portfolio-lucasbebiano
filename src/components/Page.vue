@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
-// nextTick used in onMounted
 import { useDarkMode } from '../composables/useDarkMode'
 import { useScrollSpy } from '../composables/useScrollSpy'
 import { useCarousel } from '../composables/useCarousel'
@@ -87,23 +86,22 @@ function resizeHeroCanvas() {
   startHeroCanvas()
 }
 
-// ---- Mobile projects scroll hint ----
-// Breakpoint 640px = `sm` do Tailwind, mesmo ponto onde o grid desktop aparece.
+// ---- Scroll hint (mobile) ----
 const SCROLL_HINT_BREAKPOINT = 640
 const mobileProjectsRef = ref<HTMLElement | null>(null)
 const didDismissProjectsHint = ref(false)
 const showProjectsScrollHint = ref(false)
 
+// ---- Scroll spy ----
+const { activeSection } = useScrollSpy()
+
+// ---- Navegação ----
 type NavLink = {
   label: string
   href: string
   external?: boolean
 }
 
-// ---- Scroll spy ----
-const { activeSection } = useScrollSpy()
-
-// ---- Navegação ----
 const navLinks: NavLink[] = [
   { label: 'Sobre Mim', href: '#about' },
   { label: 'Experiências', href: '#experience' },
@@ -128,7 +126,7 @@ const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 const activateMobileSkill = (skillName: string) => {
   mobileActiveSkill.value = skillName
   if (mobileActiveSkillTimer !== null) clearTimeout(mobileActiveSkillTimer)
-  // Auto-limpa o destaque após 700ms para simular hover em dispositivos touch.
+  // Simula hover touch: limpa o destaque após 700ms.
   mobileActiveSkillTimer = setTimeout(() => {
     if (mobileActiveSkill.value === skillName) mobileActiveSkill.value = null
   }, 700)
@@ -141,7 +139,7 @@ const updateProjectsScrollHint = () => {
     showProjectsScrollHint.value = false
     return
   }
-  // Exibe a dica apenas se o overflow for perceptível (> 24px de conteúdo oculto).
+  // Só exibe se o overflow for perceptível (> 24px).
   showProjectsScrollHint.value = el.scrollWidth - el.clientWidth > 24
 }
 
@@ -186,9 +184,7 @@ onUnmounted(() => {
   if (mobileActiveSkillTimer !== null) clearTimeout(mobileActiveSkillTimer)
   heroObserver?.disconnect()
 })
-// ---- Skills Carousel ----
-// O componente declara o ref DOM e o passa ao composable — o componente controla
-// os refs de template; o composable apenas os consome para calcular a largura do ciclo.
+// ---- Carousel ----
 const carouselTrackRef = ref<HTMLElement | null>(null)
 const {
   carouselOffset,
@@ -904,7 +900,7 @@ watch(showCertificatesModal, (isOpen) => {
         </div>
 
         <!-- Desktop: Grid (>= sm) -->
-        <div class="hidden sm:grid sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+        <div class="hidden sm:grid sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
           <div
             v-for="project in paginatedProjects"
             :key="project.title"

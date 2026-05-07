@@ -1,7 +1,3 @@
-// Dados das habilidades técnicas exibidas no carrossel e na grade mobile.
-// Mantidos separados do componente para facilitar adição/remoção de skills
-// sem abrir o arquivo de layout.
-
 export type Skill = {
   name: string
   /** URL do ícone SVG (devicons CDN) */

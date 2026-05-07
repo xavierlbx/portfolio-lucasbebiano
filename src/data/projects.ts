@@ -1,6 +1,3 @@
-// Centraliza os dados dos projetos num módulo dedicado.
-// O componente que exibe e o dado que é exibido são responsabilidades distintas (SRP).
-
 export type Project = {
   title: string
   description: string
@@ -16,7 +13,7 @@ export type Project = {
 }
 
 export const projects: Project[] = [
-  {
+/*   {
     title: 'Portifólio Pessoal',
     description:
       'Site portfólio responsivo com animações, dark mode e seções de projetos, habilidades e contato.',
@@ -38,7 +35,7 @@ export const projects: Project[] = [
     liveLink: 'https://portifolio-lucasxavier.vercel.app/',
     year: '2025',
     status: 'Em evolução',
-  },
+  }, */
   {
     title: 'Power Track',
     description:
@@ -66,6 +63,35 @@ export const projects: Project[] = [
     ],
     link: 'https://github.com/xavierlbx/power-track',
     year: '2024',
+    status: 'Concluído',
+  },
+  {
+    title: 'Apoia Mente',
+    description:
+      'Plataforma de atendimento psicológico comunitário conectando psicólogos voluntários a pessoas em vulnerabilidade social.',
+    longDescription:
+      'Desenvolvido no 4º semestre do curso de ADS na PUC Minas, o ApoiaMente conecta psicólogos voluntários a pessoas em vulnerabilidade social, oferecendo agendamento de sessões e videochamadas seguras. Conta com frontend web (TypeScript), frontend mobile e backend com API Gateway em C#. Disponível via web e APK para Android.',
+    tech: ['TypeScript', 'C# ASP.NET', 'React Native', 'API Gateway'],
+    highlights: [
+      'Cadastro dual: Paciente ou Psicólogo',
+      'Agendamento de sessões de psicologia',
+      'Videochamadas integradas e seguras',
+      'Frontend web acessível pelo navegador',
+      'App mobile disponível como APK para Android',
+      'API Gateway centralizando os serviços',
+      'Projeto acadêmico — 4º Semestre ADS PUC Minas',
+    ],
+    image: '/images/apoiamente/apoia-mente-main.png',
+    images: [
+      '/images/apoiamente/apoia-mente-photo (1).png',
+      '/images/apoiamente/apoia-mente-photo (2).png',
+      '/images/apoiamente/apoia-mente-photo (3).png',
+      '/images/apoiamente/apoia-mente-photo (4).png',
+      '/images/apoiamente/apoia-mente-photo (5).png',
+    ],
+    link: 'https://github.com/xavierlbx/apoia-mente',
+    liveLink: 'https://www.apoiamente.com.br',
+    year: '2025',
     status: 'Concluído',
   },
   {
@@ -107,34 +133,5 @@ export const projects: Project[] = [
     link: 'https://github.com/ICEI-PUC-Minas-PMV-ADS/pmv-ads-2025-2-e5-proj-empext-t1-pmv-ads-2025-2-e5-projigescconecta',
     year: '2025',
     status: 'Concluído',
-  },
-  {
-    title: 'Apoia Mente',
-    description:
-      'Plataforma de atendimento psicológico comunitário conectando psicólogos voluntários a pessoas em vulnerabilidade social.',
-    longDescription:
-      'Desenvolvido no 4º semestre do curso de ADS na PUC Minas, o ApoiaMente conecta psicólogos voluntários a pessoas em vulnerabilidade social, oferecendo agendamento de sessões e videochamadas seguras. Conta com frontend web (TypeScript), frontend mobile e backend com API Gateway em C#. Disponível via web e APK para Android.',
-    tech: ['TypeScript', 'C# ASP.NET', 'React Native', 'API Gateway'],
-    highlights: [
-      'Cadastro dual: Paciente ou Psicólogo',
-      'Agendamento de sessões de psicologia',
-      'Videochamadas integradas e seguras',
-      'Frontend web acessível pelo navegador',
-      'App mobile disponível como APK para Android',
-      'API Gateway centralizando os serviços',
-      'Projeto acadêmico — 4º Semestre ADS PUC Minas',
-    ],
-    image: '/images/apoiamente/apoia-mente-main.png',
-    images: [
-      '/images/apoiamente/apoia-mente-photo (1).png',
-      '/images/apoiamente/apoia-mente-photo (2).png',
-      '/images/apoiamente/apoia-mente-photo (3).png',
-      '/images/apoiamente/apoia-mente-photo (4).png',
-      '/images/apoiamente/apoia-mente-photo (5).png',
-    ],
-    link: 'https://github.com/xavierlbx/apoia-mente',
-    liveLink: 'https://www.apoiamente.com.br',
-    year: '2025',
-    status: 'Concluído',
-  },
+  }
 ]
