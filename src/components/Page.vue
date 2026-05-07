@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 // nextTick used in onMounted
 import { useDarkMode } from '../composables/useDarkMode'
 import { useScrollSpy } from '../composables/useScrollSpy'
@@ -12,6 +12,7 @@ import { CONTACT, contactPhoneHref, contactEmailHref } from '../data/contact'
 import SkillCard from './SkillCard.vue'
 import ProjectsPagination from './ProjectsPagination.vue'
 import ContactLink from './ContactLink.vue'
+import CertificatesModal from './CertificatesModal.vue'
 
 // ---- Tema ----
 const { isDark, toggleDarkMode } = useDarkMode()
@@ -24,6 +25,8 @@ let mobileActiveSkillTimer: ReturnType<typeof setTimeout> | null = null
 // ---- Hero canvas (floating code tokens) ----
 const heroCanvasRef = ref<HTMLCanvasElement | null>(null)
 let heroAnimId: number | null = null
+let heroObserver: IntersectionObserver | null = null
+let heroIsVisible = true
 
 interface CodeParticle {
   x: number; y: number; vy: number
@@ -156,6 +159,21 @@ onMounted(() => {
   nextTick(() => {
     updateProjectsScrollHint()
     startHeroCanvas()
+    if (heroCanvasRef.value) {
+      heroObserver = new IntersectionObserver(
+        (entries) => {
+          const isIntersecting = entries[0]?.isIntersecting ?? false
+          heroIsVisible = isIntersecting
+          if (isIntersecting) {
+            if (heroAnimId === null && !showCertificatesModal.value) startHeroCanvas()
+          } else {
+            if (heroAnimId !== null) { cancelAnimationFrame(heroAnimId); heroAnimId = null }
+          }
+        },
+        { threshold: 0 },
+      )
+      heroObserver.observe(heroCanvasRef.value)
+    }
   })
   window.addEventListener('resize', updateProjectsScrollHint, { passive: true })
   window.addEventListener('resize', resizeHeroCanvas, { passive: true })
@@ -166,6 +184,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', resizeHeroCanvas)
   if (heroAnimId !== null) cancelAnimationFrame(heroAnimId)
   if (mobileActiveSkillTimer !== null) clearTimeout(mobileActiveSkillTimer)
+  heroObserver?.disconnect()
 })
 // ---- Skills Carousel ----
 // O componente declara o ref DOM e o passa ao composable — o componente controla
@@ -203,6 +222,23 @@ const {
 
 // ---- Typing Animation ----
 const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
+
+// ---- Certificates Modal ----
+const showCertificatesModal = ref(false)
+
+watch(showCertificatesModal, (isOpen) => {
+  if (isOpen) {
+    if (heroAnimId !== null) {
+      cancelAnimationFrame(heroAnimId)
+      heroAnimId = null
+    }
+    return
+  }
+
+  nextTick(() => {
+    if (heroAnimId === null && heroIsVisible) startHeroCanvas()
+  })
+})
 </script>
 <template>
   <main class="min-h-screen w-full overflow-x-hidden bg-[#0D0D0D] text-slate-100">
@@ -351,14 +387,14 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
         <div class="hidden md:flex md:shrink-0 md:items-center md:justify-center">
           <div class="relative">
             <div
-              class="absolute -inset-6 rounded-full blur-3xl opacity-25"
+              class="absolute -inset-6 rounded-full blur-xl opacity-25"
               style="background: radial-gradient(circle, #eab308 0%, transparent 70%)"
               aria-hidden="true"
             />
             <img
               src="/images/coding-image.png"
               alt="Ilustração de programação"
-              class="relative w-38 opacity-90 drop-shadow-2xl lg:w-50 xl:w-58 hover:scale-[1.1] transition-transform duration-300"
+              class="relative w-60 opacity-90 drop-shadow-2xl lg:w-65 xl:w-72 hover:scale-[1.1] transition-transform duration-300"
               fetchpriority="high"
             />
           </div>
@@ -385,7 +421,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             }}<span v-if="typingPhase === 0 && showCursor" class="cursor text-yellow-400">|</span>
           </p>
 
-          <!-- Line 2: "Bem vindo!" (typing, big) -->
+          <!-- Line 2: "Bem vindo(a)!" (typing, big) -->
           <p
             class="text-4xl font-black tracking-tight text-white transition-all duration-700 sm:text-5xl lg:text-6xl"
             :class="typingPhase >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'"
@@ -436,7 +472,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           <img
             src="/images/coding-image.png"
             alt="Ilustração de programação"
-            class="w-24 opacity-80 drop-shadow-2xl hover:scale-[1.1] transition-transform duration-300"
+            class="w-50 opacity-80 drop-shadow-2xl hover:scale-[1.1] transition-transform duration-300"
           />
         </div>
       </div>
@@ -483,23 +519,23 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           <div class="group relative w-52 sm:w-64 md:w-72" style="aspect-ratio: 4/5">
             <!-- Glow ring behind photo -->
             <div
-              class="absolute -inset-4 rounded-3xl blur-2xl opacity-20"
+              class="absolute -inset-4 rounded-3xl blur-xl opacity-20"
               style="background: radial-gradient(circle, #eab308 0%, transparent 70%)"
               aria-hidden="true"
             />
             <img
               src="/images/aboutme-photo.jpg"
               alt="Lucas Bebiano na formatura"
-              class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-all duration-300 group-hover:opacity-0 group-hover:scale-[1.02]"
+              class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-[opacity,transform] duration-300 will-change-transform group-hover:opacity-0 group-hover:scale-[1.02]"
             />
             <img
               src="/images/aboutme-photo-2.png"
               alt="Lucas Bebiano"
-              class="absolute inset-0 h-full w-full rounded-2xl object-cover object-top shadow-2xl ring-1 ring-white/10 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-[1.02]"
+              class="absolute inset-0 h-full w-full rounded-2xl object-cover object-top shadow-2xl ring-1 ring-white/10 opacity-0 transition-[opacity,transform] duration-300 will-change-transform group-hover:opacity-100 group-hover:scale-[1.02]"
             />
             <!-- Badge "Disponível" -->
             <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full border border-yellow-500/30 bg-[#0D0D0D] px-3 py-1 shadow-lg">
-              <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse" />
+              <span class="h-1.5 w-1.5 rounded-full bg-yellow-400" />
               <span class="text-[10px] font-semibold tracking-[0.15em] text-yellow-300 uppercase whitespace-nowrap">Disponível</span>
             </div>
           </div>
@@ -582,7 +618,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
         <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
 
           <!-- PRODABEL -->
-          <div class="exp-card group rounded-xl border border-white/8 bg-white/2 p-6 transition-all duration-300 hover:border-yellow-500/20 hover:bg-white/3">
+          <div class="exp-card group rounded-xl border border-white/8 bg-white/2 p-6 transition-[border-color,background-color] duration-300 hover:border-yellow-500/20 hover:bg-white/3">
             <!-- Header row -->
             <div class="mb-1 flex items-start justify-between gap-3">
               <div>
@@ -618,7 +654,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           </div>
 
           <!-- CARDIESEL -->
-          <div class="exp-card group rounded-xl border border-white/8 bg-white/2 p-6 transition-all duration-300 hover:border-yellow-500/20 hover:bg-white/3">
+          <div class="exp-card group rounded-xl border border-white/8 bg-white/2 p-6 transition-[border-color,background-color] duration-300 hover:border-yellow-500/20 hover:bg-white/3">
             <!-- Header row -->
             <div class="mb-1 flex items-start justify-between gap-3">
               <div>
@@ -727,13 +763,11 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             <span class="font-mono text-[10px] tracking-widest text-slate-600 uppercase">certificados</span>
             <div class="h-px flex-1 bg-white/8" />
           </div>
-          <a
-            href="https://drive.google.com/drive/folders/12R09riJtxIafUOd8BM_FxmYydnODgxjG?usp=drive_link"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="group inline-flex items-center gap-2 rounded-lg border border-yellow-500/25 bg-yellow-500/6 px-5 py-2 text-sm font-semibold text-yellow-400 transition-all duration-200 hover:border-yellow-500/50 hover:bg-yellow-500/10 hover:text-yellow-300"
+          <button
+            class="group inline-flex items-center gap-2 rounded-lg border border-yellow-500/25 bg-yellow-500/6 px-5 py-2 text-sm font-semibold text-yellow-400 transition-all duration-200 hover:border-yellow-500/50 hover:bg-yellow-500/10 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/60 focus-visible:outline-none"
+            @click="showCertificatesModal = true"
           >
-            Ver certificados
+            Verificar Certificados
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -744,7 +778,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             >
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-          </a>
+          </button>
         </div>
       </div>
     </section>
@@ -874,7 +908,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           <div
             v-for="project in paginatedProjects"
             :key="project.title"
-            class="project-card group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/3 transition-all duration-300 hover:-translate-y-1 hover:border-yellow-500/35"
+            class="project-card group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/3 transition-[transform,border-color] duration-300 hover:-translate-y-1 hover:border-yellow-500/35"
             role="button"
             tabindex="0"
             @click="openModal(project)"
@@ -1183,6 +1217,9 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
         </div>
       </section>
     </div>
+
+    <!-- Certificates Modal -->
+    <CertificatesModal v-model="showCertificatesModal" />
 
     <!-- Fale Comigo -->
     <footer

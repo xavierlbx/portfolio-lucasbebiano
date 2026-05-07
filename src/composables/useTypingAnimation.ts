@@ -8,7 +8,7 @@ const TYPING_LINE_GAP_MS = 150
 const CURSOR_HIDE_DELAY_MS = 2500
 
 const LINE_1 = 'Hello World!'
-const LINE_2 = 'Bem vindo!'
+const LINE_2 = 'Bem vindo(a)!'
 
 export function useTypingAnimation() {
   const typedLine1 = ref('')
