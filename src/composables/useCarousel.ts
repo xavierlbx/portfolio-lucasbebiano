@@ -17,17 +17,18 @@ export function useCarousel(carouselTrackRef: Ref<HTMLElement | null>) {
   // O track contém 3 cópias idênticas dos itens. Dividir o scrollWidth por 3
   // retorna a largura de um único "set". Quando o offset atinge -setWidth,
   // resetamos para 0 — o salto é imperceptível porque o próximo set é idêntico.
-  const getSetWidth = (): number => {
-    if (!carouselTrackRef.value) return 0
-    return carouselTrackRef.value.scrollWidth / 3
+  // O valor é cacheado para evitar leitura de scrollWidth (layout reflow) a cada frame.
+  let cachedSetWidth = 0
+
+  const measureSetWidth = () => {
+    cachedSetWidth = carouselTrackRef.value ? carouselTrackRef.value.scrollWidth / 3 : 0
   }
 
   const tick = () => {
     if (carouselAutoplay.value) {
       carouselOffset.value -= CAROUSEL_SPEED
-      const setWidth = getSetWidth()
-      if (setWidth > 0 && carouselOffset.value <= -setWidth) {
-        carouselOffset.value += setWidth
+      if (cachedSetWidth > 0 && carouselOffset.value <= -cachedSetWidth) {
+        carouselOffset.value += cachedSetWidth
       }
     }
     carouselRafId = requestAnimationFrame(tick)
@@ -46,7 +47,7 @@ export function useCarousel(carouselTrackRef: Ref<HTMLElement | null>) {
     if (!carouselIsDragging.value) return
     const delta = clientX - carouselDragStartX.value
     let next = carouselDragStartOffset.value + delta
-    const setWidth = getSetWidth()
+    const setWidth = cachedSetWidth
     // Mantém o offset dentro de [-setWidth, 0] para que o loop não pule sets.
     if (setWidth > 0) {
       while (next <= -setWidth) next += setWidth
@@ -88,16 +89,45 @@ export function useCarousel(carouselTrackRef: Ref<HTMLElement | null>) {
   const onTouchEnd = () => pointerEnd()
   const onTouchCancel = () => pointerEnd()
 
+  let carouselObserver: IntersectionObserver | null = null
+
+  const startTick = () => {
+    if (carouselRafId === null) carouselRafId = requestAnimationFrame(tick)
+  }
+
+  const stopTick = () => {
+    if (carouselRafId !== null) { cancelAnimationFrame(carouselRafId); carouselRafId = null }
+  }
+
   onMounted(() => {
     window.addEventListener('mousemove', onGlobalMouseMove)
     window.addEventListener('mouseup', onGlobalMouseUp)
-    carouselRafId = requestAnimationFrame(tick)
+    window.addEventListener('resize', measureSetWidth, { passive: true })
+    if (carouselTrackRef.value) {
+      carouselObserver = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) {
+            measureSetWidth()
+            startTick()
+          } else {
+            stopTick()
+          }
+        },
+        { threshold: 0 },
+      )
+      carouselObserver.observe(carouselTrackRef.value)
+    } else {
+      measureSetWidth()
+      startTick()
+    }
   })
 
   onUnmounted(() => {
     window.removeEventListener('mousemove', onGlobalMouseMove)
     window.removeEventListener('mouseup', onGlobalMouseUp)
-    if (carouselRafId !== null) cancelAnimationFrame(carouselRafId)
+    window.removeEventListener('resize', measureSetWidth)
+    stopTick()
+    carouselObserver?.disconnect()
     if (carouselResumeTimer !== null) clearTimeout(carouselResumeTimer)
   })
 
