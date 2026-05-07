@@ -1,7 +1,4 @@
-// Dados de contato lidos de variáveis de ambiente (VITE_*).
-// Os fallbacks garantem funcionamento em desenvolvimento sem um .env local.
-// Em produção, as variáveis são substituídas em tempo de build pelo Vite.
-
+// Contato via env vars (VITE_*); fallbacks para dev sem .env.
 export type ContactInfo = {
   phone: string
   phoneLabel: string
@@ -22,6 +19,5 @@ export const CONTACT: ContactInfo = {
   linkedinLabel: import.meta.env.VITE_CONTACT_LINKEDIN_LABEL ?? 'linkedin.com/in/lucas-bebiano',
 }
 
-// Derivados pré-computados para não repetir a lógica de formatação no template.
 export const contactPhoneHref = `tel:${CONTACT.phone.replace(/[\s()-]/g, '')}`
 export const contactEmailHref = `mailto:${CONTACT.email}`

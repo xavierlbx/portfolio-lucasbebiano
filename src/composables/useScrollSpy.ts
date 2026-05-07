@@ -1,8 +1,6 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
-// A detecção de seção ativa percorre os IDs em ordem DESCENDENTE (contact → about).
-// Assim, o primeiro elemento cujo offsetTop é <= scrollY + offset é a seção mais
-// baixa já visível, garantindo que a navbar destaque a seção correta.
+// IDs em ordem descendente: o primeiro com offsetTop <= scrollY + offset é a seção ativa.
 const SECTION_IDS = ['contact', 'projects', 'skills', 'experience', 'about'] as const
 const SECTION_OFFSET = 120
 
@@ -19,8 +17,7 @@ export function useScrollSpy() {
   let scrollRafId: number | null = null
 
   const refreshSectionElements = () => {
-    // Cache das referências DOM para evitar document.getElementById() a cada scroll.
-    // Revalidamos ao montar e ao redimensionar porque o layout pode mudar.
+    // Cacheia refs DOM; revalidado ao montar/redimensionar.
     sectionElements = SECTION_IDS.map((id) => document.getElementById(id)).filter(
       (el): el is HTMLElement => el !== null,
     )
@@ -38,7 +35,7 @@ export function useScrollSpy() {
   }
 
   const handleScroll = () => {
-    // RAF throttle: garante que o handler rode no máximo uma vez por frame (~16ms).
+    // RAF throttle: max uma execução por frame.
     if (scrollRafId !== null) return
     scrollRafId = window.requestAnimationFrame(() => {
       updateActiveSection()
