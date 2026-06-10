@@ -974,7 +974,7 @@ watch(showCertificatesModal, (isOpen) => {
         class="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl sm:flex-row"
       >
         <!-- LEFT: Image panel -->
-        <div class="relative flex h-56 shrink-0 flex-col bg-zinc-900 sm:h-auto sm:w-[42%]">
+        <div class="relative flex aspect-square shrink-0 flex-col bg-zinc-900 sm:w-[42%]">
           <!-- Close button -->
           <button
             class="absolute top-3 right-3 z-30 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/60 text-slate-300 backdrop-blur-sm transition hover:border-yellow-400/70 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"

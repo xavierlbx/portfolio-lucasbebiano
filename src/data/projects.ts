@@ -88,6 +88,8 @@ export const projects: Project[] = [
       '/images/apoiamente/apoia-mente-photo (3).png',
       '/images/apoiamente/apoia-mente-photo (4).png',
       '/images/apoiamente/apoia-mente-photo (5).png',
+      '/images/apoiamente/apoia-mente-photo (6).png',
+      '/images/apoiamente/apoia-mente-photo (7).png',
     ],
     link: 'https://github.com/xavierlbx/apoia-mente',
     liveLink: 'https://www.apoiamente.com.br',
