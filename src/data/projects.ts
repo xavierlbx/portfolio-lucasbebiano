@@ -66,6 +66,34 @@ export const projects: Project[] = [
     status: 'Concluído',
   },
   {
+    title: 'Kanbam',
+    description:
+      'Aplicação web de gerenciamento de tarefas em estilo Kanban, com autenticação, organização por colunas e interface responsiva.',
+    longDescription:
+      'Projeto full stack de um Kanban interativo, com frontend em Vue 3 e backend em NestJS. A aplicação permite autenticação de usuários, visualização de tarefas por colunas e criação de novas tarefas via modal. A base do backend foi estruturada com Prisma e PostgreSQL, com suporte a ambiente local via Docker Compose.',
+    tech: ['Vue 3', 'TypeScript', 'NestJS', 'Prisma', 'PostgreSQL', 'Docker'],
+    highlights: [
+      'Fluxo de autenticação com telas de login e cadastro',
+      'Board Kanban com colunas Backlog, To Do, Doing e Done',
+      'Movimentação de tarefas por arraste e solte entre colunas',
+      'Criação de tarefas por modal com campos de título, coluna e descrição',
+      'Interface adaptada para desktop e mobile',
+      'Backend estruturado em NestJS com Prisma',
+      'Banco PostgreSQL orquestrado com Docker Compose',
+    ],
+    image: '/images/kanban/kanban-main.png',
+    images: [
+      '/images/kanban/kanban-image.png',
+      '/images/kanban/kanban-image (2).png',
+      '/images/kanban/kanban-image (3).png',
+      '/images/kanban/kanban-image (4).png',
+      '/images/kanban/kanban-image (5).png',
+    ],
+    link: 'https://github.com/xavierlbx/kanbam',
+    year: '2026',
+    status: 'Em evolução',
+  },
+  {
     title: 'Apoia Mente',
     description:
       'Plataforma de atendimento psicológico comunitário conectando psicólogos voluntários a pessoas em vulnerabilidade social.',
@@ -88,6 +116,8 @@ export const projects: Project[] = [
       '/images/apoiamente/apoia-mente-photo (3).png',
       '/images/apoiamente/apoia-mente-photo (4).png',
       '/images/apoiamente/apoia-mente-photo (5).png',
+      '/images/apoiamente/apoia-mente-photo (6).png',
+      '/images/apoiamente/apoia-mente-photo (7).png',
     ],
     link: 'https://github.com/xavierlbx/apoia-mente',
     liveLink: 'https://www.apoiamente.com.br',
