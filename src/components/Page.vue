@@ -252,7 +252,7 @@ watch(showCertificatesModal, (isOpen) => {
           >
             <span class="text-yellow-500/60 text-xs transition-colors group-hover:text-yellow-400">&gt;_</span>
             <span class="ml-1 text-sm font-black text-white tracking-tight">
-              lucas<span class="text-yellow-400">b</span>
+              lucas<span class="text-yellow-400">X</span>
             </span>
             <span class="ml-0.5 inline-block h-3 w-[2px] bg-yellow-400 opacity-80 animate-[blink_1.1s_step-end_infinite]" />
           </button>
@@ -432,7 +432,7 @@ watch(showCertificatesModal, (isOpen) => {
             class="text-base font-semibold tracking-widest text-slate-300 transition-all duration-700 delay-75 sm:text-lg"
             :class="typingPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'"
           >
-            Eu sou o <span class="text-yellow-400 font-black">Lucas Bebiano</span>
+            Eu sou o <span class="text-yellow-400 font-black">Lucas Xavier</span>
           </p>
 
           <!-- Stack label -->
@@ -521,12 +521,12 @@ watch(showCertificatesModal, (isOpen) => {
             />
             <img
               src="/images/aboutme-photo.jpg"
-              alt="Lucas Bebiano na formatura"
+              alt="Lucas Xavier na formatura"
               class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-[opacity,transform] duration-300 will-change-transform group-hover:opacity-0 group-hover:scale-[1.02]"
             />
             <img
               src="/images/aboutme-photo-2.png"
-              alt="Lucas Bebiano"
+              alt="Lucas Xavier"
               class="absolute inset-0 h-full w-full rounded-2xl object-cover object-top shadow-2xl ring-1 ring-white/10 opacity-0 transition-[opacity,transform] duration-300 will-change-transform group-hover:opacity-100 group-hover:scale-[1.02]"
             />
             <!-- Badge "Disponível" -->
@@ -545,7 +545,7 @@ watch(showCertificatesModal, (isOpen) => {
 
           <!-- Name heading -->
           <h2 class="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
-            Lucas <span class="text-yellow-400">Bebiano</span>
+            Lucas <span class="text-yellow-400">Xavier</span>
           </h2>
 
           <!-- Bio -->
@@ -1310,7 +1310,7 @@ watch(showCertificatesModal, (isOpen) => {
         <!-- Bottom divider + copyright -->
         <div class="mt-16 border-t border-white/8 py-6">
           <p class="text-center font-mono text-[10px] tracking-widest text-slate-700">
-            &copy; 2026 — <span class="text-slate-600">Lucas Bebiano</span>
+            &copy; 2026 — <span class="text-slate-600">Lucas Bebiano Xavier</span>
           </p>
         </div>
       </div>
