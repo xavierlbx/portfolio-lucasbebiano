@@ -12,6 +12,14 @@ const getSystemPrefersDark = (): boolean => {
 const applyHtmlThemeClass = (isDark: boolean) => {
   if (typeof document === 'undefined') return
   document.documentElement.classList.toggle('dark', isDark)
+  document.body.classList.toggle('dark', isDark)
+
+  const bgColor = isDark ? '#0d0d0d' : '#f8fafc'
+  const textColor = isDark ? '#f8fafc' : '#111827'
+
+  document.documentElement.style.backgroundColor = bgColor
+  document.body.style.backgroundColor = bgColor
+  document.body.style.color = textColor
 }
 
 const loadPreference = (): ThemePreference => {

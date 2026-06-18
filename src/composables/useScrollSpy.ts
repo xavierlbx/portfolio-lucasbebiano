@@ -24,6 +24,17 @@ export function useScrollSpy() {
   }
 
   const updateActiveSection = () => {
+    const viewportBottom = window.scrollY + window.innerHeight
+    const documentBottom = document.documentElement.scrollHeight
+
+    if (viewportBottom >= documentBottom - 4) {
+      const contactSection = sectionElements.find((el) => el.id === 'contact')
+      if (contactSection) {
+        activeSection.value = 'contact'
+        return
+      }
+    }
+
     let found: SectionId | '' = ''
     for (const el of sectionElements) {
       if (window.scrollY >= el.offsetTop - SECTION_OFFSET) {
