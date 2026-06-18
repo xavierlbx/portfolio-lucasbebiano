@@ -61,10 +61,10 @@ function initHeroParticles(w: number, h: number, dark: boolean): CodeParticle[] 
     x: Math.random() * w,
     y: Math.random() * h,
     vy: -(Math.random() * 0.22 + 0.08),
-    size: Math.random() * 8 + 7,
-    opacity: Math.random() * 0.09 + 0.03,
+    size: dark ? Math.random() * 8 + 7 : Math.random() * 9 + 6,
+    opacity: dark ? Math.random() * 0.09 + 0.03 : Math.random() * 0.18 + 0.09,
     text: CODE_TOKENS[Math.floor(Math.random() * CODE_TOKENS.length)] ?? '</>',
-    color: Math.random() > 0.55 ? (dark ? '#eab308' : '#10b981') : (dark ? '#94a3b8' : '#475569'),
+    color: Math.random() > 0.55 ? (dark ? '#eab308' : '#047857') : (dark ? '#94a3b8' : '#1e293b'),
   }))
 }
 
@@ -80,6 +80,10 @@ function animateHeroCanvas() {
     ctx.globalAlpha = p.opacity
     ctx.font = `${p.size}px "Courier New", monospace`
     ctx.fillStyle = p.color
+    if (!isDark.value) {
+      ctx.shadowBlur = 10
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.85)'
+    }
     ctx.fillText(p.text, p.x, p.y)
     ctx.restore()
     p.y += p.vy
@@ -316,7 +320,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 <template>
   <main
     class="min-h-screen w-full overflow-x-hidden"
-    :class="isDark ? 'bg-[#0D0D0D] text-slate-100' : 'bg-white text-gray-900'"
+    :class="isDark ? 'bg-[#0D0D0D] text-slate-100' : 'bg-[#f5f7f2] text-slate-950'"
   >
     <!-- Navbar flutuante -->
     <div class="fixed top-3 right-0 left-0 z-100 flex justify-center px-4">
@@ -333,14 +337,14 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             class="group flex items-center gap-1 font-mono select-none focus:outline-none"
             @click="scrollToTop()"
           >
-            <span class="text-xs text-emerald-600/70 dark:text-yellow-500/60 transition-colors group-hover:text-emerald-500 dark:group-hover:text-yellow-400"
+            <span class="text-xs text-teal-700/80 dark:text-yellow-500/60 transition-colors group-hover:text-teal-600 dark:group-hover:text-yellow-400"
               >&gt;_</span
             >
             <span class="ml-1 text-sm font-black tracking-tight text-gray-900 dark:text-white">
-              lucas<span class="text-emerald-500 dark:text-yellow-400">X</span>
+              lucas<span class="text-teal-600 dark:text-yellow-400">X</span>
             </span>
             <span
-              class="ml-0.5 inline-block h-3 w-[2px] animate-[blink_1.1s_step-end_infinite] bg-emerald-500 dark:bg-yellow-400 opacity-80"
+              class="ml-0.5 inline-block h-3 w-[2px] animate-[blink_1.1s_step-end_infinite] bg-teal-600 dark:bg-yellow-400 opacity-80"
             />
           </button>
 
@@ -351,8 +355,8 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
                 class="nav-link group relative rounded-md px-2.5 py-1.5 font-mono text-[10px] tracking-wider whitespace-nowrap transition-all duration-200 lg:px-3 lg:text-[11px]"
                 :class="
                   !link.external && activeSection === link.href.replace('#', '')
-                    ? 'nav-link-active text-emerald-600 dark:text-yellow-400'
-                    : 'text-gray-2900 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-200'
+                    ? 'nav-link-active text-teal-900 dark:text-yellow-400'
+                    : 'text-slate-800 dark:text-slate-300 hover:text-teal-950 dark:hover:text-slate-200'
                 "
                 @click="scrollToSection(link)"
               >
@@ -360,8 +364,8 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
                   class="mr-0.5 transition-colors duration-200"
                   :class="
                     !link.external && activeSection === link.href.replace('#', '')
-                      ? 'text-emerald-700 dark:text-yellow-600'
-                      : 'text-gray-300 dark:text-slate-700 group-hover:text-emerald-600/50 dark:group-hover:text-yellow-600/50'
+                      ? 'text-teal-800 dark:text-yellow-600'
+                      : 'text-stone-400 dark:text-slate-600 group-hover:text-teal-700/65 dark:group-hover:text-yellow-600/50'
                   "
                   >//&nbsp;</span
                 >{{ link.label.toLowerCase() }}
@@ -372,7 +376,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           <div class="flex items-center gap-2">
             <!-- theme toggle -->
             <button
-              class="flex h-7 w-7 items-center justify-center rounded border border-gray-200 dark:border-white/10 text-gray-600 dark:text-slate-500 transition hover:border-emerald-400/40 hover:text-emerald-600 dark:hover:border-yellow-400/40 dark:hover:text-yellow-400 focus-visible:ring-2 focus-visible:ring-emerald-400/60 dark:focus-visible:ring-yellow-400/60 focus-visible:outline-none"
+              class="flex h-7 w-7 items-center justify-center rounded border border-slate-300/80 bg-white/45 dark:border-white/10 dark:bg-transparent text-slate-700 dark:text-slate-500 transition hover:border-teal-600/45 hover:bg-white/75 hover:text-teal-700 dark:hover:border-yellow-400/40 dark:hover:bg-transparent dark:hover:text-yellow-400 focus-visible:ring-2 focus-visible:ring-teal-500/45 dark:focus-visible:ring-yellow-400/60 focus-visible:outline-none"
               aria-label="Alternar tema"
               @click="toggleDarkMode"
             >
@@ -408,15 +412,15 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               @click="isMenuOpen = !isMenuOpen"
             >
               <span
-                class="block h-px w-5 origin-center bg-gray-400 dark:bg-slate-400 transition-all duration-300"
+                class="block h-px w-5 origin-center bg-slate-600 dark:bg-slate-400 transition-all duration-300"
                 :class="isMenuOpen ? 'translate-y-[6px] rotate-45 bg-emerald-500 dark:bg-yellow-400' : ''"
               />
               <span
-                class="block h-px w-5 bg-gray-400 dark:bg-slate-400 transition-all duration-300"
+                class="block h-px w-5 bg-slate-600 dark:bg-slate-400 transition-all duration-300"
                 :class="isMenuOpen ? 'opacity-0' : ''"
               />
               <span
-                class="block h-px w-5 origin-center bg-gray-400 dark:bg-slate-400 transition-all duration-300"
+                class="block h-px w-5 origin-center bg-slate-600 dark:bg-slate-400 transition-all duration-300"
                 :class="isMenuOpen ? '-translate-y-[6px] -rotate-45 bg-emerald-500 dark:bg-yellow-400' : ''"
               />
             </button>
@@ -428,18 +432,18 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           class="overflow-hidden transition-all duration-300 md:hidden"
           :class="isMenuOpen ? 'max-h-80' : 'max-h-0'"
         >
-          <ul class="flex flex-col border-t border-gray-100 dark:border-white/6 py-2 font-mono">
+          <ul class="flex flex-col border-t border-stone-200 dark:border-white/6 py-2 font-mono">
             <li v-for="link in navLinks" :key="link.label">
               <button
                 class="w-full px-5 py-2 text-left text-xs tracking-wider transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-emerald-400/70 dark:focus-visible:ring-yellow-400/70 focus-visible:outline-none"
                 :class="
                   !link.external && activeSection === link.href.replace('#', '')
-                    ? 'text-emerald-600 dark:text-yellow-400'
-                    : 'text-gray-500 dark:text-slate-500 hover:text-gray-800 dark:hover:text-slate-200'
+                    ? 'text-teal-700 dark:text-yellow-400'
+                    : 'text-slate-700 dark:text-slate-500 hover:text-teal-950 dark:hover:text-slate-200'
                 "
                 @click="scrollToSection(link)"
               >
-                <span class="mr-0.5 text-gray-300 dark:text-slate-700">//&nbsp;</span>{{ link.label.toLowerCase() }}
+                <span class="mr-0.5 text-stone-400 dark:text-slate-700">//&nbsp;</span>{{ link.label.toLowerCase() }}
               </button>
             </li>
           </ul>
@@ -502,7 +506,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
           <!-- Line 1: "Hello World!" (typing) -->
           <p
-            class="text-sm font-bold tracking-[0.35em] text-gray-500 dark:text-slate-400 uppercase"
+            class="text-sm font-bold tracking-[0.35em] text-slate-700 dark:text-slate-400 uppercase"
             style="font-family: 'Courier New', monospace; min-height: 1.5em"
           >
             {{ typedLine1
@@ -521,7 +525,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
           <!-- Name -->
           <p
-            class="text-base font-semibold tracking-widest text-gray-700 dark:text-slate-300 transition-all delay-75 duration-700 sm:text-lg"
+            class="text-base font-semibold tracking-widest text-slate-800 dark:text-slate-300 transition-all delay-75 duration-700 sm:text-lg"
             :class="typingPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'"
           >
             Eu sou o <span class="font-black text-emerald-600 dark:text-yellow-400">Lucas Xavier</span>
@@ -529,7 +533,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
           <!-- Stack label -->
           <p
-            class="text-sm tracking-wide text-gray-500 dark:text-slate-500 transition-all delay-100 duration-700 md:text-base"
+            class="text-sm tracking-wide text-slate-600 dark:text-slate-500 transition-all delay-100 duration-700 md:text-base"
             :class="typingPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'"
           >
             JS &nbsp;·&nbsp; TypeScript &nbsp;·&nbsp; Vue &nbsp;·&nbsp; NestJS &nbsp;·&nbsp; .NET
@@ -548,7 +552,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               Ver Projetos
             </button>
             <button
-              class="rounded-lg border border-gray-300 dark:border-white/20 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 transition-all duration-200 hover:border-gray-400 dark:hover:border-white/40 hover:text-gray-900 dark:hover:text-white active:scale-95"
+              class="rounded-lg border border-stone-400 dark:border-white/20 px-5 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-300 transition-all duration-200 hover:border-emerald-500/45 dark:hover:border-white/40 hover:text-slate-950 dark:hover:text-white active:scale-95"
               @click="scrollToSection({ label: 'Fale Comigo', href: '#contact' })"
             >
               Fale Comigo
@@ -572,10 +576,10 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
         :class="typingPhase === 2 ? 'opacity-100' : 'opacity-0'"
         style="transform: translate3d(-50%, 0, 0)"
       >
-        <span class="text-[10px] tracking-[0.25em] text-gray-400 dark:text-slate-600 uppercase">Role para baixo</span>
+        <span class="text-[10px] tracking-[0.25em] text-slate-500 dark:text-slate-600 uppercase">Role para baixo</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-4 w-4 animate-bounce text-gray-400 dark:text-slate-500"
+          class="h-4 w-4 animate-bounce text-slate-500 dark:text-slate-500"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -638,7 +642,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
         <!-- Right: Content -->
         <div class="flex w-full flex-col gap-5">
           <!-- Label -->
-          <p class="font-mono text-xs tracking-[0.3em] text-gray-400 dark:text-slate-600 uppercase">// sobre mim</p>
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-500 dark:text-slate-600 uppercase">// sobre mim</p>
 
           <!-- Name heading -->
           <h2 class="text-3xl font-black text-gray-900 dark:text-white sm:text-4xl lg:text-5xl">
@@ -646,7 +650,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           </h2>
 
           <!-- Bio -->
-          <p class="text-sm leading-relaxed text-gray-600 dark:text-slate-400 sm:text-base">
+          <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-400 sm:text-base">
             Desenvolvedor Full Stack com experiência no ciclo completo de aplicações web — do
             levantamento de requisitos à entrega. Perfil proativo, com busca contínua por evolução
             técnica e soluções que agreguem eficiência real aos sistemas.
@@ -654,50 +658,50 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
           <!-- Terminal card -->
           <div
-            class="about-terminal rounded-xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-white/3 p-4 font-mono text-xs leading-relaxed sm:text-sm"
+            class="about-terminal rounded-xl border border-stone-300 dark:border-white/8 bg-stone-50 dark:bg-white/3 p-4 font-mono text-xs leading-relaxed sm:text-sm"
           >
             <!-- Terminal top bar -->
             <div class="mb-3 flex items-center gap-1.5">
-              <span class="h-2.5 w-2.5 rounded-full bg-gray-200 dark:bg-white/10" />
-              <span class="h-2.5 w-2.5 rounded-full bg-gray-200 dark:bg-white/10" />
-              <span class="h-2.5 w-2.5 rounded-full bg-gray-200 dark:bg-white/10" />
-              <span class="ml-2 text-[10px] tracking-wider text-gray-400 dark:text-slate-600">lucas.ts</span>
+              <span class="h-2.5 w-2.5 rounded-full bg-stone-300 dark:bg-white/10" />
+              <span class="h-2.5 w-2.5 rounded-full bg-stone-300 dark:bg-white/10" />
+              <span class="h-2.5 w-2.5 rounded-full bg-stone-300 dark:bg-white/10" />
+              <span class="ml-2 text-[10px] tracking-wider text-slate-500 dark:text-slate-600">lucas.ts</span>
             </div>
             <!-- Code -->
             <p>
-              <span class="text-purple-400">const</span> <span class="text-teal-600 dark:text-yellow-300">lucas</span>
-              <span class="text-gray-500 dark:text-slate-400">=</span> <span class="text-gray-500 dark:text-slate-400">{</span>
+              <span class="text-violet-700">const</span> <span class="text-teal-700 dark:text-yellow-300">lucas</span>
+              <span class="text-slate-600 dark:text-slate-400">=</span> <span class="text-slate-600 dark:text-slate-400">{</span>
             </p>
             <p class="pl-4">
-              <span class="text-sky-400">role</span><span class="text-gray-500 dark:text-slate-400">:</span>
-              <span class="text-green-400">'Full Stack Developer'</span
-              ><span class="text-gray-500 dark:text-slate-400">,</span>
+              <span class="text-sky-700">role</span><span class="text-slate-600 dark:text-slate-400">:</span>
+              <span class="text-emerald-700">'Full Stack Developer'</span
+              ><span class="text-slate-600 dark:text-slate-400">,</span>
             </p>
             <p class="pl-4">
-              <span class="text-sky-400">formação</span><span class="text-gray-500 dark:text-slate-400">:</span>
-              <span class="text-green-400">'ADS – Análise e Desenvolvimento de Sistemas'</span
-              ><span class="text-gray-500 dark:text-slate-400">,</span>
+              <span class="text-sky-700">formação</span><span class="text-slate-600 dark:text-slate-400">:</span>
+              <span class="text-emerald-700">'ADS – Análise e Desenvolvimento de Sistemas'</span
+              ><span class="text-slate-600 dark:text-slate-400">,</span>
             </p>
             <p class="pl-4">
-              <span class="text-sky-400">stack</span><span class="text-gray-500 dark:text-slate-400">:</span>
-              <span class="text-gray-500 dark:text-slate-400">[</span><span class="text-green-400">'JS'</span
-              ><span class="text-gray-500 dark:text-slate-400">,</span> <span class="text-green-400">'TypeScript'</span
-              ><span class="text-gray-500 dark:text-slate-400">,</span> <span class="text-green-400">'Vue'</span
-              ><span class="text-gray-500 dark:text-slate-400">,</span> <span class="text-green-400">'NestJS'</span
-              ><span class="text-gray-500 dark:text-slate-400">,</span> <span class="text-green-400">'.NET'</span
-              ><span class="text-gray-500 dark:text-slate-400">,</span> <span class="text-green-400">'SQL'</span
-              ><span class="text-gray-500 dark:text-slate-400">],</span>
+              <span class="text-sky-700">stack</span><span class="text-slate-600 dark:text-slate-400">:</span>
+              <span class="text-slate-600 dark:text-slate-400">[</span><span class="text-emerald-700">'JS'</span
+              ><span class="text-slate-600 dark:text-slate-400">,</span> <span class="text-emerald-700">'TypeScript'</span
+              ><span class="text-slate-600 dark:text-slate-400">,</span> <span class="text-emerald-700">'Vue'</span
+              ><span class="text-slate-600 dark:text-slate-400">,</span> <span class="text-emerald-700">'NestJS'</span
+              ><span class="text-slate-600 dark:text-slate-400">,</span> <span class="text-emerald-700">'.NET'</span
+              ><span class="text-slate-600 dark:text-slate-400">,</span> <span class="text-emerald-700">'SQL'</span
+              ><span class="text-slate-600 dark:text-slate-400">],</span>
             </p>
             <p class="pl-4">
-              <span class="text-sky-400">foco</span><span class="text-gray-500 dark:text-slate-400">:</span>
-              <span class="text-green-400">'boas práticas &amp; qualidade de código'</span
-              ><span class="text-gray-500 dark:text-slate-400">,</span>
+              <span class="text-sky-700">foco</span><span class="text-slate-600 dark:text-slate-400">:</span>
+              <span class="text-emerald-700">'boas práticas &amp; qualidade de código'</span
+              ><span class="text-slate-600 dark:text-slate-400">,</span>
             </p>
             <p class="pl-4">
-              <span class="text-sky-400">disponível</span><span class="text-gray-500 dark:text-slate-400">:</span>
-              <span class="text-emerald-600 dark:text-yellow-400">true</span><span class="text-gray-500 dark:text-slate-400">,</span>
+              <span class="text-sky-700">disponível</span><span class="text-slate-600 dark:text-slate-400">:</span>
+              <span class="text-emerald-700 dark:text-yellow-400">true</span><span class="text-slate-600 dark:text-slate-400">,</span>
             </p>
-            <p><span class="text-gray-500 dark:text-slate-400">}</span></p>
+            <p><span class="text-slate-600 dark:text-slate-400">}</span></p>
           </div>
 
           <!-- Chips -->
@@ -728,7 +732,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
       <div class="relative mx-auto max-w-4xl">
         <!-- Header -->
         <div class="mb-10 flex flex-col items-center gap-2">
-          <p class="font-mono text-xs tracking-[0.3em] text-gray-400 dark:text-slate-600 uppercase">// experiencias</p>
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-500 dark:text-slate-600 uppercase">// experiencias</p>
           <h2 class="text-3xl font-black text-gray-900 dark:text-white sm:text-4xl lg:text-5xl">
             Onde eu <span class="text-emerald-600 dark:text-yellow-400">trabalhei</span>
           </h2>
@@ -738,7 +742,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
         <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
           <!-- PRODABEL -->
           <div
-            class="exp-card group rounded-xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-white/2 p-6 transition-[border-color,background-color] duration-300 hover:border-emerald-500/25 dark:hover:border-yellow-500/20 hover:bg-gray-100 dark:hover:bg-white/3"
+            class="exp-card group rounded-xl border border-stone-300 dark:border-white/8 bg-stone-50 dark:bg-white/2 p-6 transition-[border-color,background-color] duration-300 hover:border-emerald-500/30 dark:hover:border-yellow-500/20 hover:bg-stone-100 dark:hover:bg-white/3"
           >
             <!-- Header row -->
             <div class="mb-1 flex items-start justify-between gap-3">
@@ -751,26 +755,26 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
                 </h3>
               </div>
               <span
-                class="shrink-0 rounded-full border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/4 px-2.5 py-1 font-mono text-[10px] text-gray-500 dark:text-slate-500"
+                class="shrink-0 rounded-full border border-stone-300 dark:border-white/10 bg-stone-100 dark:bg-white/4 px-2.5 py-1 font-mono text-[10px] text-slate-600 dark:text-slate-500"
               >
                 2024 – 2025
               </span>
             </div>
-            <p class="mb-4 text-[11px] text-gray-400 dark:text-slate-600">Belo Horizonte, MG</p>
+            <p class="mb-4 text-[11px] text-slate-500 dark:text-slate-600">Belo Horizonte, MG</p>
 
             <!-- Bullets -->
             <ul class="flex flex-col gap-2.5">
-              <li class="flex gap-2.5 text-sm leading-relaxed text-gray-600 dark:text-slate-400">
+              <li class="flex gap-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-400">
                 <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/60 dark:bg-yellow-500/60" />
                 Desenvolvimento de sistemas web modernos, participando de todo o ciclo — do código
                 ao ambiente de produção.
               </li>
-              <li class="flex gap-2.5 text-sm leading-relaxed text-gray-600 dark:text-slate-400">
+              <li class="flex gap-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-400">
                 <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/60 dark:bg-yellow-500/60" />
                 Atuação em equipe multidisciplinar com metodologia ágil (Scrum), contribuindo em
                 cerimônias e entregas.
               </li>
-              <li class="flex gap-2.5 text-sm leading-relaxed text-gray-600 dark:text-slate-400">
+              <li class="flex gap-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-400">
                 <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/60 dark:bg-yellow-500/60" />
                 Levantamento e validação de requisitos com stakeholders, traduzindo necessidades de
                 negócio em soluções técnicas.
@@ -790,36 +794,36 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
           <!-- CARDIESEL -->
           <div
-            class="exp-card group rounded-xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-white/2 p-6 transition-[border-color,background-color] duration-300 hover:border-emerald-500/25 dark:hover:border-yellow-500/20 hover:bg-gray-100 dark:hover:bg-white/3"
+            class="exp-card group rounded-xl border border-stone-300 dark:border-white/8 bg-stone-50 dark:bg-white/2 p-6 transition-[border-color,background-color] duration-300 hover:border-emerald-500/30 dark:hover:border-yellow-500/20 hover:bg-stone-100 dark:hover:bg-white/3"
           >
             <!-- Header row -->
             <div class="mb-1 flex items-start justify-between gap-3">
               <div>
-                <p class="text-[11px] font-semibold tracking-widest text-gray-500 dark:text-slate-500 uppercase">
+                <p class="text-[11px] font-semibold tracking-widest text-slate-600 dark:text-slate-500 uppercase">
                   Cardiesel
                 </p>
                 <h3 class="mt-1 text-base leading-snug font-bold text-gray-900 dark:text-white">
                   Jovem Aprendiz — TI
                 </h3>
-                <p class="mt-0.5 text-[11px] text-gray-400 dark:text-slate-600">Concessionária Mercedes-Benz</p>
+                <p class="mt-0.5 text-[11px] text-slate-500 dark:text-slate-600">Concessionária Mercedes-Benz</p>
               </div>
               <span
-                class="shrink-0 rounded-full border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/4 px-2.5 py-1 font-mono text-[10px] text-gray-500 dark:text-slate-500"
+                class="shrink-0 rounded-full border border-stone-300 dark:border-white/10 bg-stone-100 dark:bg-white/4 px-2.5 py-1 font-mono text-[10px] text-slate-600 dark:text-slate-500"
               >
                 2022 – 2023
               </span>
             </div>
-            <p class="mb-4 text-[11px] text-gray-400 dark:text-slate-600">Belo Horizonte, MG</p>
+            <p class="mb-4 text-[11px] text-slate-500 dark:text-slate-600">Belo Horizonte, MG</p>
 
             <!-- Bullets -->
             <ul class="flex flex-col gap-2.5">
-              <li class="flex gap-2.5 text-sm leading-relaxed text-gray-600 dark:text-slate-400">
-                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-gray-300 dark:bg-white/25" />
+              <li class="flex gap-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-400">
+                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400 dark:bg-white/25" />
                 Participação na implantação de novo sistema interno, sendo ponto de contato entre
                 equipe técnica e usuários finais.
               </li>
-              <li class="flex gap-2.5 text-sm leading-relaxed text-gray-600 dark:text-slate-400">
-                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-gray-300 dark:bg-white/25" />
+              <li class="flex gap-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-400">
+                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400 dark:bg-white/25" />
                 Suporte técnico e atendimento a colaboradores via Service Desk, auxiliando na
                 resolução de problemas do dia a dia.
               </li>
@@ -851,7 +855,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           <h2 class="text-3xl font-black text-gray-900 dark:text-white sm:text-4xl lg:text-5xl">
             Minha <span class="text-emerald-600 dark:text-yellow-400">Stack</span>
           </h2>
-          <p class="mt-1 text-sm text-gray-500 dark:text-slate-500">Tecnologias que uso no dia a dia</p>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-500">Tecnologias que uso no dia a dia</p>
         </div>
 
         <!-- Mobile: Grid -->
@@ -860,7 +864,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             <div
               v-for="skill in skills"
               :key="skill.name"
-              class="group flex flex-col items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-white/3 p-3 text-center transition-all duration-300 active:scale-[1.03] active:border-emerald-500/30 dark:active:border-yellow-500/30"
+              class="group flex flex-col items-center justify-center gap-2 rounded-xl border border-stone-300 dark:border-white/8 bg-stone-50 dark:bg-white/3 p-3 text-center transition-all duration-300 active:scale-[1.03] active:border-emerald-500/35 dark:active:border-yellow-500/30"
               role="button"
               tabindex="0"
               :aria-label="`Destacar habilidade ${skill.name}`"
@@ -876,7 +880,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
                 :class="mobileActiveSkill === skill.name ? 'scale-110' : ''"
                 draggable="false"
               />
-              <span class="text-xs leading-tight font-semibold text-gray-700 dark:text-slate-300">{{
+              <span class="text-xs leading-tight font-semibold text-slate-800 dark:text-slate-300">{{
                 skill.name
               }}</span>
             </div>
@@ -922,7 +926,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
       <div class="relative mx-auto w-full max-w-7xl">
         <!-- Header -->
         <div class="mb-12 flex flex-col items-center gap-2">
-          <p class="font-mono text-xs tracking-[0.3em] text-gray-400 dark:text-slate-600 uppercase">// certificados</p>
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-500 dark:text-slate-600 uppercase">// certificados</p>
           <h2 class="text-3xl font-black text-gray-900 dark:text-white sm:text-4xl lg:text-5xl">
             Minhas <span class="text-emerald-600 dark:text-yellow-400">Certificações</span>
           </h2>
@@ -930,7 +934,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
         <!-- Linha 1: Destaques -->
         <div class="mb-8 ">
-          <p class="mb-3 font-mono text-[10px] tracking-[0.25em] text-gray-400 dark:text-slate-600 uppercase text-center">
+          <p class="mb-3 font-mono text-[10px] tracking-[0.25em] text-slate-500 dark:text-slate-600 uppercase text-center">
             ★ destaques acadêmicos
           </p>
           <!-- Gradient fade wrapper -->
@@ -949,7 +953,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           <div
             v-for="cert in featuredCertificates"
             :key="`feat-${cert.title}`"
-            class="cert-inline-featured group relative flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-emerald-500/25 dark:border-yellow-500/20 bg-gray-50 dark:bg-white/3 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/55 dark:hover:border-yellow-500/50"
+            class="cert-inline-featured group relative flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-emerald-600/30 dark:border-yellow-500/20 bg-stone-50 dark:bg-white/3 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-600/60 dark:hover:border-yellow-500/50"
           >
             <div class="pointer-events-none absolute top-2 left-2 z-10">
               <span
@@ -968,7 +972,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
                 Destaque
               </span>
             </div>
-            <div class="aspect-[4/3] w-full overflow-hidden bg-gray-200 dark:bg-zinc-900">
+            <div class="aspect-[4/3] w-full overflow-hidden bg-stone-200 dark:bg-zinc-900">
               <img
                 :src="cert.image"
                 :alt="cert.title"
@@ -981,7 +985,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               <h3 class="line-clamp-2 text-[11px] leading-snug font-bold text-gray-900 dark:text-white">
                 {{ cert.title }}
               </h3>
-              <p class="line-clamp-3 flex-1 text-[10px] leading-relaxed text-gray-600 dark:text-slate-400">
+              <p class="line-clamp-3 flex-1 text-[10px] leading-relaxed text-slate-700 dark:text-slate-400">
                 {{ cert.description }}
               </p>
               <a
@@ -1033,7 +1037,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
         <!-- Linha 2: Demais certificados -->
         <div>
-          <p class="mb-3 font-mono text-[10px] tracking-[0.25em] text-gray-400 dark:text-slate-600 uppercase text-center">
+          <p class="mb-3 font-mono text-[10px] tracking-[0.25em] text-slate-500 dark:text-slate-600 uppercase text-center">
             // demais certificados
           </p>
           <!-- Gradient fade wrapper -->
@@ -1056,11 +1060,11 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             :href="cert.link"
             target="_blank"
             rel="noopener noreferrer"
-            class="cert-inline-alura group flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-white/3 transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/35"
+            class="cert-inline-alura group flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-stone-300 dark:border-white/8 bg-stone-50 dark:bg-white/3 transition-all duration-300 hover:-translate-y-1 hover:border-sky-600/45"
             style="text-decoration: none"
             @mousedown.stop
           >
-            <div class="relative aspect-[4/3] w-full overflow-hidden bg-gray-200 dark:bg-zinc-900">
+            <div class="relative aspect-[4/3] w-full overflow-hidden bg-stone-200 dark:bg-zinc-900">
               <div class="pointer-events-none absolute top-2 left-2 z-10">
                 <span
                   class="inline-flex items-center gap-1 rounded-full border border-sky-400/60 bg-black/80 px-1.5 py-0.5 text-[9px] font-bold text-sky-400"
@@ -1094,11 +1098,11 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               <h3 class="line-clamp-2 text-[11px] leading-snug font-bold text-gray-900 dark:text-white">
                 {{ cert.title }}
               </h3>
-              <p class="line-clamp-3 flex-1 text-[10px] leading-relaxed text-gray-600 dark:text-slate-400">
+              <p class="line-clamp-3 flex-1 text-[10px] leading-relaxed text-slate-700 dark:text-slate-400">
                 {{ cert.description }}
               </p>
               <div
-                class="mt-1 inline-flex items-center gap-1 self-start rounded border border-sky-500/30 bg-sky-500/8 px-2 py-1 text-[9px] font-semibold text-sky-400 transition-all duration-200 group-hover:border-sky-500/50 group-hover:bg-sky-500/15 group-hover:text-sky-300"
+                class="mt-1 inline-flex items-center gap-1 self-start rounded border border-sky-600/35 bg-sky-600/10 px-2 py-1 text-[9px] font-semibold text-sky-700 transition-all duration-200 group-hover:border-sky-600/55 group-hover:bg-sky-600/15 group-hover:text-sky-800"
               >
                 Ver certificado
                 <svg
@@ -1157,11 +1161,11 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
       <div class="relative mx-auto w-full max-w-7xl">
         <!-- Header -->
         <div class="mb-12 flex flex-col items-center gap-2">
-          <p class="font-mono text-xs tracking-[0.3em] text-gray-400 dark:text-slate-600 uppercase">// projetos</p>
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-500 dark:text-slate-600 uppercase">// projetos</p>
           <h2 class="text-3xl font-black text-gray-900 dark:text-white sm:text-4xl lg:text-5xl">
             O que eu <span class="text-emerald-600 dark:text-yellow-400">construí</span>
           </h2>
-          <p class="mt-1 text-sm text-gray-500 dark:text-slate-500">Clique em um projeto para ver os detalhes</p>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-500">Clique em um projeto para ver os detalhes</p>
         </div>
 
         <!-- Mobile: Carrossel horizontal (< sm) -->
@@ -1176,7 +1180,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           >
             <div
               v-if="showProjectsScrollHint"
-              class="mb-4 flex items-center justify-center gap-2 text-xs font-semibold tracking-wide text-slate-500"
+              class="mb-4 flex items-center justify-center gap-2 text-xs font-semibold tracking-wide text-slate-600"
               aria-live="polite"
             >
               <svg
@@ -1212,7 +1216,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             <div
               v-for="project in projects"
               :key="project.title"
-              class="project-card flex w-[85%] shrink-0 cursor-pointer snap-start flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-white/3"
+              class="project-card flex w-[85%] shrink-0 cursor-pointer snap-start flex-col overflow-hidden rounded-2xl border border-stone-300 dark:border-white/8 bg-stone-50 dark:bg-white/3"
               role="button"
               tabindex="0"
               @click="openModal(project)"
@@ -1220,16 +1224,16 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               @keydown.space.prevent="openModal(project)"
             >
               <!-- Terminal bar -->
-              <div class="flex items-center gap-1.5 border-b border-gray-200 dark:border-white/8 bg-gray-100 dark:bg-white/3 px-3 py-2">
-                <span class="h-2 w-2 rounded-full bg-gray-300 dark:bg-white/10" />
-                <span class="h-2 w-2 rounded-full bg-gray-300 dark:bg-white/10" />
-                <span class="h-2 w-2 rounded-full bg-gray-300 dark:bg-white/10" />
-                <span class="ml-1 truncate font-mono text-[9px] tracking-wider text-gray-400 dark:text-slate-600"
+              <div class="flex items-center gap-1.5 border-b border-stone-300 dark:border-white/8 bg-stone-100 dark:bg-white/3 px-3 py-2">
+                <span class="h-2 w-2 rounded-full bg-stone-400 dark:bg-white/10" />
+                <span class="h-2 w-2 rounded-full bg-stone-400 dark:bg-white/10" />
+                <span class="h-2 w-2 rounded-full bg-stone-400 dark:bg-white/10" />
+                <span class="ml-1 truncate font-mono text-[9px] tracking-wider text-slate-500 dark:text-slate-600"
                   >{{ project.title.toLowerCase().replace(/\s/g, '-') }}.ts</span
                 >
               </div>
               <!-- Image 16:9 -->
-              <div class="aspect-video w-full overflow-hidden bg-gray-100 dark:bg-white/5">
+              <div class="aspect-video w-full overflow-hidden bg-stone-100 dark:bg-white/5">
                 <img
                   :src="project.image"
                   :alt="project.title"
@@ -1241,7 +1245,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
               <!-- Content -->
               <div class="flex flex-1 flex-col gap-2 p-3">
                 <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ project.title }}</h3>
-                <p class="flex-1 text-xs leading-relaxed text-gray-600 dark:text-slate-400">
+                <p class="flex-1 text-xs leading-relaxed text-slate-700 dark:text-slate-400">
                   {{ project.description }}
                 </p>
                 <div class="flex flex-wrap gap-1">
@@ -1253,7 +1257,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
                     {{ tech }}
                   </span>
                 </div>
-                <span class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sky-400">
+                <span class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sky-700">
                   Ver detalhes
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -1280,7 +1284,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
           <div
             v-for="project in paginatedProjects"
             :key="project.title"
-            class="project-card group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-white/3 transition-[transform,border-color] duration-300 hover:-translate-y-1 hover:border-emerald-500/35 dark:hover:border-yellow-500/35"
+            class="project-card group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-stone-300 dark:border-white/8 bg-stone-50 dark:bg-white/3 transition-[transform,border-color] duration-300 hover:-translate-y-1 hover:border-emerald-600/40 dark:hover:border-yellow-500/35"
             role="button"
             tabindex="0"
             @click="openModal(project)"
@@ -1288,18 +1292,18 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             @keydown.space.prevent="openModal(project)"
           >
             <!-- Terminal bar -->
-            <div class="flex items-center gap-1.5 border-b border-gray-200 dark:border-white/8 bg-gray-100 dark:bg-white/3 px-3 py-2">
+            <div class="flex items-center gap-1.5 border-b border-stone-300 dark:border-white/8 bg-stone-100 dark:bg-white/3 px-3 py-2">
               <span
-                class="h-2 w-2 rounded-full bg-gray-300 dark:bg-white/10 transition-colors duration-200 group-hover:bg-emerald-500/40 dark:group-hover:bg-yellow-500/40"
+                class="h-2 w-2 rounded-full bg-stone-400 dark:bg-white/10 transition-colors duration-200 group-hover:bg-emerald-600/45 dark:group-hover:bg-yellow-500/40"
               />
-              <span class="h-2 w-2 rounded-full bg-gray-300 dark:bg-white/10" />
-              <span class="h-2 w-2 rounded-full bg-gray-300 dark:bg-white/10" />
-              <span class="ml-1 truncate font-mono text-[9px] tracking-wider text-gray-400 dark:text-slate-600"
+              <span class="h-2 w-2 rounded-full bg-stone-400 dark:bg-white/10" />
+              <span class="h-2 w-2 rounded-full bg-stone-400 dark:bg-white/10" />
+              <span class="ml-1 truncate font-mono text-[9px] tracking-wider text-slate-500 dark:text-slate-600"
                 >{{ project.title.toLowerCase().replace(/\s/g, '-') }}.ts</span
               >
             </div>
             <!-- Image 16:9 -->
-            <div class="aspect-video w-full overflow-hidden bg-gray-100 dark:bg-white/5">
+            <div class="aspect-video w-full overflow-hidden bg-stone-100 dark:bg-white/5">
               <img
                 :src="project.image"
                 :alt="project.title"
@@ -1311,7 +1315,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
             <!-- Content -->
             <div class="flex flex-1 flex-col gap-2 p-3">
               <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ project.title }}</h3>
-              <p class="flex-1 text-xs leading-relaxed text-gray-600 dark:text-slate-400">{{ project.description }}</p>
+              <p class="flex-1 text-xs leading-relaxed text-slate-700 dark:text-slate-400">{{ project.description }}</p>
               <div class="flex flex-wrap gap-1">
                 <span
                   v-for="tech in project.tech"
@@ -1322,7 +1326,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
                 </span>
               </div>
               <span
-                class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sky-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sky-700 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
               >
                 Ver detalhes
                 <svg
@@ -1696,9 +1700,9 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
         </div>
 
         <!-- Bottom divider + copyright -->
-        <div class="mt-16 border-t border-gray-200 dark:border-white/8 py-6">
-          <p class="text-center font-mono text-[10px] tracking-widest text-gray-400 dark:text-slate-700">
-            &copy; 2026 — <span class="text-gray-400 dark:text-slate-600">Lucas Bebiano Xavier</span>
+        <div class="mt-16 border-t border-stone-300 dark:border-white/8 py-6">
+          <p class="text-center font-mono text-[10px] tracking-widest text-slate-500 dark:text-slate-700">
+            &copy; 2026 — <span class="text-slate-500 dark:text-slate-600">Lucas Bebiano Xavier</span>
           </p>
         </div>
       </div>
@@ -1712,9 +1716,13 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 }
 
 .nav-bar-light {
-  background: rgba(248, 250, 252, 0.92);
-  border-color: rgba(0, 0, 0, 0.08);
-  border-top-color: rgba(16, 185, 129, 0.3);
+  background:
+    linear-gradient(135deg, rgba(255, 251, 245, 0.94), rgba(240, 249, 245, 0.9));
+  border-color: rgba(15, 23, 42, 0.1);
+  border-top-color: rgba(13, 148, 136, 0.42);
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 .nav-bar-dark {
@@ -1724,7 +1732,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 }
 
 .nav-top-accent-light {
-  background: linear-gradient(90deg, transparent 5%, rgba(16, 185, 129, 0.45) 50%, transparent 95%);
+  background: linear-gradient(90deg, transparent 0%, rgba(13, 148, 136, 0.18) 18%, rgba(20, 184, 166, 0.7) 50%, rgba(245, 158, 11, 0.24) 82%, transparent 100%);
 }
 
 .nav-top-accent-dark {
@@ -1742,7 +1750,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
   right: 0;
   bottom: 0;
   height: 1px;
-  background: rgba(16, 185, 129, 0.6);
+  background: rgba(13, 148, 136, 0.72);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.25s ease;
@@ -1757,11 +1765,13 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 }
 
 .nav-link-active {
-  background: rgba(16, 185, 129, 0.07);
+  background: linear-gradient(180deg, rgba(20, 184, 166, 0.16), rgba(13, 148, 136, 0.08));
+  box-shadow: inset 0 0 0 1px rgba(13, 148, 136, 0.1);
 }
 
 :global(html.dark) .nav-link-active {
   background: rgba(234, 179, 8, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(234, 179, 8, 0.16);
 }
 
 .nav-link-active::after {
@@ -1770,7 +1780,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
 /* Hero background dot grid */
 .hero-grid-overlay {
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(15, 23, 42, 0.08) 1px, transparent 1px);
   background-size: 30px 30px;
 }
 
@@ -1780,7 +1790,7 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
 /* Primary CTA glow on hover */
 .hero-btn-primary:hover {
-  box-shadow: 0 0 22px rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 22px rgba(5, 150, 105, 0.46);
 }
 
 :global(html.dark) .hero-btn-primary:hover {
@@ -1790,14 +1800,15 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 /* About section */
 .about-terminal {
   backdrop-filter: blur(4px);
+  box-shadow: 0 18px 40px rgba(148, 163, 184, 0.12);
 }
 
 .about-chip {
   display: inline-block;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  background: rgba(16, 185, 129, 0.07);
+  border: 1px solid rgba(5, 150, 105, 0.34);
+  background: rgba(5, 150, 105, 0.1);
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -1822,8 +1833,8 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 /* Project cards */
 .project-card:hover {
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(16, 185, 129, 0.25);
+    0 12px 34px rgba(15, 23, 42, 0.12),
+    0 0 0 1px rgba(5, 150, 105, 0.28);
 }
 
 :global(html.dark) .project-card:hover {
@@ -1835,8 +1846,8 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 /* Certificate cards (inline section) */
 .cert-inline-featured:hover {
   box-shadow:
-    0 10px 28px rgba(16, 185, 129, 0.15),
-    0 0 0 1px rgba(16, 185, 129, 0.28);
+    0 12px 30px rgba(5, 150, 105, 0.14),
+    0 0 0 1px rgba(5, 150, 105, 0.32);
 }
 
 :global(html.dark) .cert-inline-featured:hover {
@@ -1847,8 +1858,8 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
 .cert-inline-alura:hover {
   box-shadow:
-    0 10px 28px rgba(14, 165, 233, 0.1),
-    0 0 0 1px rgba(14, 165, 233, 0.2);
+    0 12px 28px rgba(2, 132, 199, 0.12),
+    0 0 0 1px rgba(2, 132, 199, 0.24);
 }
 
 /* Experience timeline */
@@ -1868,8 +1879,8 @@ const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
 
 .exp-card:hover {
   box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(16, 185, 129, 0.22);
+    0 8px 28px rgba(15, 23, 42, 0.1),
+    0 0 0 1px rgba(5, 150, 105, 0.24);
 }
 
 :global(html.dark) .exp-card:hover {
