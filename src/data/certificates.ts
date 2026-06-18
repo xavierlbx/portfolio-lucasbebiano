@@ -9,7 +9,7 @@ export const featuredCertificates: Certificate[] = [
   {
     title: 'IGESC',
     description:
-      'Formação complementar em tecnologia e desenvolvimento de sistemas pela instituição IGESC. Desenvolvido no 5º semestre de ADS na PUC Minas.',
+      'Projeto acadêmico de conclusão de curso - aplicação web completa feita para a empresa IGESC (Empresa Real). Desenvolvido no 5º semestre de ADS na PUC Minas.',
     image: 'images/Certificados/certificado-igesc.jpg',
   },
   {
@@ -39,13 +39,13 @@ export const aluraCertificates: Certificate[] = [
     description:
       'Tipagem estática, orientação a objetos e desenvolvimento seguro com TypeScript.',
     image: 'images/Certificados/certificado-typescript.png',
-    link: 'https://cursos.alura.com.br/certificate/999f7185-265a-4ef2-856f-dc4cdfd63501?lang=pt_BR',
+    link: 'https://cursos.alura.com.br/certificate/953ce1c6-f7b4-4569-b736-3e30300bb9be?lang=pt_BR',
   },
   {
     title: 'Certificação ChatGPT e IA',
     description:
       'Estudos sobre inteligência artificial aplicada, prompts e produtividade com IA.',
     image: 'images/Certificados/certificado-chatgpt.png',
-    link: 'https://cursos.alura.com.br/certificate/953ce1c6-f7b4-4569-b736-3e30300bb9be?lang=pt_BR',
+    link: 'https://cursos.alura.com.br/certificate/999f7185-265a-4ef2-856f-dc4cdfd63501?lang=pt_BR',
   },
 ]

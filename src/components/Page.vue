@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useDarkMode } from '../composables/useDarkMode'
 import { useScrollSpy } from '../composables/useScrollSpy'
 import { useCarousel } from '../composables/useCarousel'
@@ -11,7 +11,7 @@ import { CONTACT, contactPhoneHref, contactEmailHref } from '../data/contact'
 import SkillCard from './SkillCard.vue'
 import ProjectsPagination from './ProjectsPagination.vue'
 import ContactLink from './ContactLink.vue'
-import CertificatesModal from './CertificatesModal.vue'
+import { featuredCertificates, aluraCertificates } from '../data/certificates'
 
 // ---- Tema ----
 const { isDark, toggleDarkMode } = useDarkMode()
@@ -25,14 +25,34 @@ let mobileActiveSkillTimer: ReturnType<typeof setTimeout> | null = null
 const heroCanvasRef = ref<HTMLCanvasElement | null>(null)
 let heroAnimId: number | null = null
 let heroObserver: IntersectionObserver | null = null
-let heroIsVisible = true
 
 interface CodeParticle {
-  x: number; y: number; vy: number
-  size: number; opacity: number; text: string; color: string
+  x: number
+  y: number
+  vy: number
+  size: number
+  opacity: number
+  text: string
+  color: string
 }
 
-const CODE_TOKENS = ['</>', '{  }', '=>', '&&', '||', 'const', 'async', '01', '10', '()', ';', '===', 'fn()', 'null', 'true']
+const CODE_TOKENS = [
+  '</>',
+  '{  }',
+  '=>',
+  '&&',
+  '||',
+  'const',
+  'async',
+  '01',
+  '10',
+  '()',
+  ';',
+  '===',
+  'fn()',
+  'null',
+  'true',
+]
 let heroParticles: CodeParticle[] = []
 
 function initHeroParticles(w: number, h: number): CodeParticle[] {
@@ -82,7 +102,10 @@ function startHeroCanvas() {
 }
 
 function resizeHeroCanvas() {
-  if (heroAnimId !== null) { cancelAnimationFrame(heroAnimId); heroAnimId = null }
+  if (heroAnimId !== null) {
+    cancelAnimationFrame(heroAnimId)
+    heroAnimId = null
+  }
   startHeroCanvas()
 }
 
@@ -106,6 +129,7 @@ const navLinks: NavLink[] = [
   { label: 'Sobre Mim', href: '#about' },
   { label: 'Experiências', href: '#experience' },
   { label: 'Conhecimentos', href: '#skills' },
+  { label: 'Certificados', href: '#certificates' },
   { label: 'Projetos', href: '#projects' },
   { label: 'Fale Comigo', href: '#contact' },
 ]
@@ -161,25 +185,30 @@ onMounted(() => {
       heroObserver = new IntersectionObserver(
         (entries) => {
           const isIntersecting = entries[0]?.isIntersecting ?? false
-          heroIsVisible = isIntersecting
           if (isIntersecting) {
-            if (heroAnimId === null && !showCertificatesModal.value) startHeroCanvas()
+            if (heroAnimId === null) startHeroCanvas()
           } else {
-            if (heroAnimId !== null) { cancelAnimationFrame(heroAnimId); heroAnimId = null }
+            if (heroAnimId !== null) {
+              cancelAnimationFrame(heroAnimId)
+              heroAnimId = null
+            }
           }
         },
-        { threshold: 0 },
+        { threshold: 0 }
       )
       heroObserver.observe(heroCanvasRef.value)
     }
   })
   window.addEventListener('resize', updateProjectsScrollHint, { passive: true })
   window.addEventListener('resize', resizeHeroCanvas, { passive: true })
+  window.addEventListener('resize', updateCertScrollState, { passive: true })
+  nextTick(updateCertScrollState)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateProjectsScrollHint)
   window.removeEventListener('resize', resizeHeroCanvas)
+  window.removeEventListener('resize', updateCertScrollState)
   if (heroAnimId !== null) cancelAnimationFrame(heroAnimId)
   if (mobileActiveSkillTimer !== null) clearTimeout(mobileActiveSkillTimer)
   heroObserver?.disconnect()
@@ -196,12 +225,69 @@ const {
   onTouchCancel: onCarouselTouchCancel,
 } = useCarousel(carouselTrackRef)
 
+// ---- Cert carousel drag-scroll (factory) ----
+function useCertCarouselDrag(carouselRef: ReturnType<typeof ref<HTMLElement | null>>) {
+  let dragging = false
+  let dragStartX = 0
+  let dragScrollLeft = 0
+  const isDragging = ref(false)
+
+  const onMouseDown = (e: MouseEvent) => {
+    isDragging.value = true
+    dragging = true
+    dragStartX = e.pageX - (carouselRef.value?.offsetLeft ?? 0)
+    dragScrollLeft = carouselRef.value?.scrollLeft ?? 0
+  }
+  const onMouseMove = (e: MouseEvent) => {
+    if (!dragging || !carouselRef.value) return
+    e.preventDefault()
+    const x = e.pageX - carouselRef.value.offsetLeft
+    carouselRef.value.scrollLeft = dragScrollLeft - (x - dragStartX)
+  }
+  const onMouseUp = () => {
+    isDragging.value = false
+    dragging = false
+  }
+
+  return { isDragging, onMouseDown, onMouseMove, onMouseUp }
+}
+
+const certCarouselRef = ref<HTMLElement | null>(null)
+const certCarousel2Ref = ref<HTMLElement | null>(null)
+
+// ---- Cert scroll overflow detection ----
+const cert1CanScroll = ref(false)
+const cert2CanScroll = ref(false)
+
+function updateCertScrollState() {
+  if (certCarouselRef.value) {
+    cert1CanScroll.value = certCarouselRef.value.scrollWidth > certCarouselRef.value.clientWidth + 4
+  }
+  if (certCarousel2Ref.value) {
+    cert2CanScroll.value = certCarousel2Ref.value.scrollWidth > certCarousel2Ref.value.clientWidth + 4
+  }
+}
+
+const {
+  isDragging: certIsDragging,
+  onMouseDown: onCertMouseDownTrack,
+  onMouseMove: onCertMouseMoveTrack,
+  onMouseUp: onCertMouseUpTrack,
+} = useCertCarouselDrag(certCarouselRef)
+
+const {
+  isDragging: certIsDragging2,
+  onMouseDown: onCertMouseDownTrack2,
+  onMouseMove: onCertMouseMoveTrack2,
+  onMouseUp: onCertMouseUpTrack2,
+} = useCertCarouselDrag(certCarousel2Ref)
+
 // ---- Projects Pagination ----
 const ITEMS_PER_PAGE = 4
 const currentPage = ref(0)
 const totalPages = computed(() => Math.ceil(projects.length / ITEMS_PER_PAGE))
 const paginatedProjects = computed(() =>
-  projects.slice(currentPage.value * ITEMS_PER_PAGE, (currentPage.value + 1) * ITEMS_PER_PAGE),
+  projects.slice(currentPage.value * ITEMS_PER_PAGE, (currentPage.value + 1) * ITEMS_PER_PAGE)
 )
 
 // ---- Project Modal ----
@@ -218,29 +304,14 @@ const {
 
 // ---- Typing Animation ----
 const { typedLine1, typedLine2, typingPhase, showCursor } = useTypingAnimation()
-
-// ---- Certificates Modal ----
-const showCertificatesModal = ref(false)
-
-watch(showCertificatesModal, (isOpen) => {
-  if (isOpen) {
-    if (heroAnimId !== null) {
-      cancelAnimationFrame(heroAnimId)
-      heroAnimId = null
-    }
-    return
-  }
-
-  nextTick(() => {
-    if (heroAnimId === null && heroIsVisible) startHeroCanvas()
-  })
-})
 </script>
 <template>
   <main class="min-h-screen w-full overflow-x-hidden bg-[#0D0D0D] text-slate-100">
     <!-- Navbar flutuante -->
     <div class="fixed top-3 right-0 left-0 z-100 flex justify-center px-4">
-      <nav class="nav-bar w-full max-w-5xl overflow-hidden rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.8)] backdrop-blur-xl">
+      <nav
+        class="nav-bar w-full max-w-5xl overflow-hidden rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.8)] backdrop-blur-xl"
+      >
         <!-- Top accent line -->
         <div class="nav-top-accent h-px w-full" />
 
@@ -250,18 +321,22 @@ watch(showCertificatesModal, (isOpen) => {
             class="group flex items-center gap-1 font-mono select-none focus:outline-none"
             @click="scrollToTop()"
           >
-            <span class="text-yellow-500/60 text-xs transition-colors group-hover:text-yellow-400">&gt;_</span>
-            <span class="ml-1 text-sm font-black text-white tracking-tight">
+            <span class="text-xs text-yellow-500/60 transition-colors group-hover:text-yellow-400"
+              >&gt;_</span
+            >
+            <span class="ml-1 text-sm font-black tracking-tight text-white">
               lucas<span class="text-yellow-400">X</span>
             </span>
-            <span class="ml-0.5 inline-block h-3 w-[2px] bg-yellow-400 opacity-80 animate-[blink_1.1s_step-end_infinite]" />
+            <span
+              class="ml-0.5 inline-block h-3 w-[2px] animate-[blink_1.1s_step-end_infinite] bg-yellow-400 opacity-80"
+            />
           </button>
 
           <!-- Desktop links (centered) -->
           <ul class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-0.5 md:flex">
             <li v-for="link in navLinks" :key="link.label">
               <button
-                class="nav-link group relative px-3 py-1.5 font-mono text-[11px] tracking-wider transition-all duration-200 rounded-md"
+                class="nav-link group relative rounded-md px-3 py-1.5 font-mono text-[11px] tracking-wider transition-all duration-200"
                 :class="
                   !link.external && activeSection === link.href.replace('#', '')
                     ? 'nav-link-active text-yellow-400'
@@ -271,8 +346,13 @@ watch(showCertificatesModal, (isOpen) => {
               >
                 <span
                   class="mr-0.5 transition-colors duration-200"
-                  :class="!link.external && activeSection === link.href.replace('#', '') ? 'text-yellow-600' : 'text-slate-700 group-hover:text-yellow-600/50'"
-                >//&nbsp;</span>{{ link.label.toLowerCase() }}
+                  :class="
+                    !link.external && activeSection === link.href.replace('#', '')
+                      ? 'text-yellow-600'
+                      : 'text-slate-700 group-hover:text-yellow-600/50'
+                  "
+                  >//&nbsp;</span
+                >{{ link.label.toLowerCase() }}
               </button>
             </li>
           </ul>
@@ -347,7 +427,7 @@ watch(showCertificatesModal, (isOpen) => {
                 "
                 @click="scrollToSection(link)"
               >
-                <span class="text-slate-700 mr-0.5">//&nbsp;</span>{{ link.label.toLowerCase() }}
+                <span class="mr-0.5 text-slate-700">//&nbsp;</span>{{ link.label.toLowerCase() }}
               </button>
             </li>
           </ul>
@@ -356,22 +436,27 @@ watch(showCertificatesModal, (isOpen) => {
     </div>
 
     <!-- Hero / Bem vindo -->
-    <section class="relative h-screen w-full overflow-hidden" style="background: #0D0D0D">
-
+    <section class="relative h-screen w-full overflow-hidden" style="background: #0d0d0d">
       <!-- Canvas: floating code tokens -->
       <canvas
         ref="heroCanvasRef"
-        class="absolute inset-0 h-full w-full pointer-events-none select-none"
+        class="pointer-events-none absolute inset-0 h-full w-full select-none"
         aria-hidden="true"
       />
 
       <!-- Dot-grid overlay -->
-      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <div class="hero-grid-overlay pointer-events-none absolute inset-0" aria-hidden="true" />
 
       <!-- Radial yellow glow -->
       <div
-        class="absolute inset-0 pointer-events-none"
-        style="background: radial-gradient(ellipse 65% 55% at 62% 50%, rgba(234,179,8,0.07) 0%, transparent 65%)"
+        class="pointer-events-none absolute inset-0"
+        style="
+          background: radial-gradient(
+            ellipse 65% 55% at 62% 50%,
+            rgba(234, 179, 8, 0.07) 0%,
+            transparent 65%
+          );
+        "
         aria-hidden="true"
       />
 
@@ -383,14 +468,14 @@ watch(showCertificatesModal, (isOpen) => {
         <div class="hidden md:flex md:shrink-0 md:items-center md:justify-center">
           <div class="relative">
             <div
-              class="absolute -inset-6 rounded-full blur-xl opacity-25"
+              class="absolute -inset-6 rounded-full opacity-25 blur-xl"
               style="background: radial-gradient(circle, #eab308 0%, transparent 70%)"
               aria-hidden="true"
             />
             <img
               src="/images/coding-image.png"
               alt="Ilustração de programação"
-              class="relative w-60 opacity-90 drop-shadow-2xl lg:w-65 xl:w-72 hover:scale-[1.1] transition-transform duration-300"
+              class="relative w-60 opacity-90 drop-shadow-2xl transition-transform duration-300 hover:scale-[1.1] lg:w-65 xl:w-72"
               fetchpriority="high"
             />
           </div>
@@ -398,14 +483,15 @@ watch(showCertificatesModal, (isOpen) => {
 
         <!-- Right: Text block -->
         <div class="flex flex-col items-center gap-4 md:items-start">
-
           <!-- Badge "Full Stack Developer" -->
           <div
             class="inline-flex items-center gap-2 rounded-full border border-yellow-500/30 bg-yellow-500/8 px-4 py-1.5 transition-all duration-700"
-            :class="typingPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'"
+            :class="typingPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'"
           >
-            <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse" />
-            <span class="text-xs font-semibold tracking-[0.2em] text-yellow-300 uppercase">Full Stack Developer</span>
+            <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-yellow-400" />
+            <span class="text-xs font-semibold tracking-[0.2em] text-yellow-300 uppercase"
+              >Full Stack Developer</span
+            >
           </div>
 
           <!-- Line 1: "Hello World!" (typing) -->
@@ -429,24 +515,25 @@ watch(showCertificatesModal, (isOpen) => {
 
           <!-- Name -->
           <p
-            class="text-base font-semibold tracking-widest text-slate-300 transition-all duration-700 delay-75 sm:text-lg"
+            class="text-base font-semibold tracking-widest text-slate-300 transition-all delay-75 duration-700 sm:text-lg"
             :class="typingPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'"
           >
-            Eu sou o <span class="text-yellow-400 font-black">Lucas Xavier</span>
+            Eu sou o <span class="font-black text-yellow-400">Lucas Xavier</span>
           </p>
 
           <!-- Stack label -->
           <p
-            class="text-sm tracking-wide text-slate-500 transition-all duration-700 delay-100 md:text-base"
-            :class="typingPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'"
+            class="text-sm tracking-wide text-slate-500 transition-all delay-100 duration-700 md:text-base"
+            :class="typingPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'"
           >
-            JS &nbsp;·&nbsp; TypeScript &nbsp;·&nbsp; Vue &nbsp;·&nbsp; NestJS &nbsp;·&nbsp; .NET &nbsp;·&nbsp; SQL
+            JS &nbsp;·&nbsp; TypeScript &nbsp;·&nbsp; Vue &nbsp;·&nbsp; NestJS &nbsp;·&nbsp; .NET
+            &nbsp;·&nbsp; SQL
           </p>
 
           <!-- CTA buttons -->
           <div
-            class="mt-2 flex flex-wrap gap-3 transition-all duration-700 delay-200"
-            :class="typingPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'"
+            class="mt-2 flex flex-wrap gap-3 transition-all delay-200 duration-700"
+            :class="typingPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'"
           >
             <button
               class="hero-btn-primary rounded-lg bg-yellow-500 px-5 py-2.5 text-sm font-bold text-black transition-all duration-200 hover:bg-yellow-400 active:scale-95"
@@ -468,7 +555,7 @@ watch(showCertificatesModal, (isOpen) => {
           <img
             src="/images/coding-image.png"
             alt="Ilustração de programação"
-            class="w-50 opacity-80 drop-shadow-2xl hover:scale-[1.1] transition-transform duration-300"
+            class="w-50 opacity-80 drop-shadow-2xl transition-transform duration-300 hover:scale-[1.1]"
           />
         </div>
       </div>
@@ -496,50 +583,61 @@ watch(showCertificatesModal, (isOpen) => {
     <section
       id="about"
       class="relative z-[1] overflow-hidden px-4 py-12 sm:px-8 md:px-15 md:py-16 lg:py-20"
-      style="background: #0D0D0D"
+      style="background: #0d0d0d"
     >
       <!-- Dot-grid (same as hero) -->
-      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <div class="hero-grid-overlay pointer-events-none absolute inset-0" aria-hidden="true" />
 
       <!-- Radial glow: left side -->
       <div
-        class="absolute inset-0 pointer-events-none"
-        style="background: radial-gradient(ellipse 55% 50% at 20% 55%, rgba(234,179,8,0.06) 0%, transparent 65%)"
+        class="pointer-events-none absolute inset-0"
+        style="
+          background: radial-gradient(
+            ellipse 55% 50% at 20% 55%,
+            rgba(234, 179, 8, 0.06) 0%,
+            transparent 65%
+          );
+        "
         aria-hidden="true"
       />
 
-      <div class="relative mx-auto flex max-w-5xl flex-col items-center gap-12 md:flex-row md:items-center md:gap-16">
-
+      <div
+        class="relative mx-auto flex max-w-5xl flex-col items-center gap-12 md:flex-row md:items-center md:gap-16"
+      >
         <!-- Left: Photo -->
         <div class="shrink-0">
           <div class="group relative w-52 sm:w-64 md:w-72" style="aspect-ratio: 4/5">
             <!-- Glow ring behind photo -->
             <div
-              class="absolute -inset-4 rounded-3xl blur-xl opacity-20"
+              class="absolute -inset-4 rounded-3xl opacity-20 blur-xl"
               style="background: radial-gradient(circle, #eab308 0%, transparent 70%)"
               aria-hidden="true"
             />
             <img
               src="/images/aboutme-photo.jpg"
               alt="Lucas Xavier na formatura"
-              class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-[opacity,transform] duration-300 will-change-transform group-hover:opacity-0 group-hover:scale-[1.02]"
+              class="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-[opacity,transform] duration-300 will-change-transform group-hover:scale-[1.02] group-hover:opacity-0"
             />
             <img
               src="/images/aboutme-photo-2.png"
               alt="Lucas Xavier"
-              class="absolute inset-0 h-full w-full rounded-2xl object-cover object-top shadow-2xl ring-1 ring-white/10 opacity-0 transition-[opacity,transform] duration-300 will-change-transform group-hover:opacity-100 group-hover:scale-[1.02]"
+              class="absolute inset-0 h-full w-full rounded-2xl object-cover object-top opacity-0 shadow-2xl ring-1 ring-white/10 transition-[opacity,transform] duration-300 will-change-transform group-hover:scale-[1.02] group-hover:opacity-100"
             />
             <!-- Badge "Disponível" -->
-            <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full border border-yellow-500/30 bg-[#0D0D0D] px-3 py-1 shadow-lg">
+            <div
+              class="absolute -bottom-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-yellow-500/30 bg-[#0D0D0D] px-3 py-1 shadow-lg"
+            >
               <span class="h-1.5 w-1.5 rounded-full bg-yellow-400" />
-              <span class="text-[10px] font-semibold tracking-[0.15em] text-yellow-300 uppercase whitespace-nowrap">Disponível</span>
+              <span
+                class="text-[10px] font-semibold tracking-[0.15em] whitespace-nowrap text-yellow-300 uppercase"
+                >Disponível</span
+              >
             </div>
           </div>
         </div>
 
         <!-- Right: Content -->
         <div class="flex w-full flex-col gap-5">
-
           <!-- Label -->
           <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">// sobre mim</p>
 
@@ -550,12 +648,15 @@ watch(showCertificatesModal, (isOpen) => {
 
           <!-- Bio -->
           <p class="text-sm leading-relaxed text-slate-400 sm:text-base">
-            Desenvolvedor Full Stack com experiência no ciclo completo de aplicações web — do levantamento de requisitos à entrega.
-            Perfil proativo, com busca contínua por evolução técnica e soluções que agreguem eficiência real aos sistemas.
+            Desenvolvedor Full Stack com experiência no ciclo completo de aplicações web — do
+            levantamento de requisitos à entrega. Perfil proativo, com busca contínua por evolução
+            técnica e soluções que agreguem eficiência real aos sistemas.
           </p>
 
-                    <!-- Terminal card -->
-          <div class="about-terminal rounded-xl border border-white/8 bg-white/3 p-4 font-mono text-xs leading-relaxed sm:text-sm">
+          <!-- Terminal card -->
+          <div
+            class="about-terminal rounded-xl border border-white/8 bg-white/3 p-4 font-mono text-xs leading-relaxed sm:text-sm"
+          >
             <!-- Terminal top bar -->
             <div class="mb-3 flex items-center gap-1.5">
               <span class="h-2.5 w-2.5 rounded-full bg-white/10" />
@@ -564,12 +665,39 @@ watch(showCertificatesModal, (isOpen) => {
               <span class="ml-2 text-[10px] tracking-wider text-slate-600">lucas.ts</span>
             </div>
             <!-- Code -->
-            <p><span class="text-purple-400">const</span> <span class="text-yellow-300">lucas</span> <span class="text-slate-400">=</span> <span class="text-slate-400">{</span></p>
-            <p class="pl-4"><span class="text-sky-400">role</span><span class="text-slate-400">:</span> <span class="text-green-400">'Full Stack Developer'</span><span class="text-slate-400">,</span></p>
-            <p class="pl-4"><span class="text-sky-400">formação</span><span class="text-slate-400">:</span> <span class="text-green-400">'ADS – Análise e Desenvolvimento de Sistemas'</span><span class="text-slate-400">,</span></p>
-            <p class="pl-4"><span class="text-sky-400">stack</span><span class="text-slate-400">:</span> <span class="text-slate-400">[</span><span class="text-green-400">'JS'</span><span class="text-slate-400">,</span> <span class="text-green-400">'TypeScript'</span><span class="text-slate-400">,</span> <span class="text-green-400">'Vue'</span><span class="text-slate-400">,</span> <span class="text-green-400">'NestJS'</span><span class="text-slate-400">,</span> <span class="text-green-400">'.NET'</span><span class="text-slate-400">,</span> <span class="text-green-400">'SQL'</span><span class="text-slate-400">],</span></p>
-            <p class="pl-4"><span class="text-sky-400">foco</span><span class="text-slate-400">:</span> <span class="text-green-400">'boas práticas &amp; qualidade de código'</span><span class="text-slate-400">,</span></p>
-            <p class="pl-4"><span class="text-sky-400">disponível</span><span class="text-slate-400">:</span> <span class="text-yellow-400">true</span><span class="text-slate-400">,</span></p>
+            <p>
+              <span class="text-purple-400">const</span> <span class="text-yellow-300">lucas</span>
+              <span class="text-slate-400">=</span> <span class="text-slate-400">{</span>
+            </p>
+            <p class="pl-4">
+              <span class="text-sky-400">role</span><span class="text-slate-400">:</span>
+              <span class="text-green-400">'Full Stack Developer'</span
+              ><span class="text-slate-400">,</span>
+            </p>
+            <p class="pl-4">
+              <span class="text-sky-400">formação</span><span class="text-slate-400">:</span>
+              <span class="text-green-400">'ADS – Análise e Desenvolvimento de Sistemas'</span
+              ><span class="text-slate-400">,</span>
+            </p>
+            <p class="pl-4">
+              <span class="text-sky-400">stack</span><span class="text-slate-400">:</span>
+              <span class="text-slate-400">[</span><span class="text-green-400">'JS'</span
+              ><span class="text-slate-400">,</span> <span class="text-green-400">'TypeScript'</span
+              ><span class="text-slate-400">,</span> <span class="text-green-400">'Vue'</span
+              ><span class="text-slate-400">,</span> <span class="text-green-400">'NestJS'</span
+              ><span class="text-slate-400">,</span> <span class="text-green-400">'.NET'</span
+              ><span class="text-slate-400">,</span> <span class="text-green-400">'SQL'</span
+              ><span class="text-slate-400">],</span>
+            </p>
+            <p class="pl-4">
+              <span class="text-sky-400">foco</span><span class="text-slate-400">:</span>
+              <span class="text-green-400">'boas práticas &amp; qualidade de código'</span
+              ><span class="text-slate-400">,</span>
+            </p>
+            <p class="pl-4">
+              <span class="text-sky-400">disponível</span><span class="text-slate-400">:</span>
+              <span class="text-yellow-400">true</span><span class="text-slate-400">,</span>
+            </p>
             <p><span class="text-slate-400">}</span></p>
           </div>
 
@@ -580,8 +708,6 @@ watch(showCertificatesModal, (isOpen) => {
             <span class="about-chip">Trabalho em equipe</span>
             <span class="about-chip">Perfil proativo</span>
           </div>
-
-
         </div>
       </div>
     </section>
@@ -590,14 +716,20 @@ watch(showCertificatesModal, (isOpen) => {
     <section
       id="experience"
       class="relative z-[1] overflow-hidden px-4 py-12 sm:px-6 md:px-10 md:py-16"
-      style="background: #0D0D0D"
+      style="background: #0d0d0d"
     >
       <!-- Dot-grid -->
-      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <div class="hero-grid-overlay pointer-events-none absolute inset-0" aria-hidden="true" />
       <!-- Glow right -->
       <div
-        class="absolute inset-0 pointer-events-none"
-        style="background: radial-gradient(ellipse 50% 45% at 75% 40%, rgba(234,179,8,0.06) 0%, transparent 65%)"
+        class="pointer-events-none absolute inset-0"
+        style="
+          background: radial-gradient(
+            ellipse 50% 45% at 75% 40%,
+            rgba(234, 179, 8, 0.06) 0%,
+            transparent 65%
+          );
+        "
         aria-hidden="true"
       />
 
@@ -612,16 +744,23 @@ watch(showCertificatesModal, (isOpen) => {
 
         <!-- Cards side by side on desktop, stacked on mobile -->
         <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-
           <!-- PRODABEL -->
-          <div class="exp-card group rounded-xl border border-white/8 bg-white/2 p-6 transition-[border-color,background-color] duration-300 hover:border-yellow-500/20 hover:bg-white/3">
+          <div
+            class="exp-card group rounded-xl border border-white/8 bg-white/2 p-6 transition-[border-color,background-color] duration-300 hover:border-yellow-500/20 hover:bg-white/3"
+          >
             <!-- Header row -->
             <div class="mb-1 flex items-start justify-between gap-3">
               <div>
-                <p class="text-[11px] font-semibold uppercase tracking-widest text-yellow-500/80">Prodabel</p>
-                <h3 class="mt-1 text-base font-bold text-white leading-snug">Estagiário de Desenvolvimento</h3>
+                <p class="text-[11px] font-semibold tracking-widest text-yellow-500/80 uppercase">
+                  Prodabel
+                </p>
+                <h3 class="mt-1 text-base leading-snug font-bold text-white">
+                  Estagiário de Desenvolvimento
+                </h3>
               </div>
-              <span class="shrink-0 rounded-full border border-white/10 bg-white/4 px-2.5 py-1 text-[10px] font-mono text-slate-500">
+              <span
+                class="shrink-0 rounded-full border border-white/10 bg-white/4 px-2.5 py-1 font-mono text-[10px] text-slate-500"
+              >
                 2024 – 2025
               </span>
             </div>
@@ -629,36 +768,52 @@ watch(showCertificatesModal, (isOpen) => {
 
             <!-- Bullets -->
             <ul class="flex flex-col gap-2.5">
-              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+              <li class="flex gap-2.5 text-sm leading-relaxed text-slate-400">
                 <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-500/60" />
-                Desenvolvimento de sistemas web modernos, participando de todo o ciclo — do código ao ambiente de produção.
+                Desenvolvimento de sistemas web modernos, participando de todo o ciclo — do código
+                ao ambiente de produção.
               </li>
-              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+              <li class="flex gap-2.5 text-sm leading-relaxed text-slate-400">
                 <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-500/60" />
-                Atuação em equipe multidisciplinar com metodologia ágil (Scrum), contribuindo em cerimônias e entregas.
+                Atuação em equipe multidisciplinar com metodologia ágil (Scrum), contribuindo em
+                cerimônias e entregas.
               </li>
-              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+              <li class="flex gap-2.5 text-sm leading-relaxed text-slate-400">
                 <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-500/60" />
-                Levantamento e validação de requisitos com stakeholders, traduzindo necessidades de negócio em soluções técnicas.
+                Levantamento e validação de requisitos com stakeholders, traduzindo necessidades de
+                negócio em soluções técnicas.
               </li>
             </ul>
 
             <!-- Stack -->
             <div class="mt-5 flex flex-wrap gap-1.5">
-              <span v-for="tech in ['Vue.js', 'Node.js', 'TypeScript', 'NestJS', 'Oracle']" :key="tech" class="about-chip">{{ tech }}</span>
+              <span
+                v-for="tech in ['Vue.js', 'Node.js', 'TypeScript', 'NestJS', 'Oracle']"
+                :key="tech"
+                class="about-chip"
+                >{{ tech }}</span
+              >
             </div>
           </div>
 
           <!-- CARDIESEL -->
-          <div class="exp-card group rounded-xl border border-white/8 bg-white/2 p-6 transition-[border-color,background-color] duration-300 hover:border-yellow-500/20 hover:bg-white/3">
+          <div
+            class="exp-card group rounded-xl border border-white/8 bg-white/2 p-6 transition-[border-color,background-color] duration-300 hover:border-yellow-500/20 hover:bg-white/3"
+          >
             <!-- Header row -->
             <div class="mb-1 flex items-start justify-between gap-3">
               <div>
-                <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Cardiesel</p>
-                <h3 class="mt-1 text-base font-bold text-white leading-snug">Jovem Aprendiz — TI</h3>
+                <p class="text-[11px] font-semibold tracking-widest text-slate-500 uppercase">
+                  Cardiesel
+                </p>
+                <h3 class="mt-1 text-base leading-snug font-bold text-white">
+                  Jovem Aprendiz — TI
+                </h3>
                 <p class="mt-0.5 text-[11px] text-slate-600">Concessionária Mercedes-Benz</p>
               </div>
-              <span class="shrink-0 rounded-full border border-white/10 bg-white/4 px-2.5 py-1 text-[10px] font-mono text-slate-500">
+              <span
+                class="shrink-0 rounded-full border border-white/10 bg-white/4 px-2.5 py-1 font-mono text-[10px] text-slate-500"
+              >
                 2022 – 2023
               </span>
             </div>
@@ -666,17 +821,18 @@ watch(showCertificatesModal, (isOpen) => {
 
             <!-- Bullets -->
             <ul class="flex flex-col gap-2.5">
-              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+              <li class="flex gap-2.5 text-sm leading-relaxed text-slate-400">
                 <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-white/25" />
-                Participação na implantação de novo sistema interno, sendo ponto de contato entre equipe técnica e usuários finais.
+                Participação na implantação de novo sistema interno, sendo ponto de contato entre
+                equipe técnica e usuários finais.
               </li>
-              <li class="flex gap-2.5 text-sm text-slate-400 leading-relaxed">
+              <li class="flex gap-2.5 text-sm leading-relaxed text-slate-400">
                 <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-white/25" />
-                Suporte técnico e atendimento a colaboradores via Service Desk, auxiliando na resolução de problemas do dia a dia.
+                Suporte técnico e atendimento a colaboradores via Service Desk, auxiliando na
+                resolução de problemas do dia a dia.
               </li>
             </ul>
           </div>
-
         </div>
       </div>
     </section>
@@ -684,21 +840,29 @@ watch(showCertificatesModal, (isOpen) => {
     <section
       id="skills"
       class="relative z-[1] overflow-hidden py-12 md:py-16"
-      style="background: #0D0D0D"
+      style="background: #0d0d0d"
     >
       <!-- Dot-grid -->
-      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <div class="hero-grid-overlay pointer-events-none absolute inset-0" aria-hidden="true" />
       <!-- Glow center -->
       <div
-        class="absolute inset-0 pointer-events-none"
-        style="background: radial-gradient(ellipse 60% 40% at 50% 50%, rgba(234,179,8,0.05) 0%, transparent 65%)"
+        class="pointer-events-none absolute inset-0"
+        style="
+          background: radial-gradient(
+            ellipse 60% 40% at 50% 50%,
+            rgba(234, 179, 8, 0.05) 0%,
+            transparent 65%
+          );
+        "
         aria-hidden="true"
       />
 
       <div class="relative px-4 sm:px-6">
         <!-- Header -->
         <div class="mb-12 flex flex-col items-center gap-2">
-          <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">// conhecimentos</p>
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">
+            // conhecimentos
+          </p>
           <h2 class="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
             Minha <span class="text-yellow-400">Stack</span>
           </h2>
@@ -727,7 +891,9 @@ watch(showCertificatesModal, (isOpen) => {
                 :class="mobileActiveSkill === skill.name ? 'scale-110' : ''"
                 draggable="false"
               />
-              <span class="text-xs leading-tight font-semibold text-slate-300">{{ skill.name }}</span>
+              <span class="text-xs leading-tight font-semibold text-slate-300">{{
+                skill.name
+              }}</span>
             </div>
           </div>
         </div>
@@ -751,30 +917,248 @@ watch(showCertificatesModal, (isOpen) => {
             <SkillCard v-for="skill in skills" :key="`${set}-${skill.name}`" :skill="skill" />
           </template>
         </div>
+      </div>
+    </section>
 
-        <!-- Footer link -->
-        <div class="mt-12 flex flex-col items-center gap-4">
-          <div class="flex items-center gap-3 w-full max-w-xs">
-            <div class="h-px flex-1 bg-white/8" />
-            <span class="font-mono text-[10px] tracking-widest text-slate-600 uppercase">certificados</span>
-            <div class="h-px flex-1 bg-white/8" />
-          </div>
-          <button
-            class="group inline-flex items-center gap-2 rounded-lg border border-yellow-500/25 bg-yellow-500/6 px-5 py-2 text-sm font-semibold text-yellow-400 transition-all duration-200 hover:border-yellow-500/50 hover:bg-yellow-500/10 hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/60 focus-visible:outline-none"
-            @click="showCertificatesModal = true"
+    <!-- Certificados -->
+    <section
+      id="certificates"
+      class="relative z-[1] overflow-hidden px-4 pt-12 pb-16 sm:px-6 md:px-15 md:pt-16 md:pb-20"
+      style="background: #0d0d0d"
+    >
+      <!-- Dot-grid -->
+      <div class="hero-grid-overlay pointer-events-none absolute inset-0" aria-hidden="true" />
+      <!-- Glow left -->
+      <div
+        class="pointer-events-none absolute inset-0"
+        style="
+          background: radial-gradient(
+            ellipse 55% 45% at 20% 40%,
+            rgba(234, 179, 8, 0.05) 0%,
+            transparent 65%
+          );
+        "
+        aria-hidden="true"
+      />
+
+      <div class="relative mx-auto w-full max-w-7xl">
+        <!-- Header -->
+        <div class="mb-12 flex flex-col items-center gap-2">
+          <p class="font-mono text-xs tracking-[0.3em] text-slate-600 uppercase">// certificados</p>
+          <h2 class="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
+            Minhas <span class="text-yellow-400">Certificações</span>
+          </h2>
+        </div>
+
+        <!-- Linha 1: Destaques -->
+        <div class="mb-8 ">
+          <p class="mb-3 font-mono text-[10px] tracking-[0.25em] text-slate-600 uppercase text-center">
+            ★ destaques acadêmicos
+          </p>
+          <!-- Gradient fade wrapper -->
+          <div class="relative">
+          <div
+            ref="certCarouselRef"
+            class="carousel -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-2"
+            style="justify-content: safe center; touch-action: pan-x pan-y;"
+            :style="{ cursor: certIsDragging ? 'grabbing' : 'grab', userSelect: 'none' }"
+            @mousedown="onCertMouseDownTrack"
+            @mousemove="onCertMouseMoveTrack"
+            @mouseup="onCertMouseUpTrack"
+            @mouseleave="onCertMouseUpTrack"
+            @scroll.passive="updateCertScrollState"
           >
-            Verificar Certificados
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </button>
+          <div
+            v-for="cert in featuredCertificates"
+            :key="`feat-${cert.title}`"
+            class="cert-inline-featured group relative flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-yellow-500/20 bg-white/3 transition-all duration-300 hover:-translate-y-1 hover:border-yellow-500/50"
+          >
+            <div class="pointer-events-none absolute top-2 left-2 z-10">
+              <span
+                class="inline-flex items-center gap-1 rounded-full border border-yellow-400/60 bg-black/80 px-1.5 py-0.5 text-[9px] font-bold text-yellow-400"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-2 w-2"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"
+                  />
+                </svg>
+                Destaque
+              </span>
+            </div>
+            <div class="aspect-[4/3] w-full overflow-hidden bg-zinc-900">
+              <img
+                :src="cert.image"
+                :alt="cert.title"
+                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <div class="flex flex-1 flex-col gap-1.5 p-2.5">
+              <h3 class="line-clamp-2 text-[11px] leading-snug font-bold text-white">
+                {{ cert.title }}
+              </h3>
+              <p class="line-clamp-3 flex-1 text-[10px] leading-relaxed text-slate-400">
+                {{ cert.description }}
+              </p>
+              <a
+                v-if="cert.link"
+                :href="cert.link"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-1 inline-flex items-center gap-1 self-start rounded border border-yellow-500/40 bg-yellow-500/8 px-2 py-1 text-[9px] font-semibold text-yellow-400 transition-all duration-200 hover:border-yellow-500/60 hover:bg-yellow-500/15 hover:text-yellow-300"
+                @mousedown.stop
+              >
+                Ver certificado
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-2.5 w-2.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                  />
+                </svg>
+              </a>
+            </div>
+          </div>
+          </div>
+          </div>
+          <!-- Drag indicator row 1 -->
+          <div
+            v-if="cert1CanScroll"
+            class="mt-3 flex items-center justify-center gap-2"
+          >
+            <span class="h-px w-8 bg-yellow-500/20" />
+            <span class="flex items-center gap-1.5 rounded-full border border-yellow-500/20 bg-yellow-500/6 px-3 py-1 text-[10px] font-medium text-yellow-400/70">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 animate-[slide-left_1.4s_ease-in-out_infinite]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              arraste para ver mais
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 animate-[slide-right_1.4s_ease-in-out_infinite]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+            <span class="h-px w-8 bg-yellow-500/20" />
+          </div>
+        </div>
+
+        <!-- Linha 2: Demais certificados -->
+        <div>
+          <p class="mb-3 font-mono text-[10px] tracking-[0.25em] text-slate-600 uppercase text-center">
+            // demais certificados
+          </p>
+          <!-- Gradient fade wrapper -->
+          <div class="relative">
+          <div
+            ref="certCarousel2Ref"
+            class="carousel -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2"
+            style="justify-content: safe center; touch-action: pan-x pan-y;"
+            :style="{ cursor: certIsDragging2 ? 'grabbing' : 'grab', userSelect: 'none' }"
+            @mousedown="onCertMouseDownTrack2"
+            @mousemove="onCertMouseMoveTrack2"
+            @mouseup="onCertMouseUpTrack2"
+            @mouseleave="onCertMouseUpTrack2"
+            @scroll.passive="updateCertScrollState"
+          >
+          <!-- Alura -->
+          <a
+            v-for="cert in aluraCertificates"
+            :key="`alura-${cert.title}`"
+            :href="cert.link"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="cert-inline-alura group flex w-60 shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-white/8 bg-white/3 transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/35"
+            style="text-decoration: none"
+            @mousedown.stop
+          >
+            <div class="relative aspect-[4/3] w-full overflow-hidden bg-zinc-900">
+              <div class="pointer-events-none absolute top-2 left-2 z-10">
+                <span
+                  class="inline-flex items-center gap-1 rounded-full border border-sky-400/60 bg-black/80 px-1.5 py-0.5 text-[9px] font-bold text-sky-400"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-2 w-2 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 3.741-1.342m-7.482 0c.338-.134.68-.265 1.028-.391m-1.028.391a50.717 50.717 0 0 0-3.741 1.342m7.482 0a50.717 50.717 0 0 0 3.741 1.342"
+                    />
+                  </svg>
+                  Alura
+                </span>
+              </div>
+              <img
+                :src="cert.image"
+                :alt="cert.title"
+                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <div class="flex flex-1 flex-col gap-1.5 p-2.5">
+              <h3 class="line-clamp-2 text-[11px] leading-snug font-bold text-white">
+                {{ cert.title }}
+              </h3>
+              <p class="line-clamp-3 flex-1 text-[10px] leading-relaxed text-slate-400">
+                {{ cert.description }}
+              </p>
+              <div
+                class="mt-1 inline-flex items-center gap-1 self-start rounded border border-sky-500/30 bg-sky-500/8 px-2 py-1 text-[9px] font-semibold text-sky-400 transition-all duration-200 group-hover:border-sky-500/50 group-hover:bg-sky-500/15 group-hover:text-sky-300"
+              >
+                Ver certificado
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-2.5 w-2.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                  />
+                </svg>
+              </div>
+            </div>
+          </a>
+          </div>
+          </div>
+          <!-- Drag indicator row 2 -->
+          <div
+            v-if="cert2CanScroll"
+            class="mt-3 flex items-center justify-center gap-2"
+          >
+            <span class="h-px w-8 bg-sky-500/20" />
+            <span class="flex items-center gap-1.5 rounded-full border border-sky-500/20 bg-sky-500/6 px-3 py-1 text-[10px] font-medium text-sky-400/70">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 animate-[slide-left_1.4s_ease-in-out_infinite]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              arraste para ver mais
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 animate-[slide-right_1.4s_ease-in-out_infinite]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+            <span class="h-px w-8 bg-sky-500/20" />
+          </div>
         </div>
       </div>
     </section>
@@ -782,14 +1166,20 @@ watch(showCertificatesModal, (isOpen) => {
     <section
       id="projects"
       class="relative z-[1] overflow-hidden px-4 pt-12 pb-16 sm:px-6 md:px-15 md:pt-16 md:pb-20"
-      style="background: #0D0D0D"
+      style="background: #0d0d0d"
     >
       <!-- Dot-grid -->
-      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <div class="hero-grid-overlay pointer-events-none absolute inset-0" aria-hidden="true" />
       <!-- Glow right -->
       <div
-        class="absolute inset-0 pointer-events-none"
-        style="background: radial-gradient(ellipse 55% 45% at 80% 30%, rgba(234,179,8,0.05) 0%, transparent 65%)"
+        class="pointer-events-none absolute inset-0"
+        style="
+          background: radial-gradient(
+            ellipse 55% 45% at 80% 30%,
+            rgba(234, 179, 8, 0.05) 0%,
+            transparent 65%
+          );
+        "
         aria-hidden="true"
       />
 
@@ -863,7 +1253,9 @@ watch(showCertificatesModal, (isOpen) => {
                 <span class="h-2 w-2 rounded-full bg-white/10" />
                 <span class="h-2 w-2 rounded-full bg-white/10" />
                 <span class="h-2 w-2 rounded-full bg-white/10" />
-                <span class="ml-1 font-mono text-[9px] tracking-wider text-slate-600 truncate">{{ project.title.toLowerCase().replace(/\s/g, '-') }}.ts</span>
+                <span class="ml-1 truncate font-mono text-[9px] tracking-wider text-slate-600"
+                  >{{ project.title.toLowerCase().replace(/\s/g, '-') }}.ts</span
+                >
               </div>
               <!-- Image 16:9 -->
               <div class="aspect-video w-full overflow-hidden bg-white/5">
@@ -878,7 +1270,9 @@ watch(showCertificatesModal, (isOpen) => {
               <!-- Content -->
               <div class="flex flex-1 flex-col gap-2 p-3">
                 <h3 class="text-sm font-bold text-white">{{ project.title }}</h3>
-                <p class="flex-1 text-xs leading-relaxed text-slate-400">{{ project.description }}</p>
+                <p class="flex-1 text-xs leading-relaxed text-slate-400">
+                  {{ project.description }}
+                </p>
                 <div class="flex flex-wrap gap-1">
                   <span
                     v-for="tech in project.tech"
@@ -890,8 +1284,19 @@ watch(showCertificatesModal, (isOpen) => {
                 </div>
                 <span class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sky-400">
                   Ver detalhes
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-3 w-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                    />
                   </svg>
                 </span>
               </div>
@@ -913,10 +1318,14 @@ watch(showCertificatesModal, (isOpen) => {
           >
             <!-- Terminal bar -->
             <div class="flex items-center gap-1.5 border-b border-white/8 bg-white/3 px-3 py-2">
-              <span class="h-2 w-2 rounded-full bg-white/10 transition-colors duration-200 group-hover:bg-yellow-500/40" />
+              <span
+                class="h-2 w-2 rounded-full bg-white/10 transition-colors duration-200 group-hover:bg-yellow-500/40"
+              />
               <span class="h-2 w-2 rounded-full bg-white/10" />
               <span class="h-2 w-2 rounded-full bg-white/10" />
-              <span class="ml-1 font-mono text-[9px] tracking-wider text-slate-600 truncate">{{ project.title.toLowerCase().replace(/\s/g, '-') }}.ts</span>
+              <span class="ml-1 truncate font-mono text-[9px] tracking-wider text-slate-600"
+                >{{ project.title.toLowerCase().replace(/\s/g, '-') }}.ts</span
+              >
             </div>
             <!-- Image 16:9 -->
             <div class="aspect-video w-full overflow-hidden bg-white/5">
@@ -941,10 +1350,23 @@ watch(showCertificatesModal, (isOpen) => {
                   {{ tech }}
                 </span>
               </div>
-              <span class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sky-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              <span
+                class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sky-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+              >
                 Ver detalhes
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3 w-3"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
                 </svg>
               </span>
             </div>
@@ -1214,21 +1636,24 @@ watch(showCertificatesModal, (isOpen) => {
       </section>
     </div>
 
-    <!-- Certificates Modal -->
-    <CertificatesModal v-model="showCertificatesModal" />
-
     <!-- Fale Comigo -->
     <footer
       id="contact"
       class="relative z-[1] overflow-hidden px-4 pt-12 pb-0 sm:px-6 md:px-10 md:pt-16"
-      style="background: #0D0D0D"
+      style="background: #0d0d0d"
     >
       <!-- Dot-grid -->
-      <div class="hero-grid-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <div class="hero-grid-overlay pointer-events-none absolute inset-0" aria-hidden="true" />
       <!-- Glow left -->
       <div
-        class="absolute inset-0 pointer-events-none"
-        style="background: radial-gradient(ellipse 50% 45% at 25% 40%, rgba(234,179,8,0.06) 0%, transparent 65%)"
+        class="pointer-events-none absolute inset-0"
+        style="
+          background: radial-gradient(
+            ellipse 50% 45% at 25% 40%,
+            rgba(234, 179, 8, 0.06) 0%,
+            transparent 65%
+          );
+        "
         aria-hidden="true"
       />
 
@@ -1241,8 +1666,6 @@ watch(showCertificatesModal, (isOpen) => {
           </h2>
           <p class="mt-1 text-sm text-slate-500">Aberto a novas oportunidades e colaborações</p>
         </div>
-
-
 
         <!-- Contact links -->
         <div class="flex flex-wrap items-stretch justify-center gap-4 sm:gap-5">
@@ -1389,12 +1812,33 @@ watch(showCertificatesModal, (isOpen) => {
 
 /* Project cards */
 .project-card:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(234, 179, 8, 0.15);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(234, 179, 8, 0.15);
+}
+
+/* Certificate cards (inline section) */
+.cert-inline-featured:hover {
+  box-shadow:
+    0 10px 28px rgba(234, 179, 8, 0.1),
+    0 0 0 1px rgba(234, 179, 8, 0.2);
+}
+
+.cert-inline-alura:hover {
+  box-shadow:
+    0 10px 28px rgba(14, 165, 233, 0.08),
+    0 0 0 1px rgba(14, 165, 233, 0.15);
 }
 
 /* Experience timeline */
 .exp-timeline-line {
-  background: linear-gradient(to bottom, transparent, rgba(234, 179, 8, 0.2) 15%, rgba(234, 179, 8, 0.2) 85%, transparent);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(234, 179, 8, 0.2) 15%,
+    rgba(234, 179, 8, 0.2) 85%,
+    transparent
+  );
 }
 
 .exp-card {
@@ -1402,7 +1846,9 @@ watch(showCertificatesModal, (isOpen) => {
 }
 
 .exp-card:hover {
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(234, 179, 8, 0.1);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(234, 179, 8, 0.1);
 }
 
 .carousel {
@@ -1431,6 +1877,28 @@ watch(showCertificatesModal, (isOpen) => {
     opacity: 1;
   }
 }
+@keyframes slide-left {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateX(-3px);
+    opacity: 1;
+  }
+}
+@keyframes slide-right {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateX(3px);
+    opacity: 1;
+  }
+}
 @keyframes blink-text {
   0%,
   100% {
@@ -1445,6 +1913,4 @@ watch(showCertificatesModal, (isOpen) => {
     opacity: 0;
   }
 }
-
-
 </style>

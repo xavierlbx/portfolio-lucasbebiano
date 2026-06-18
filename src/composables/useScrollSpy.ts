@@ -1,7 +1,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 // IDs em ordem descendente: o primeiro com offsetTop <= scrollY + offset é a seção ativa.
-const SECTION_IDS = ['contact', 'projects', 'skills', 'experience', 'about'] as const
+const SECTION_IDS = ['contact', 'projects', 'certificates', 'skills', 'experience', 'about'] as const
 const SECTION_OFFSET = 120
 
 // Breakpoint md do Tailwind — mesma condição do `md:hidden` usado no hamburger menu.
