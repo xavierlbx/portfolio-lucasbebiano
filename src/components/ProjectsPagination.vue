@@ -33,7 +33,7 @@ const goNext = () => {
   >
     <button
       :disabled="currentPage === 0"
-      class="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-400 transition-all hover:border-yellow-500/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+      class="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-slate-400 transition-all hover:border-emerald-500/40 dark:hover:border-yellow-500/40 hover:text-gray-900 dark:hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
       aria-label="Pagina anterior"
       @click="goPrev"
     >
@@ -54,7 +54,7 @@ const goNext = () => {
         v-for="page in totalPages"
         :key="page"
         class="h-2.5 w-2.5 rounded-full transition-all duration-300"
-        :class="currentPage === page - 1 ? 'w-6 bg-yellow-500' : 'bg-white/20 hover:bg-white/40'"
+        :class="currentPage === page - 1 ? 'w-6 bg-emerald-500 dark:bg-yellow-500' : 'bg-gray-300 dark:bg-white/20 hover:bg-gray-400 dark:hover:bg-white/40'"
         :aria-label="`Ir para pagina ${page}`"
         :aria-current="currentPage === page - 1 ? 'page' : undefined"
         @click="goToPage(page - 1)"
@@ -63,7 +63,7 @@ const goNext = () => {
 
     <button
       :disabled="currentPage === totalPages - 1"
-      class="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-400 transition-all hover:border-yellow-500/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+      class="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-slate-400 transition-all hover:border-emerald-500/40 dark:hover:border-yellow-500/40 hover:text-gray-900 dark:hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
       aria-label="Proxima pagina"
       @click="goNext"
     >

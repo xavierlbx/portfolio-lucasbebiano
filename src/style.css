@@ -27,14 +27,33 @@ body,
 #app {
   width: 100%;
   min-height: 100%;
+  height: 100%;
   margin: 0;
   padding: 0;
 }
 
+html,
+body,
+#app {
+  background: #f8fafc;
+}
+
+html.dark,
+html.dark body,
+html.dark #app,
+body.dark,
+body.dark #app {
+  background: #0d0d0d;
+}
+
 body {
   overflow-x: hidden;
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  color: #111827;
+}
+
+html.dark body,
+body.dark {
+  color: #f8fafc;
 }
 
 * {
