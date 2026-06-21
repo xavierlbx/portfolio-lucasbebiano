@@ -81,3 +81,63 @@ h2 {
 #app {
   min-height: 100vh;
 }
+
+/* ─── Shared dot-grid overlay (used in every section) ─── */
+.hero-grid-overlay {
+  background-image: radial-gradient(circle, rgba(15, 23, 42, 0.08) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+html.dark .hero-grid-overlay {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+/* ─── Chip badge (About + Experience) ─── */
+.chip {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(5, 150, 105, 0.34);
+  background: rgba(5, 150, 105, 0.1);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #065f46;
+  text-transform: uppercase;
+}
+
+html.dark .chip {
+  border-color: rgba(234, 179, 8, 0.2);
+  background: rgba(234, 179, 8, 0.06);
+  color: #fde68a;
+}
+
+/* ─── Horizontal scroll carousel (hide scrollbar) ─── */
+.carousel {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Shared keyframe animations ─── */
+@keyframes slide-hint {
+  0%, 100% { transform: translateX(0); opacity: 0.75; }
+  50%       { transform: translateX(3px); opacity: 1; }
+}
+@keyframes slide-left {
+  0%, 100% { transform: translateX(0); opacity: 0.6; }
+  50%       { transform: translateX(-3px); opacity: 1; }
+}
+@keyframes slide-right {
+  0%, 100% { transform: translateX(0); opacity: 0.6; }
+  50%       { transform: translateX(3px); opacity: 1; }
+}
+@keyframes blink-text {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
