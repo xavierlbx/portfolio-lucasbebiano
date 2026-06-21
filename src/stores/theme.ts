@@ -4,11 +4,6 @@ type ThemePreference = 'dark' | 'light' | null
 
 const STORAGE_KEY = 'theme'
 
-const getSystemPrefersDark = (): boolean => {
-  if (typeof window === 'undefined') return false
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-}
-
 const applyHtmlThemeClass = (isDark: boolean) => {
   if (typeof document === 'undefined') return
   document.documentElement.classList.toggle('dark', isDark)
@@ -37,7 +32,7 @@ const savePreference = (preference: ThemePreference) => {
 
 export const useThemeStore = defineStore('theme', {
   state: () => ({
-    isDark: false as boolean,
+    isDark: true as boolean,
     preference: null as ThemePreference,
     initialized: false as boolean,
   }),
@@ -49,20 +44,9 @@ export const useThemeStore = defineStore('theme', {
 
       this.preference = loadPreference()
 
-      this.isDark = this.preference ? this.preference === 'dark' : getSystemPrefersDark()
+      this.isDark = this.preference ? this.preference === 'dark' : true
 
       applyHtmlThemeClass(this.isDark)
-
-      if (typeof window === 'undefined') return
-
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-      const handleSystemThemeChange = (event: MediaQueryListEvent) => {
-        if (this.preference) return
-        this.isDark = event.matches
-        applyHtmlThemeClass(this.isDark)
-      }
-
-      mediaQuery.addEventListener('change', handleSystemThemeChange)
     },
 
     toggleDarkMode() {
@@ -79,7 +63,7 @@ export const useThemeStore = defineStore('theme', {
     clearThemePreference() {
       this.preference = null
       savePreference(null)
-      this.isDark = getSystemPrefersDark()
+      this.isDark = true
       applyHtmlThemeClass(this.isDark)
     },
   },

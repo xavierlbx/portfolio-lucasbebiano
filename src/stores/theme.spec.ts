@@ -9,6 +9,15 @@ describe('theme store', () => {
     document.documentElement.className = ''
   })
 
+  it('initializes in dark mode when no preference is saved', () => {
+    const themeStore = useThemeStore()
+    themeStore.init()
+
+    expect(themeStore.isDark).toBe(true)
+    expect(themeStore.preference).toBe(null)
+    expect(document.documentElement.classList.contains('dark')).toBe(true)
+  })
+
   it('initializes from saved preference', () => {
     localStorage.setItem('theme', 'dark')
 
@@ -34,7 +43,7 @@ describe('theme store', () => {
     expect(localStorage.getItem('theme')).toBe('light')
   })
 
-  it('clears user preference and follows system setting', () => {
+  it('clears user preference and returns to dark default', () => {
     const themeStore = useThemeStore()
     themeStore.init()
     themeStore.setDarkMode(false)
@@ -42,6 +51,7 @@ describe('theme store', () => {
     themeStore.clearThemePreference()
 
     expect(themeStore.preference).toBe(null)
+    expect(themeStore.isDark).toBe(true)
     expect(localStorage.getItem('theme')).toBe(null)
   })
 })
