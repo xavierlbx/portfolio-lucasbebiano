@@ -115,15 +115,19 @@ const onTouchEnd = (e: TouchEvent) => {
       <div class="flex flex-col gap-4 overflow-y-auto px-5 py-4">
 
         <!-- ── GALLERY CTA CARD ─────────────────────────────────────────── -->
-        <button
+        <div
           v-if="images.length > 0"
-          class="gallery-cta group relative w-full overflow-hidden rounded-xl border-2 border-dashed text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/70"
+          class="gallery-cta group relative block min-h-[9.5rem] w-full cursor-pointer overflow-hidden rounded-xl border-2 border-dashed text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/70"
+          role="button"
+          tabindex="0"
           :class="{
             'border-sky-500/40 hover:border-sky-400/80': project.device === 'mobile',
             'border-violet-500/40 hover:border-violet-400/80': project.device === 'desktop',
             'border-emerald-500/40 hover:border-emerald-400/80': project.device === 'both',
           }"
           @click="emit('open-gallery')"
+          @keydown.enter="emit('open-gallery')"
+          @keydown.space.prevent="emit('open-gallery')"
         >
           <!-- Animated gradient bg -->
           <div
@@ -202,9 +206,9 @@ const onTouchEnd = (e: TouchEvent) => {
                 </span>
               </div>
               <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                <template v-if="project.device === 'mobile'">Prints do app dentro de um mockup de smartphone</template>
-                <template v-else-if="project.device === 'desktop'">Capturas do sistema dentro de um mockup de laptop</template>
-                <template v-else>Telas web e mobile com mockup automático por imagem</template>
+                <template v-if="project.device === 'mobile'">Prints do app exibidos sem corte</template>
+                <template v-else-if="project.device === 'desktop'">Capturas do sistema exibidas sem corte</template>
+                <template v-else>Telas web e mobile exibidas em sua proporção original</template>
               </p>
             </div>
 
@@ -217,7 +221,7 @@ const onTouchEnd = (e: TouchEvent) => {
           </div>
 
           <!-- Thumbnail strip preview -->
-          <div class="relative flex gap-1.5 px-4 pb-3.5 sm:px-5 sm:pb-4">
+          <div class="relative flex min-h-[4.25rem] gap-1.5 px-4 pb-3.5 sm:min-h-[4.75rem] sm:px-5 sm:pb-4">
             <template v-for="(img, i) in images.slice(0, 4)" :key="i">
               <div
                 v-if="i < 3"
@@ -225,13 +229,13 @@ const onTouchEnd = (e: TouchEvent) => {
                 :class="[
                   // When 'both': use imageDevices for individual aspect, fallback to a square
                   project.device === 'both'
-                    ? (project.imageDevices?.[i] === 'mobile' ? 'aspect-[9/16] w-9' : 'aspect-video flex-1')
+                    ? (project.imageDevices?.[i] === 'mobile' ? 'h-[4.25rem] w-10 sm:h-[4.75rem] sm:w-11' : 'min-h-[4.25rem] flex-1 sm:min-h-[4.75rem]')
                     : project.device === 'mobile'
-                      ? 'aspect-[9/16] w-9'
-                      : 'aspect-video flex-1',
+                      ? 'h-[4.25rem] w-10 sm:h-[4.75rem] sm:w-11'
+                      : 'min-h-[4.25rem] flex-1 sm:min-h-[4.75rem]',
                 ]"
               >
-                <img :src="img" :alt="`Preview ${i + 1}`" class="h-full w-full object-cover object-top opacity-80 transition-opacity group-hover:opacity-100" loading="lazy" decoding="async" />
+                <img :src="img" :alt="`Preview ${i + 1}`" class="h-full w-full object-contain opacity-80 transition-opacity group-hover:opacity-100" loading="lazy" decoding="async" />
               </div>
             </template>
             <div
@@ -239,14 +243,14 @@ const onTouchEnd = (e: TouchEvent) => {
               class="flex items-center justify-center rounded-md border border-white/10 bg-zinc-900/80 text-xs font-bold text-slate-400"
               :class="
                 project.device === 'mobile' || project.imageDevices?.[3] === 'mobile'
-                  ? 'aspect-[9/16] w-9'
-                  : 'aspect-video flex-1'
+                  ? 'h-[4.25rem] w-10 sm:h-[4.75rem] sm:w-11'
+                  : 'min-h-[4.25rem] flex-1 sm:min-h-[4.75rem]'
               "
             >
               +{{ images.length - 3 }}
             </div>
           </div>
-        </button>
+        </div>
 
         <!-- Description -->
         <p class="text-sm leading-relaxed text-gray-700 dark:text-slate-300">
@@ -383,82 +387,13 @@ const onTouchEnd = (e: TouchEvent) => {
             </svg>
           </button>
 
-          <!-- ── MOBILE MOCKUP ── -->
-          <div
-            v-if="currentImageDevice === 'mobile'"
-            class="gallery-phone flex h-full w-full items-center justify-center"
-            style="padding: 16px 56px;"
-          >
-            <div
-              class="phone-shell relative flex flex-col overflow-hidden rounded-[2.2rem] border-[5px] border-zinc-800 bg-zinc-900 shadow-[0_0_60px_rgba(0,0,0,0.8),inset_0_0_0_1px_rgba(255,255,255,0.06)]"
-              style="height: 100%; aspect-ratio: 9/19.5; max-width: 100%;"
-            >
-              <!-- Notch -->
-              <div class="absolute top-0 left-1/2 z-20 -translate-x-1/2">
-                <div class="flex h-6 items-center gap-1.5 rounded-b-xl bg-zinc-900 px-3">
-                  <div class="h-1.5 w-1.5 rounded-full bg-zinc-700" />
-                  <div class="h-1 w-8 rounded-full bg-zinc-700" />
-                  <div class="h-1.5 w-1.5 rounded-full bg-zinc-700" />
-                </div>
-              </div>
-              <!-- Screen content -->
-              <img
-                :src="images[imageIndex]"
-                :alt="project.title"
-                class="h-full w-full object-cover object-top"
-              />
-              <!-- Home bar -->
-              <div class="absolute bottom-1.5 left-1/2 z-20 h-1 w-1/3 -translate-x-1/2 rounded-full bg-white/25" />
-            </div>
-            <!-- Side buttons (decorative) -->
-            <div class="absolute top-1/4 -right-px h-12 w-1 rounded-r-sm bg-zinc-700 opacity-50" />
-            <div class="absolute top-[30%] -left-px h-7 w-1 rounded-l-sm bg-zinc-700 opacity-50" />
-            <div class="absolute top-[42%] -left-px h-7 w-1 rounded-l-sm bg-zinc-700 opacity-50" />
-          </div>
-
-          <!-- ── DESKTOP MOCKUP ── -->
-          <div
-            v-else
-            class="gallery-laptop flex w-full flex-col items-center"
-            style="padding: 16px 56px 8px; max-height: 100%;"
-          >
-            <!-- Screen bezel -->
-            <div
-              class="laptop-screen relative w-full overflow-hidden rounded-t-xl border-[7px] border-b-0 border-zinc-800 bg-zinc-900 shadow-[0_-4px_40px_rgba(0,0,0,0.5)]"
-              style="aspect-ratio: 16/10; max-height: calc(100% - 52px);"
-            >
-              <!-- Browser bar -->
-              <div class="flex h-7 shrink-0 items-center gap-2 border-b border-zinc-700 bg-zinc-800 px-3">
-                <div class="flex gap-1.5">
-                  <div class="h-2.5 w-2.5 rounded-full bg-red-500/80" />
-                  <div class="h-2.5 w-2.5 rounded-full bg-yellow-500/80" />
-                  <div class="h-2.5 w-2.5 rounded-full bg-emerald-500/80" />
-                </div>
-                <div class="mx-1 flex flex-1 items-center gap-1.5 rounded-md bg-zinc-700/60 px-2 py-0.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 shrink-0 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8" /><path stroke-linecap="round" d="m21 21-4.35-4.35" />
-                  </svg>
-                  <span class="truncate font-mono text-[9px] text-zinc-400">
-                    {{ project.liveLink ?? project.link.replace('https://github.com/', 'localhost:3000/') }}
-                  </span>
-                </div>
-              </div>
-              <div class="relative h-[calc(100%-1.75rem)] w-full overflow-hidden">
-                <img
-                  :src="images[imageIndex]"
-                  :alt="project.title"
-                  class="h-full w-full object-cover object-top"
-                />
-              </div>
-            </div>
-            <!-- Hinge -->
-            <div class="h-1.5 w-full bg-gradient-to-b from-zinc-600 to-zinc-700" />
-            <!-- Base + trackpad -->
-            <div class="w-full rounded-b-xl bg-gradient-to-b from-zinc-700 to-zinc-800 px-6 py-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
-              <div class="mx-auto h-4 w-1/4 rounded-md border border-zinc-600 bg-zinc-700/50" />
-            </div>
-            <!-- Table shadow -->
-            <div class="mt-1 h-1.5 w-[88%] rounded-full bg-black/30 blur-sm" />
+          <!-- ── IMAGE DISPLAY ── -->
+          <div class="flex h-full w-full items-center justify-center px-14 py-4 sm:px-16">
+            <img
+              :src="images[imageIndex]"
+              :alt="project.title"
+              class="max-h-full max-w-full object-contain"
+            />
           </div>
 
           <!-- Next button -->
@@ -512,7 +447,7 @@ const onTouchEnd = (e: TouchEvent) => {
               :aria-label="`Ver tela ${i + 1}`"
               @click="emit('set-image', i)"
             >
-              <img :src="img" :alt="`Tela ${i + 1}`" class="h-full w-full object-cover object-top" loading="lazy" decoding="async" />
+              <img :src="img" :alt="`Tela ${i + 1}`" class="h-full w-full object-contain" loading="lazy" decoding="async" />
             </button>
           </div>
 
@@ -526,15 +461,3 @@ const onTouchEnd = (e: TouchEvent) => {
   </Teleport>
 </template>
 
-<style scoped>
-/* Force the phone mockup to fill the available height */
-.gallery-phone .phone-shell {
-  /* Height driven by parent padding box, width derived from aspect-ratio */
-  max-width: calc((100vh - 200px) * (9 / 19.5));
-}
-
-/* Laptop screen fits within the padded main area */
-.gallery-laptop .laptop-screen {
-  width: 100%;
-}
-</style>
