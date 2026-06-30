@@ -4,6 +4,7 @@ import type { Project } from '../data/projects'
 export function useProjectModal() {
   const selectedProject = ref<Project | null>(null)
   const modalImageIndex = ref(0)
+  const showGallery = ref(false)
 
   // Prefere `images` (galeria); cai em `image` como item único.
   const modalImages = computed((): string[] => {
@@ -15,10 +16,12 @@ export function useProjectModal() {
   const openModal = (project: Project) => {
     selectedProject.value = project
     modalImageIndex.value = 0
+    showGallery.value = false
   }
 
   const closeModal = () => {
     selectedProject.value = null
+    showGallery.value = false
   }
 
   const modalPrev = () => {
@@ -36,7 +39,17 @@ export function useProjectModal() {
   }
 
   const handleGlobalKeydown = (event: KeyboardEvent) => {
-    if (event.key === 'Escape' && selectedProject.value) closeModal()
+    if (event.key === 'Escape') {
+      if (showGallery.value) {
+        showGallery.value = false
+      } else if (selectedProject.value) {
+        closeModal()
+      }
+    }
+    if (showGallery.value) {
+      if (event.key === 'ArrowLeft') modalPrev()
+      if (event.key === 'ArrowRight') modalNext()
+    }
   }
 
   // Bloqueia scroll do body enquanto o modal está aberto.
@@ -58,6 +71,7 @@ export function useProjectModal() {
     selectedProject,
     modalImageIndex,
     modalImages,
+    showGallery,
     openModal,
     closeModal,
     modalPrev,

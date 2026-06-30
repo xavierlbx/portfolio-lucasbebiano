@@ -6,10 +6,13 @@ export type Project = {
   highlights: string[]
   image: string
   images?: string[]
+  /** Per-image device override — maps 1-to-1 with `images[]`. Used when `device` is 'both'. */
+  imageDevices?: ('desktop' | 'mobile')[]
   link: string
   liveLink?: string
   year: string
   status: string
+  device: 'desktop' | 'mobile' | 'both'
 }
 
 export const projects: Project[] = [
@@ -64,6 +67,7 @@ export const projects: Project[] = [
     link: 'https://github.com/xavierlbx/power-track',
     year: '2024',
     status: 'Concluído',
+    device: 'mobile',
   },
   {
     title: 'Kanbam',
@@ -92,6 +96,7 @@ export const projects: Project[] = [
     link: 'https://github.com/xavierlbx/kanbam',
     year: '2026',
     status: 'Em evolução',
+    device: 'desktop',
   },
   {
     title: 'Apoia Mente',
@@ -119,10 +124,13 @@ export const projects: Project[] = [
       '/images/apoiamente/apoia-mente-photo (6).png',
       '/images/apoiamente/apoia-mente-photo (7).png',
     ],
+    // Adjust the order below to match your actual image sequence (desktop = web, mobile = app)
+    imageDevices: ['desktop', 'desktop', 'desktop', 'mobile', 'mobile', 'mobile', 'mobile'],
     link: 'https://github.com/xavierlbx/apoia-mente',
     liveLink: 'https://www.apoiamente.com.br',
     year: '2025',
     status: 'Concluído',
+    device: 'both',
   },
   {
     title: 'Igesc Conecta',
@@ -163,5 +171,6 @@ export const projects: Project[] = [
     link: 'https://github.com/ICEI-PUC-Minas-PMV-ADS/pmv-ads-2025-2-e5-proj-empext-t1-pmv-ads-2025-2-e5-projigescconecta',
     year: '2025',
     status: 'Concluído',
+    device: 'desktop',
   }
 ]
