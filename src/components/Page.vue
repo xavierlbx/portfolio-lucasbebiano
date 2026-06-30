@@ -23,6 +23,7 @@ const {
   selectedProject,
   modalImageIndex,
   modalImages,
+  showGallery,
   openModal,
   closeModal,
   modalPrev,
@@ -53,11 +54,14 @@ const openProjectModal = (project: Project) => openModal(project)
       :project="selectedProject"
       :images="modalImages"
       :image-index="modalImageIndex"
+      :show-gallery="showGallery"
       @close="closeModal"
       @prev="modalPrev"
       @next="modalNext"
       @set-image="modalImageIndex = $event"
       @open-link="openProjectLink"
+      @open-gallery="showGallery = true"
+      @close-gallery="showGallery = false"
     />
   </main>
 </template>
