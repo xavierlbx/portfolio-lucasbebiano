@@ -17,11 +17,13 @@ export const experiences: ExperienceItem[] = [
     period: '2024 – 2025',
     isPrimary: true,
     bullets: [
-      'Desenvolvimento de sistemas web modernos, participando de todo o ciclo — do código ao ambiente de produção.',
-      'Atuação em equipe multidisciplinar com metodologia ágil (Scrum), contribuindo em cerimônias e entregas.',
-      'Levantamento e validação de requisitos com stakeholders, traduzindo necessidades de negócio em soluções técnicas.',
+      'Atuação na reescrita de sistema legado em Java para arquitetura moderna utilizando Vue 3, Node.js e NestJS.',
+      'Definição de padrões arquiteturais (camadas e modular) e apoio na disseminação da nova stack entre equipes.',
+      'Ciclo completo de entrega (do código à produção) via pipelines de CI/CD no GitLab, sob metodologia ágil Scrum.',
+      'Levantamento de requisitos com stakeholders, alinhando regras de negócio a soluções técnicas eficientes.',
+      'Aumento de produtividade no desenvolvimento com o uso prático de IA assistiva (GitHub Copilot e Gemini Academy).'
     ],
-    tech: ['Vue.js', 'Node.js', 'TypeScript', 'NestJS', 'Oracle'],
+    tech: ['Vue.js 3', 'Node.js', 'TypeScript', 'NestJS', 'Oracle', 'GitLab CI/CD'],
   },
   {
     company: 'Cardiesel',
@@ -31,8 +33,10 @@ export const experiences: ExperienceItem[] = [
     period: '2022 – 2023',
     isPrimary: false,
     bullets: [
-      'Participação na implantação de novo sistema interno, sendo ponto de contato entre equipe técnica e usuários finais.',
-      'Suporte técnico e atendimento a colaboradores via Service Desk, auxiliando na resolução de problemas do dia a dia.',
+      'Ponto focal na implantação do novo sistema de reembolso de combustível, fazendo a ponte entre técnicos e usuários.',
+      'Suporte técnico e atendimento de Service Desk aos colaboradores, garantindo a resolução ágil de incidentes na plataforma de gestão.',
+      'Manutenção e auditoria de planilhas em Excel para garantir a integridade dos dados operacionais da empresa.'
     ],
+    tech: ['Service Desk', 'Excel', 'Gestão de Incidentes'],
   },
 ]
