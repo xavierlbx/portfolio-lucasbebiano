@@ -44,15 +44,15 @@ export const projects: Project[] = [
     description:
       'Aplicativo mobile multiplataforma para gestão de bem-estar, focado no rastreamento de atividades físicas, metas de hidratação e monitoramento evolutivo.',
     longDescription:
-      'Solução mobile de alta maturidade desenvolvida como projeto principal no 3º semestre de ADS na PUC Minas, onde conquistou o posto de Destaque Acadêmico do semestre. O Power Track combina um ecossistema frontend ágil com um backend robusto e escalável. O projeto se diferencia por sua engenharia rigorosa, sustentada por uma documentação técnica abrangente que cobre desde a especificação arquitetural até planos minuciosos de testes de software e usabilidade.',
+      'Solução mobile desenvolvida como projeto principal do 3º semestre de ADS na PUC Minas. O Power Track combina um ecossistema frontend ágil construído em React Native e Expo com um backend robusto e escalável em C# e TSQL. O grande diferencial do projeto está na sua engenharia rigorosa, sustentada por um ciclo completo de desenvolvimento documentado: desde a especificação e design de interface até planos detalhados e registros de testes de software e usabilidade com usuários reais.',
     tech: ['React Native', 'Expo', 'JavaScript', 'TypeScript', 'C#', 'TSQL'],
     highlights: [
-      'Premiado como Destaque Acadêmico do 3º semestre de ADS — PUC Minas',
-      'Arquitetura moderna com separação de responsabilidades (Frontend Mobile + API Backend)',
-      'Módulo avançado para registro e histórico dinâmico de treinos personalizados',
-      'Controle preciso de ingestão diária de água com metas inteligentes de hidratação',
-      'Documentação técnica robusta (Arquitetura da Solução, Engenharia de Requisitos e Matriz de Rastreabilidade)',
-      'Garantia de qualidade validada por Planos e Registros de Testes de Software e Usabilidade',
+      'Arquitetura moderna com ecossistema mobile integrado a uma API Backend estruturada.',
+      'Módulo dinâmico para registro, acompanhamento e histórico de atividades físicas.',
+      'Documentação técnica abrangente dividida em etapas, cobrindo o Contexto, Especificação e Arquitetura da Solução.',
+      'Projeto de Interface validado através de wireframes e design de telas centrado no usuário.',
+      'Garantia de qualidade comprovada por Planos e Registros de Testes de Software e Usabilidade.',
+      'Apresentação completa da solução final validada em formato de pitch audiovisual.',
     ],
     image: 'images/powertrack/power-track-main.png',
     images: [
@@ -72,18 +72,18 @@ export const projects: Project[] = [
   {
     title: 'Kanbam',
     description:
-      'Aplicação web de gerenciamento de tarefas em estilo Kanban, com autenticação, organização por colunas e interface responsiva.',
+      'Aplicação web full stack de gerenciamento de tarefas em estilo Kanban, contando com autenticação JWT, interface altamente reativa e assistente de IA integrado.',
     longDescription:
-      'Projeto full stack de um Kanban interativo, com frontend em Vue 3 e backend em NestJS. A aplicação permite autenticação de usuários, visualização de tarefas por colunas e criação de novas tarefas via modal. A base do backend foi estruturada com Prisma e PostgreSQL, com suporte a ambiente local via Docker Compose.',
-    tech: ['Vue 3', 'TypeScript', 'NestJS', 'Prisma', 'PostgreSQL', 'Docker'],
+      'Sistema Kanban interativo e moderno desenvolvido com Vue 3 e NestJS. A aplicação oferece controle completo de fluxo de trabalho com movimentação drag-and-drop, segurança robusta via tokens de acesso e um chat inteligente integrado à API do Gemini para auxiliar na gestão. O ecossistema é totalmente conteinerizado com Docker e integrado ao Prisma ORM para persistência eficiente.',
+    tech: ['Vue 3', 'TypeScript', 'NestJS', 'Prisma', 'PostgreSQL', 'Docker', 'Gemini API'],
     highlights: [
-      'Fluxo de autenticação com telas de login e cadastro',
-      'Board Kanban com colunas Backlog, To Do, Doing e Done',
-      'Movimentação de tarefas por arraste e solte entre colunas',
-      'Criação de tarefas por modal com campos de título, coluna e descrição',
-      'Interface adaptada para desktop e mobile',
-      'Backend estruturado em NestJS com Prisma',
-      'Banco PostgreSQL orquestrado com Docker Compose',
+      'Autenticação segura de usuários com fluxo completo de JWT (Login/Cadastro)',
+      'Board interativo com sistema drag-and-drop (arraste e solte) para movimentação fluida de tarefas',
+      'Assistente de Inteligência Artificial integrado (Gemini API) via chatbox nativo',
+      'Gerenciamento dinâmico de tarefas através de modais interativos e responsivos',
+      'Arquitetura backend modular, escalável e documentada de forma automatizada via Swagger',
+      'Persistência e modelagem de dados robustas utilizando Prisma ORM e PostgreSQL',
+      'Ambiente de desenvolvimento isolado e de rápida inicialização orquestrado com Docker Compose',
     ],
     image: '/images/kanban/kanban-main.png',
     images: [
@@ -133,30 +133,19 @@ export const projects: Project[] = [
     device: 'both',
   },
   {
-    title: 'Igesc Conecta',
+    title: 'IGESC Conecta',
     description:
-      'Plataforma web para modernizar a gestão interna do Instituto GESC, substituindo planilhas por um sistema integrado.',
+      'Sistema sociotécnico inovador para modernização e centralização da gestão interna e processos do Instituto GESC.',
     longDescription:
-      'Desenvolvido no 5º semestre do curso de ADS na PUC Minas, o IGESC Conecta tem como objetivo modernizar a gestão interna do Instituto GESC, centralizando informações e organizando processos de forma mais eficiente. Conta com backend em ASP.NET Web API e frontend em React 19 com TypeScript, além de geração de relatórios e upload de CSV.',
-    tech: [
-      'React 19',
-      'TypeScript',
-      'Vite',
-      'C# ASP.NET',
-      'Material UI',
-      'MUI X',
-      'Axios',
-      'Firebase',
-    ],
+      'Solução corporativa desenvolvida para uma empresa real, projetada para substituir o uso de planilhas descentralizadas por uma plataforma integrada de alta eficiência. O projeto conquistou o posto de Destaque Acadêmico no 5º semestre de ADS na PUC Minas. Unindo um ecossistema frontend robusto em TypeScript com um backend escalável em C#, o sistema automatiza fluxos de trabalho, organiza dados operacionais e garante total controle, auditoria e acessibilidade às informações institucionais.',
+    tech: ['TypeScript', 'React', 'C#', 'Entity Framework Core', 'CQRS', 'JavaScript', 'HTML', 'CSS'],
     highlights: [
-      'Gerenciamento de empresas e doações',
-      'Gerenciamento de times com filtros avançados',
-      'Gerador de relatórios PDF/CSV',
-      'Upload de arquivos CSV com drag-and-drop',
-      'Integração OpenAPI com backend',
-      'Filtragem por status e informações de auditoria',
-      'Deploy no Firebase Hosting',
-      'Projeto acadêmico — 5º Semestre ADS PUC Minas',
+      'Premiado como Destaque Acadêmico do 5º semestre de ADS — PUC Minas.',
+      'Desenvolvido para uma empresa real com foco em resolver dores e necessidades de negócio reais.',
+      'Centralização e modernização de processos internos, eliminando o controle ineficiente por planilhas.',
+      'Módulo avançado de auditoria e filtragem inteligente por status de doações e empresas parceiras.',
+      'Garantia de qualidade validada por Planos de Testes de Software e usabilidade aplicados ao cenário real.',
+      'Arquitetura moderna (Full Stack) com implantação contínua e documentação técnica ponta a ponta.',
     ],
     image: '/images/igesc/igesc-main.png',
     images: [
