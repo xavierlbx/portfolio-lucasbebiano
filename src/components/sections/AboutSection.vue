@@ -70,7 +70,7 @@ const CHIPS = ['Ciclo completo', 'Boas práticas', 'Trabalho em equipe', 'Perfil
       </div>
 
       <!-- Content -->
-      <div class="flex w-full flex-col gap-5">
+      <div class="flex w-full flex-col items-center gap-5 text-center md:items-start md:text-left">
         <p class="font-mono text-xs tracking-[0.3em] text-slate-500 dark:text-slate-600 uppercase">
           // sobre mim
         </p>
@@ -87,7 +87,7 @@ const CHIPS = ['Ciclo completo', 'Boas práticas', 'Trabalho em equipe', 'Perfil
 
         <!-- Terminal card -->
         <div
-          class="about-terminal rounded-xl border border-stone-300 dark:border-white/8 bg-stone-50 dark:bg-white/3 p-4 font-mono text-xs leading-relaxed sm:text-sm"
+          class="about-terminal w-full rounded-xl border border-stone-300 dark:border-white/8 bg-stone-50 dark:bg-white/3 p-4 text-left font-mono text-xs leading-relaxed sm:text-sm"
         >
           <div class="mb-3 flex items-center gap-1.5">
             <span class="h-2.5 w-2.5 rounded-full bg-stone-300 dark:bg-white/10" />
@@ -140,7 +140,7 @@ const CHIPS = ['Ciclo completo', 'Boas práticas', 'Trabalho em equipe', 'Perfil
         </div>
 
         <!-- Chips using the global .chip class that auto-handles dark mode -->
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap justify-center gap-2 md:justify-start">
           <span v-for="label in CHIPS" :key="label" class="chip">{{ label }}</span>
         </div>
       </div>

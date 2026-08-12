@@ -62,7 +62,7 @@ const onTouchEnd = (e: TouchEvent) => {
       class="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 shadow-2xl"
     >
       <!-- HEADER: title + badges + close -->
-      <div class="relative shrink-0 border-b border-gray-200 dark:border-white/10 px-5 pt-5 pb-4">
+      <div class="relative shrink-0 border-b border-gray-200 dark:border-white/10 px-5 pt-5 pb-4 text-center ">
         <button
           class="absolute top-4 right-4 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-slate-400 transition hover:border-yellow-400/70 dark:hover:border-yellow-400/70 hover:text-gray-900 dark:hover:text-yellow-300 focus-visible:ring-2 focus-visible:ring-yellow-400/70 focus-visible:outline-none"
           aria-label="Fechar detalhes do projeto"
@@ -112,12 +112,12 @@ const onTouchEnd = (e: TouchEvent) => {
       </div>
 
       <!-- SCROLLABLE BODY -->
-      <div class="flex flex-col gap-4 overflow-y-auto px-5 py-4">
+      <div class="flex flex-col gap-4 overflow-y-auto px-5 py-4 text-center">
 
         <!-- ── GALLERY CTA CARD ─────────────────────────────────────────── -->
         <div
           v-if="images.length > 0"
-          class="gallery-cta group relative block min-h-[9.5rem] w-full cursor-pointer overflow-hidden rounded-xl border-2 border-dashed text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/70"
+          class="gallery-cta group relative block min-h-[9.5rem] w-full cursor-pointer overflow-hidden rounded-xl border-2 border-dashed text-center transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/70 sm:text-left"
           role="button"
           tabindex="0"
           :class="{
@@ -183,8 +183,8 @@ const onTouchEnd = (e: TouchEvent) => {
             </div>
 
             <!-- Text content -->
-            <div class="min-w-0 flex-1">
-              <div class="flex flex-wrap items-center gap-2">
+            <div class="min-w-0 flex-1 sm:text-left">
+              <div class="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
                 <span class="text-sm font-bold text-gray-900 dark:text-white">Ver galeria de telas</span>
                 <span
                   class="inline-flex animate-pulse items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
@@ -213,7 +213,7 @@ const onTouchEnd = (e: TouchEvent) => {
             </div>
 
             <!-- Arrow -->
-            <div class="flex shrink-0 items-center transition-all duration-300 group-hover:translate-x-1">
+            <div class="hidden shrink-0 items-center transition-all duration-300 group-hover:translate-x-1 sm:flex">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
               </svg>
@@ -221,7 +221,7 @@ const onTouchEnd = (e: TouchEvent) => {
           </div>
 
           <!-- Thumbnail strip preview -->
-          <div class="relative flex min-h-[4.25rem] gap-1.5 px-4 pb-3.5 sm:min-h-[4.75rem] sm:px-5 sm:pb-4">
+          <div class="relative flex min-h-[4.25rem] justify-center gap-1.5 px-4 pb-3.5 sm:min-h-[4.75rem] sm:justify-start sm:px-5 sm:pb-4">
             <template v-for="(img, i) in images.slice(0, 4)" :key="i">
               <div
                 v-if="i < 3"
@@ -277,7 +277,7 @@ const onTouchEnd = (e: TouchEvent) => {
           <h4 class="mb-3 text-xs font-semibold tracking-widest text-emerald-600 dark:text-yellow-500 uppercase">
             Stack utilizada
           </h4>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap justify-center gap-2 sm:justify-start">
             <span
               v-for="tech in project.tech"
               :key="tech"
