@@ -24,13 +24,13 @@ export const projects: Project[] = [
       'Portfólio desenvolvido para apresentar minha trajetória como Desenvolvedor Full Stack, com foco em clareza, identidade visual e boa experiência de navegação. Estruturado com uma base moderna e performática, evoluído com responsividade, fluidez e organização de conteúdo.',
     tech: ['Vue 3', 'TypeScript', 'Vite', 'Tailwind CSS', 'Pinia'],
     highlights: [
-      'Animação de digitação na apresentação inicial',
-      'Carrossel infinito de habilidades com drag/touch',
+      'Animação de digitação na home',
+      'Carrossel infinito de skills com drag/touch',
       'Modal de detalhes dos projetos',
-      'Tema escuro com persistência de preferência',
-      'Interface totalmente responsiva (mobile e desktop)',
+      'Tema escuro com persistência',
+      'Interface responsiva (mobile e desktop)',
       'Testes automatizados com Vitest',
-      'Deploy contínuo via Vercel',
+      'Deploy contínuo na Vercel',
     ],
     image: 'images/previa_portifolio.png',
     images: ['images/previa_portifolio.png'],
@@ -42,17 +42,17 @@ export const projects: Project[] = [
   {
     title: 'Power Track',
     description:
-      'Aplicativo mobile para organizar e aprimorar a rotina de bem-estar, com controle de treinos e ingestão de água.',
+      'App mobile para organizar a rotina de bem-estar: treinos e ingestão de água.',
     longDescription:
-      'Aplicativo mobile desenvolvido no 3º semestre do curso de ADS na PUC Minas, com o objetivo de ajudar os usuários a organizar, gerenciar e aprimorar sua rotina de bem-estar. Permite registrar treinos, controlar a ingestão diária de água e acompanhar a evolução física ao longo do tempo. Disponível para Android.',
+      'App mobile do 3º semestre de ADS na PUC Minas para organizar a rotina de bem-estar. Registra treinos, controla a ingestão de água e acompanha a evolução física. Disponível para Android.',
     tech: ['React Native', 'Expo', 'JavaScript', 'C#', 'Entity Framework'],
     highlights: [
-      'Registro e histórico de treinos personalizados',
-      'Controle de ingestão diária de água',
-      'Acompanhamento de evolução física',
+      'Registro e histórico de treinos',
+      'Controle de ingestão de água',
+      'Acompanhamento da evolução física',
       'Autenticação de usuários',
-      'Disponível como APK para Android',
-      'Projeto acadêmico — 3º Semestre ADS PUC Minas',
+      'APK disponível para Android',
+      'Projeto acadêmico — 3º semestre ADS PUC Minas',
     ],
     image: 'images/powertrack/power-track-main.png',
     images: [
@@ -72,18 +72,18 @@ export const projects: Project[] = [
   {
     title: 'Kanbam',
     description:
-      'Aplicação web de gerenciamento de tarefas em estilo Kanban, com autenticação, organização por colunas e interface responsiva.',
+      'Kanban web com autenticação, colunas de tarefas e interface responsiva. No ar com Vercel, Render e Supabase.',
     longDescription:
-      'Projeto full stack de um Kanban interativo, com frontend em Vue 3 e backend em NestJS. A aplicação permite autenticação de usuários, visualização de tarefas por colunas e criação de novas tarefas via modal. A base do backend foi estruturada com Prisma e PostgreSQL, com suporte a ambiente local via Docker Compose.',
-    tech: ['Vue 3', 'TypeScript', 'NestJS', 'Prisma', 'PostgreSQL', 'Docker'],
+      'Kanban full stack com Vue 3 e NestJS. Autenticação, colunas de tarefas e criação via modal. Backend com Prisma e PostgreSQL. No ar: frontend na Vercel, API no Render e banco no Supabase.',
+    tech: ['Vue 3', 'TypeScript', 'NestJS', 'Prisma', 'PostgreSQL', 'Docker', 'Vercel', 'Render', 'Supabase'],
     highlights: [
-      'Fluxo de autenticação com telas de login e cadastro',
-      'Board Kanban com colunas Backlog, To Do, Doing e Done',
-      'Movimentação de tarefas por arraste e solte entre colunas',
-      'Criação de tarefas por modal com campos de título, coluna e descrição',
-      'Interface adaptada para desktop e mobile',
-      'Backend estruturado em NestJS com Prisma',
-      'Banco PostgreSQL orquestrado com Docker Compose',
+      'Login e cadastro de usuários',
+      'Colunas Backlog, To Do, Doing e Done',
+      'Arraste e solte de tarefas',
+      'Criação de tarefas por modal',
+      'Interface desktop e mobile',
+      'Backend em NestJS com Prisma',
+      'No ar: Vercel, Render e Supabase',
     ],
     image: '/images/kanban/kanban-main.png',
     images: [
@@ -92,8 +92,10 @@ export const projects: Project[] = [
       '/images/kanban/kanban-image (3).png',
       '/images/kanban/kanban-image (4).png',
       '/images/kanban/kanban-image (5).png',
+      '/images/kanban/kanban-image (6).png',
     ],
     link: 'https://github.com/xavierlbx/kanbam',
+    liveLink: 'https://kanbam-one.vercel.app/',
     year: '2026',
     status: 'Em evolução',
     device: 'desktop',
@@ -101,18 +103,18 @@ export const projects: Project[] = [
   {
     title: 'Apoia Mente',
     description:
-      'Plataforma de atendimento psicológico comunitário conectando psicólogos voluntários a pessoas em vulnerabilidade social.',
+      'Plataforma de atendimento psicológico comunitário entre psicólogos voluntários e pessoas em vulnerabilidade.',
     longDescription:
-      'Desenvolvido no 4º semestre do curso de ADS na PUC Minas, o ApoiaMente conecta psicólogos voluntários a pessoas em vulnerabilidade social, oferecendo agendamento de sessões e videochamadas seguras. Conta com frontend web (TypeScript), frontend mobile e backend com API Gateway em C#. Disponível via web e APK para Android.',
+      'Projeto do 4º semestre de ADS na PUC Minas. Conecta psicólogos voluntários a pessoas em vulnerabilidade, com agendamento e videochamadas. Web, mobile e API Gateway em C#. Disponível via web e APK Android.',
     tech: ['TypeScript', 'C# ASP.NET', 'React Native', 'API Gateway'],
     highlights: [
-      'Cadastro dual: Paciente ou Psicólogo',
-      'Agendamento de sessões de psicologia',
-      'Videochamadas integradas e seguras',
-      'Frontend web acessível pelo navegador',
-      'App mobile disponível como APK para Android',
+      'Cadastro de paciente ou psicólogo',
+      'Agendamento de sessões',
+      'Videochamadas seguras',
+      'Acesso web pelo navegador',
+      'App mobile em APK Android',
       'API Gateway centralizando os serviços',
-      'Projeto acadêmico — 4º Semestre ADS PUC Minas',
+      'Projeto acadêmico — 4º semestre ADS PUC Minas',
     ],
     image: '/images/apoiamente/apoia-mente-main.png',
     images: [
@@ -135,9 +137,9 @@ export const projects: Project[] = [
   {
     title: 'Igesc Conecta',
     description:
-      'Plataforma web para modernizar a gestão interna do Instituto GESC, substituindo planilhas por um sistema integrado.',
+      'Plataforma web para modernizar a gestão interna do Instituto GESC, no lugar de planilhas.',
     longDescription:
-      'Desenvolvido no 5º semestre do curso de ADS na PUC Minas, o IGESC Conecta tem como objetivo modernizar a gestão interna do Instituto GESC, centralizando informações e organizando processos de forma mais eficiente. Conta com backend em ASP.NET Web API e frontend em React 19 com TypeScript, além de geração de relatórios e upload de CSV.',
+      'Projeto do 5º semestre de ADS na PUC Minas. Centraliza a gestão interna do Instituto GESC. Backend ASP.NET Web API, frontend React 19 + TypeScript, relatórios e upload de CSV.',
     tech: [
       'React 19',
       'TypeScript',
@@ -149,14 +151,14 @@ export const projects: Project[] = [
       'Firebase',
     ],
     highlights: [
-      'Gerenciamento de empresas e doações',
-      'Gerenciamento de times com filtros avançados',
+      'Gestão de empresas e doações',
+      'Gestão de times com filtros',
       'Gerador de relatórios PDF/CSV',
-      'Upload de arquivos CSV com drag-and-drop',
-      'Integração OpenAPI com backend',
-      'Filtragem por status e informações de auditoria',
+      'Upload de CSV por arraste e solte',
+      'Integração OpenAPI com o backend',
+      'Filtros por status e auditoria',
       'Deploy no Firebase Hosting',
-      'Projeto acadêmico — 5º Semestre ADS PUC Minas',
+      'Projeto acadêmico — 5º semestre ADS PUC Minas',
     ],
     image: '/images/igesc/igesc-main.png',
     images: [

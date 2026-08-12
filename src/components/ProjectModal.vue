@@ -277,7 +277,7 @@ const onTouchEnd = (e: TouchEvent) => {
           <h4 class="mb-3 text-xs font-semibold tracking-widest text-emerald-600 dark:text-yellow-500 uppercase">
             Stack utilizada
           </h4>
-          <div class="flex flex-wrap justify-center gap-2 sm:justify-start">
+          <div class="flex flex-wrap justify-center gap-2 sm:justify-center">
             <span
               v-for="tech in project.tech"
               :key="tech"
